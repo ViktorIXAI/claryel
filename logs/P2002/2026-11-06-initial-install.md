@@ -119,3 +119,10 @@ The operator executed the planned libvirt commands and reported successful compl
 - **Negative control PASS (tested direction only):** a temporary client attached solely to Zone B received `Network is unreachable` when attempting to connect to the Zone A server on TCP 8080.
 - This confirms reachability within Zone A and failure of the tested B-to-A connection, not a comprehensive demonstration of security isolation. Reverse direction, other protocols, multi-homed containers, and host-boundary behavior remain untested.
 - The persistent Zone A test server has **not yet been confirmed removed** at this checkpoint. Clean it up and verify the container inventory before proceeding. The exact dynamic container IP is omitted from the public log.
+
+## Cleanup after two-zone test (owner-verified)
+
+- Operator removed the temporary Zone A HTTP server using Docker; the removal command returned its expected container name.
+- `docker ps -a` showed zero remaining containers. The two isolated internal test networks remain configured for further reverse-direction testing.
+- SSH and UFW remained active with default-deny ingress and restricted authorized workstation SSH access.
+- Next verification is the reverse A-to-B connectivity attempt with a positive control inside Zone B; no result for that direction is claimed yet.
