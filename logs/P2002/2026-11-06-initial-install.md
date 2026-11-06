@@ -110,3 +110,12 @@ The operator executed the planned libvirt commands and reported successful compl
 - Post-test evidence: no containers remained; SSH and UFW stayed active with the previously authorized administrative source restriction.
 - The pasted shell transcript contained visible line corruption near the final probe command, although output included all three probe outcomes. Treat results as **preliminary PASS with a reproducibility caveat**. Future tests must record independent exit codes and include DNS/UDP, lateral traffic, host reachability and multiple attached networks.
 - No application service, agent or private data was deployed during this test.
+
+## Two-zone Docker network isolation test (owner-provided results)
+
+- Created isolated internal bridges Zone A and Zone B with distinct IPv4 subnets and isolated gateway mode.
+- A disposable BusyBox HTTP server was started on Zone A without published host ports or additional capabilities.
+- **Positive control PASS:** a temporary client attached to Zone A retrieved the known `CLARYEL_OK` response from that server.
+- **Negative control PASS (tested direction only):** a temporary client attached solely to Zone B received `Network is unreachable` when attempting to connect to the Zone A server on TCP 8080.
+- This confirms reachability within Zone A and failure of the tested B-to-A connection, not a comprehensive demonstration of security isolation. Reverse direction, other protocols, multi-homed containers, and host-boundary behavior remain untested.
+- The persistent Zone A test server has **not yet been confirmed removed** at this checkpoint. Clean it up and verify the container inventory before proceeding. The exact dynamic container IP is omitted from the public log.
