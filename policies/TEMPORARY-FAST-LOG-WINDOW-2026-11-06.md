@@ -1,31 +1,47 @@
-# Temporary 24-hour fast-log publication window
+# Temporary 24-hour owner-authorized P2002 technical-log publication window
 
-**Owner request:** 2026-11-06. **Starts:** 2026-11-06 17:06 Europe/Rome (16:06 UTC). **Expires automatically as a policy exception:** 2026-11-07 17:06 Europe/Rome (16:06 UTC). **Status:** temporary documentary operating mode, not a change to GitHub permissions or proof of technical enforcement.
+**Owner authorization:** explicit instruction in the active ChatGPT conversation on 2026-11-06.  
+**Starts:** 2026-11-06T17:09:44+01:00 (16:09:44 UTC).  
+**Expires automatically:** 2026-11-07T17:09:44+01:00 (16:09:44 UTC).  
+**Scope:** P2002 / CLARYEL installation, configuration, debugging, security review, and agent activity during this window.
 
-## Limited relaxation for this window
+## Publication authorization
 
-The owner requests rapid and comprehensive publication of installation/debugging logs while multiple agents work concurrently. For this 24-hour period, **technical logs that contain no secrets, no other people's private data, and no exploitable environment-specific access details may be published verbatim**, including failed commands, stack traces, test outputs, warnings, model/agent mistakes, configuration reasoning, time stamps and non-sensitive hardware/software versions. There is **no requirement to rewrite such safe text into a prose narrative**, create separate rich evidence packets, or await editorial style/completeness review. A clear `UNVERIFIED` label is sufficient for incomplete results; missing extra metadata should be corrected later rather than used to suppress an otherwise safe technical log.
+The owner explicitly authorizes comprehensive, prompt publication of technical activity and evidence for the scope above. During this window, publish technical logs and diagnostic outputs without suppressing non-secret operational detail, including actual host/network identifiers, private IP addresses, MAC addresses, hostnames, VM identifiers, topology, interface mappings, firewall/access rules, service configuration, command output, failures, warnings, and agent mistakes.
 
-Publication remains English-first as the project's norm, but language formatting alone must not stall a safe urgent technical checkpoint. Maintain clear per-instance agent attribution and machine aliases if available; do not fake missing identities. For Hermes, runtime machine ID remains mandatory: resolve to a safe machine alias before public publication.
+This is a time-limited owner override of contrary non-secret infrastructure-disclosure restrictions in the standing publication and installation-logging policies and the logging restrictions referenced by issues #1 and #4. It applies only to public technical reporting for the stated P2002/CLARYEL work. It does not amend the permanent acceptance criteria for the publishing gate or reproducibility tests.
 
-## Safety protections NOT relaxed
+## The only excluded material
 
-**Never publish** secrets (API tokens, passwords, private keys, session cookies, recovery phrases), customer or third-party personal content, sensitive files or backups, or live details that make existing infrastructure materially easier to compromise (private IP/host maps, real SSH destinations, credential-bearing command lines, sensitive firewall exceptions, account-specific dumps). Even a 24-hour public exposure can be copied indefinitely. If a raw artifact includes any such data, **hold the raw artifact outside public GitHub** and publish only a redacted copy or a concise safe summary. Do not disable Gitleaks, credential filters, or other existing detection checks. Do not bypass the single-publisher security gate once deployed.
+Never publish:
+- passwords, passphrases, API tokens, access tokens, authentication cookies, session credentials;
+- private keys, recovery phrases/codes, TOTP seeds, certificate private keys, vault contents, or other secret authentication material.
 
-This exception does not grant permission to execute changes on the machines, delete evidence, rewrite Git history, alter isolation/security controls or publish private repositories. It does not attest that current prepublication gate enforcement exists.
+If any such material appears in an otherwise publishable log, withhold or redact the secret value before upload. Do not include scanner output that reproduces a detected secret. No secret or password is authorized for publication.
 
-## Automatic expiration of policy exception
+## Required handling
 
-At **2026-11-07 16:06 UTC**, this exception becomes void **without further action or approval**. The standing [publication security policy](PUBLICATION-SECURITY.md), [installation audit logging policy](INSTALLATION-AUDIT-LOGGING.md), and [contributor provenance policy](CONTRIBUTOR-PROVENANCE.md) then apply without relaxation. Automated agents MUST evaluate the absolute expiry time before every publication and not rely on the presence of this file as a permanent waiver. Technical CI enforcement has not been validated.
+- Keep Gitleaks and credential detection enabled; do not disable scanners or remove existing rules.
+- Infrastructure-only findings may be published under this explicit owner authorization during the window; credential/secret findings remain hard blocks.
+- Review the exact outgoing bytes before each write. This is a manual review process, not evidence that the future fail-closed publication gate has been implemented.
+- Preserve truthful provenance. Distinguish owner-supplied terminal output from commands personally executed by an agent. Do not fabricate event timestamps, exit codes, machine identities, or independent verification.
+- Use `UNKNOWN` or `NOT_TESTED` where evidence is absent.
+- Keep all changes to the P2002 host, VM, network, firewall, and disks under their separate execution approvals. This publication authorization is not permission to execute host changes.
+- Do not delete evidence, rewrite Git history, publish private repositories, or claim that publication makes public data private again.
+
+## Expiration
+
+At **2026-11-07T17:09:44+01:00**, this exception expires automatically without further approval. The standing publication-security, installation-audit-logging, and contributor-provenance policies resume without this temporary override. Check the absolute expiry before every publication.
 
 ## Contribution provenance
 
 - Writer-instance: CHATGPT-REVIEW-01
 - Writer-role: REPOSITORY_AUDITOR
+- Deployment-alias: NOT_APPLICABLE
 - Prepared-by: ChatGPT GPT-6 (declared)
-- Executed-by: NOT_APPLICABLE
+- Executed-by: NOT_APPLICABLE (policy documentation only)
 - Evidence-source: OWNER_REQUEST
 - Reviewed-by: SELF_REVIEW_ONLY
-- Approved-by: OWNER_REQUEST_2026-11-06
+- Approved-by: explicit owner instruction, 2026-11-06
 - Published-by: GitHub connector via shared ViktorIXAI account
 - Attribution-confidence: DECLARED_UNVERIFIED
