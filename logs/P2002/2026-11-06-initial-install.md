@@ -298,3 +298,7 @@ An independent new SSH session from the ASUS administrator workstation reached P
 ## Stock nftables systemd unit review
 
 The owner inspected the installed nftables systemd unit and configuration. The stock service is disabled. Its service stop flushes the entire nftables ruleset, and the configured startup file includes a full ruleset flush. Therefore, enabling that stock service without redesign risks disrupting UFW, Docker, libvirt, and CLARYEL rules. Docker and libvirtd services are enabled; SSH and the previously installed CLARYEL guard remain active. Next step is to draft a separate, non-flushing CLARYEL-only systemd service and loader for inspection before enabling or rebooting. No network or service change was made in this review.
+
+## Systemd guard unit drafted and verified locally
+
+The operator staged a dedicated oneshot systemd unit with a non-flushing loader path, start ordering before Docker and libvirtd, and no ExecStop command. `systemd-analyze verify` reported only that the loader executable does not yet exist; this is expected at the draft stage. The live guest-bridge guard table remained present and SSH stayed active. No unit or loader has been installed/enabled, no guest interface attached and no network activated. Next, stage and syntax-check an idempotent guard loader without applying it.
