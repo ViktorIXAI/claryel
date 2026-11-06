@@ -84,3 +84,12 @@ Owner requires public, sanitized documentation of each configuration action, out
 ## Libvirt default network disabled (owner-verified)
 
 The operator executed the planned libvirt commands and reported successful completion. The libvirt `default` network is now **inactive**, **autostart=no**, and **persistent=yes** (configuration retained); no VM was running at the earlier inventory. SSH remains active; UFW remains active with default-deny incoming, default-allow outgoing, deny routed, and the single authorized workstation SSH rule. This confirms the local libvirt default-network state only, **not** network isolation of future guest VMs or Docker containers. Next milestone: review container runtime installation and networking before any guest or container external exposure. No sensitive host addresses are published.
+
+## Docker installation and firewall preflight (owner terminal evidence)
+
+- Ubuntu-packaged Docker Engine 29.1.3 and Docker Compose 2.40.3 installed and operational; daemon active, no containers. Standard bridge, host and none networks exist.
+- Host IPv4 forwarding is enabled; IPv6 forwarding is disabled. UFW remains active with deny incoming and deny routed.
+- No daemon.json exists. Docker default bridge configuration currently enables inter-container communication (ICC) and masquerading; published ports default to binding on all IPv4 addresses. docker0 is currently without carrier.
+- iptables v1.8.10 uses nf_tables compatibility backend. DOCKER-USER chain exists; top FORWARD rules jump into DOCKER-USER and DOCKER-FORWARD before UFW chains, and FORWARD default policy is DROP. These observations do not prove container traffic isolation or public-port restrictions.
+- The host listens on SSH over IPv4 and IPv6, but UFW currently limits permitted inbound SSH to the designated administrative workstation IPv4. Loopback DNS and an additional loopback listener were also observed. Exact private host addresses and generated IDs deliberately omitted.
+- No new containers, exposed ports, traffic policies or firewall modifications have yet been performed. Next: read-only review of Docker forwarding/NAT rules, then a narrowly scoped security configuration and explicit tests before applications are deployed.
