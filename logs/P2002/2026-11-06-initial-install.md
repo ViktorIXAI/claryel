@@ -224,3 +224,10 @@ The operator executed the planned libvirt commands and reported successful compl
 - Subsequent `virsh list --all` showed the guest in `running` state; `virsh domiflist` returned no network interfaces, consistent with the intentionally offline first boot.
 - This only establishes hypervisor start and no attached guest NIC. The guest OS boot sequence, serial console, guest cloud-init completion and guest administrative access remain unverified at this checkpoint.
 - Next: inspect serial console without changing guest settings. No live cloud credentials have been added.
+
+## Offline guest serial login prompt observed
+
+- The operator attached to the running Cloud Hermes domain using `virsh console` and saw the Ubuntu guest serial login prompt for the expected guest hostname.
+- This confirms that guest boot reached a login prompt and that the serial console is operational while no NIC is attached.
+- It does not independently establish full cloud-init success, authorized-key enrollment or an administrative login. The account has password login disabled, so no serial password login was attempted.
+- Next: detach serial console with Ctrl+] without powering down; confirm domain stays running, then design a narrowly scoped management network that does not bridge the cloud guest onto the private LAN.
