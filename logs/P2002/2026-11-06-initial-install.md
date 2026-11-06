@@ -217,3 +217,10 @@ The operator executed the planned libvirt commands and reported successful compl
 - At the pre-boot inspection, both guest image files were owned by root and had mode 0644, and the image directory had mode 0711. Actual QEMU runtime access and mandatory access controls have not yet been tested. File permissions must be reviewed before any confidential material is stored.
 - Host SSH and UFW remained active. No guest network interface was attached.
 - Next safe operation is the first offline boot and serial-console observation. No guest boot success, guest cloud-init completion or network connectivity is claimed yet.
+
+## First KVM power-on (owner-verified)
+
+- Operator executed `virsh start` for the previously defined Cloud Hermes domain. Libvirt reported the domain started.
+- Subsequent `virsh list --all` showed the guest in `running` state; `virsh domiflist` returned no network interfaces, consistent with the intentionally offline first boot.
+- This only establishes hypervisor start and no attached guest NIC. The guest OS boot sequence, serial console, guest cloud-init completion and guest administrative access remain unverified at this checkpoint.
+- Next: inspect serial console without changing guest settings. No live cloud credentials have been added.
