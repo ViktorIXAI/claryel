@@ -193,3 +193,11 @@ The operator executed the planned libvirt commands and reported successful compl
 - The private key remains on the trusted administrative workstation. The pre-existing P2002 host SSH key remains separate.
 - The next planned operation is to copy the checksum-verified Ubuntu cloud image to a dedicated guest QCOW2 under libvirt images and resize the copy to a 40 GiB virtual capacity, leaving the downloaded source unchanged. The guest is not yet created, booted or network-attached.
 - An initially networkless guest requires an independent serial-console/recovery plan because SSH cannot work without guest networking.
+
+## Cloud Hermes VM disk created and verified (owner-supplied output)
+
+- Operator copied the checksum-checked Ubuntu 24.04 Cloud Image into a separate QCOW2 under the libvirt image directory, then resized the copy to **40 GiB** virtual capacity.
+- qemu-img reports the new file occupies approximately **1.75 GiB** of actual storage at this checkpoint, recognizes QCOW2 and reports corrupt=false. qemu-img check returned **no errors**.
+- The original downloaded source image remains a separate 3.5 GiB virtual disk and was not resized.
+- Libvirt VM list remains empty: the guest domain has not yet been defined or booted.
+- Planned resources: 2 virtual CPUs, 4 GiB RAM and 40 GiB storage, initially with no guest network interface. Cloud-init credentials must include only the separate administrative public SSH key, never the ASUS private key; password SSH and root login are disabled. Without any guest NIC, serial console is for observing boot until a separate permitted management channel is established.
