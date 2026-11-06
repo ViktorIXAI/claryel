@@ -162,3 +162,11 @@ The operator executed the planned libvirt commands and reported successful compl
 - Proposed test VM allocation: 4 vCPU, 8 GiB RAM and a sparse 40 GiB virtual disk. The future cloud-connected Hermes is intended to run in a KVM virtual machine, not directly as a host Docker container.
 - The host root remains unencrypted in this prototype stage. No genuine cloud credentials or private workloads should be put into the VM until secure storage and networking controls are implemented and tested.
 - No guest has been created or booted at this checkpoint.
+
+## Cloud image tool installation preflight (owner observation)
+
+- `cloud-localds` and `qemu-img` are present and executable; QEMU image utility reports version 8.2.2; virt-install reports version 4.1.0.
+- SSH remains active and host UFW remains enabled with the designated authorized workstation rule.
+- The shell transcript includes a malformed/interleaved apt command line followed by an interrupt (^C). No system failure was observed; package manager consistency is **not yet verified**.
+- Next action is read-only `dpkg --audit`, installed-package status, and apt/dpkg process inspection. Do not create a guest or run new package installations until the package state is verified.
+- Planned first test Cloud Hermes VM remains 2 vCPU, 4 GiB RAM, 40 GiB disk, with no initial network interface and no credentials on the current unencrypted host filesystem.
