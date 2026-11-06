@@ -8,6 +8,8 @@
 - **Target role:** BOX_TEST_HOST (no actual hostname or IP)
 - **Writer-instance (persistent declared alias, unique for each Hermes):** UNKNOWN
 - **Writer-role (e.g. PUBLIC_CLOUD_AGENT / PRIVATE_LOCAL_AGENT):** UNKNOWN
+- **Hermes-runtime-machine-ID (MANDATORY for every Hermes instance; safe physical/VM host alias):** NOT_APPLICABLE for non-Hermes / required safe machine ID for Hermes
+- **Target-machine-ID (separate remote target, if any):** NOT_APPLICABLE / safe target alias
 - **Deployment-alias (safe box/environment alias, never real hostname/IP):** NOT_APPLICABLE / UNKNOWN
 - **Prepared-by (person/model/agent or safe chat alias):** UNKNOWN
 - **Executed-by (actual machine operator, if any):** NOT_APPLICABLE / UNKNOWN
@@ -35,7 +37,7 @@
 ## Review checklist
 
 - [ ] Execution context and actor are evidenced, not inferred from Git author identity.
-- [ ] Each Hermes instance has distinct stable alias, role and non-sensitive deployment alias (same or different boxes).
+- [ ] Each Hermes instance has distinct stable alias, role and required runtime machine ID (same or different boxes); record remote target separately. Missing Hermes runtime machine ID blocks publication once gate is enforced.
 - [ ] Each test has a declared scope; simulated test is not relabeled live validation.
 - [ ] Missing evidence is labeled UNKNOWN or NOT_TESTED.
 - [ ] Public output is synthetic or independently sanitized before upload.
