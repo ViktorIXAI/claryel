@@ -209,3 +209,11 @@ The operator executed the planned libvirt commands and reported successful compl
 - Operator unmounted the ISO without reported error.
 - This validates seed contents prior to VM definition, but not successful cloud-init execution at guest boot. No guest has been booted yet.
 - Next controlled stage: check the libvirt staging destination does not exist and ISO is unmounted, copy seed to the libvirt images directory, and compare SHA256 hashes of the copy before VM creation. No secret/private SSH key should be placed in the seed image.
+
+## VM registered and pre-boot inspected (owner-provided output)
+
+- The Cloud Hermes KVM domain was registered persistently but was still powered off at the checkpoint. The registered definition reports two vCPUs, 4194304 KiB (4 GiB) memory, disabled autostart, no network interfaces, a guest QCOW2 disk and a cloud-init ISO.
+- A PTY-backed ISA serial console is defined. A virtio guest-agent channel exists, but guest-agent installation and operation have not been verified.
+- At the pre-boot inspection, both guest image files were owned by root and had mode 0644, and the image directory had mode 0711. Actual QEMU runtime access and mandatory access controls have not yet been tested. File permissions must be reviewed before any confidential material is stored.
+- Host SSH and UFW remained active. No guest network interface was attached.
+- Next safe operation is the first offline boot and serial-console observation. No guest boot success, guest cloud-init completion or network connectivity is claimed yet.
