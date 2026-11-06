@@ -15,7 +15,7 @@
 | --- | --- | --- | --- |
 | Installation sequence | [P2002 journal](../logs/P2002/2026-11-06-initial-install.md) | Owner-provided observations, not live independent shell audit | [#3](https://github.com/ViktorIXAI/claryel/issues/3) |
 | Firewall validation | Same journal: exact JSON checker and simulated missing DROP rule | No universal packet-level or boot-persistence proof | [#4](https://github.com/ViktorIXAI/claryel/issues/4) |
-| UFW / Guard integration | [UFW and Guard checkpoint](../logs/P2002/2026-11-06-ufw-guard-audit.md) | UFW restore behavior and UFW-to-Guard boot order unresolved; source inspection only | [#1](https://github.com/ViktorIXAI/claryel/issues/1), [#4](https://github.com/ViktorIXAI/claryel/issues/4) |
+| UFW / Guard integration | [UFW and Guard checkpoint](../logs/P2002/2026-11-06-ufw-guard-audit.md), [boot timing and bridge inspection](../logs/P2002/2026-11-06-ufw-guard-boot-timing.md) | Critical-chain output does not establish completion order; UFW restart and reboot effects NOT_TESTED | [#1](https://github.com/ViktorIXAI/claryel/issues/1), [#4](https://github.com/ViktorIXAI/claryel/issues/4) |
 | Publication safety | [Two-ledger policy](../policies/PUBLICATION-SECURITY.md) | Mandatory prepublication enforcement not verified | [#1](https://github.com/ViktorIXAI/claryel/issues/1) |
 | Private evidence | Two-ledger policy | Protected full-fidelity ledger not deployed | [#2](https://github.com/ViktorIXAI/claryel/issues/2) |
 | Project status | [README](../README.md) | Not production-ready; documentation subject to concurrent changes | [#5](https://github.com/ViktorIXAI/claryel/issues/5) |
