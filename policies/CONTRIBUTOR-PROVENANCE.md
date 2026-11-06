@@ -20,6 +20,30 @@ Different Hermes instances on the **same host** still require distinct instance 
 
 Record `Writer-instance`, `Writer-role` and `Deployment-alias` on each contribution. For a non-Hermes writer use equivalent fields (e.g. `CHATGPT-REVIEW-01`, `REPOSITORY_AUDITOR`, `NOT_APPLICABLE`). Do not reuse an instance alias after it has been retired; log role or deployment changes without overwriting history. A separate publisher/relay may submit on behalf of the Hermes instance; name both and never assume the relay authored the content.
 
+## Minimum mandatory Hermes machine identity
+
+**Owner clarification (2026-11-06): Every Hermes instance MUST identify the machine on which that particular Hermes instance is running.** A generic agent name, security role, or GitHub login does not satisfy this minimum. Record:
+
+- `Hermes-instance-ID`: stable unique identifier for the running Hermes instance, e.g. `HERMES-PRIVATE-02`.
+- `Hermes-runtime-machine-ID`: stable, explicit **public-safe machine alias**, corresponding to the physical/virtual machine hosting that running Hermes process, e.g. `P2002` only if that label is already authorized for public release, otherwise `BOX-LAB-B`.
+- `Hermes-role`: cloud/external, local/private, test or other actual role.
+- `Target-machine-ID`: separate machine alias when Hermes operates on another machine. Do not conflate runtime host with a remotely managed target.
+
+The machine ID is **mandatory** for Hermes-authored or Hermes-executed public activity; a placeholder such as `UNKNOWN` indicates a noncompliant, unverified record awaiting correction, **not acceptance**. If the runtime machine is not safely identified, **hold the publication** through the future gate and resolve it in the private ledger first. Where a public mapping itself would reveal sensitive topology, select a neutral one-to-one alias; never publish real hostname, MAC, hardware serial, private IP, VM UUID, or a cross-zone topology map. Distinct Hermes copies may share one runtime machine ID but MUST have different instance IDs. A Hermes instance moved to another machine must retain its instance identity while recording the machine change as a new event; historical events keep the original runtime machine ID.
+
+Illustrative attribution (not a declaration of deployed instances):
+
+```text
+Writer-instance: HERMES-PRIVATE-02
+Writer-role: PRIVATE_LOCAL_AGENT
+Hermes-runtime-machine-ID: BOX-LAB-B
+Target-machine-ID: BOX-LAB-A
+Prepared-by: Hermes HERMES-PRIVATE-02 (declared)
+Attribution-confidence: DECLARED_UNVERIFIED
+```
+
+This is an explicit **machine-of-execution minimum**, independent of GitHub identity. It remains a documented requirement until issue #6 and the publication gate (#1) enforce it.
+
 ## Required declarations for every new contribution
 
 - **Writer-instance / writer-role / deployment-alias:** unique declared writer instance, security/task role and safe box/environment alias (or `NOT_APPLICABLE`). For Hermes all three are mandatory; see above.
