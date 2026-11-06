@@ -350,3 +350,7 @@ The operator verified that `virt-cat`, `virt-ls`, `virt-filesystems`, and `guest
 ## qcow2 disk lock pre-shutdown check
 
 The operator confirmed that Cloud Hermes was running and QEMU exclusively held its qcow2 image open. `qemu-img info` refused access due to a shared write-lock conflict, as expected for a live guest; no attempt was made to override the lock. No NBD block devices were loaded. Host SSH stayed active and the live CLARYEL guard passed validation. The next action is a guest-only graceful ACPI shutdown, followed by state and lock-release verification; forceful VM termination is explicitly excluded. No host reboot or firewall change.
+
+## Guest ACPI shutdown requested
+
+The operator issued a normal libvirt shutdown command to Cloud Hermes. Libvirt acknowledged that the guest is being shut down, but an immediate state check still reported running. Host SSH remained active and the exact nftables guard validator returned OVERALL PASS. A stopped state and disk lock release have not yet been verified. Do not force-stop the guest or access the qcow2 disk until shutdown completion is confirmed.
