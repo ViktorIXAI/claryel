@@ -6,7 +6,16 @@
 - **Event time (UTC):** UNKNOWN / YYYY-MM-DDTHH:MM:SSZ (actual execution time, not commit time)
 - **Publication time (UTC):** UNKNOWN / YYYY-MM-DDTHH:MM:SSZ
 - **Target role:** BOX_TEST_HOST (no actual hostname or IP)
-- **Actor / evidence origin:** OWNER_REPORTED | AGENT_PROPOSED | INDEPENDENTLY_TESTED | UNKNOWN
+- **Writer-instance (persistent declared alias, unique for each Hermes):** UNKNOWN
+- **Writer-role (e.g. PUBLIC_CLOUD_AGENT / PRIVATE_LOCAL_AGENT):** UNKNOWN
+- **Deployment-alias (safe box/environment alias, never real hostname/IP):** NOT_APPLICABLE / UNKNOWN
+- **Prepared-by (person/model/agent or safe chat alias):** UNKNOWN
+- **Executed-by (actual machine operator, if any):** NOT_APPLICABLE / UNKNOWN
+- **Evidence-source:** OWNER_REPORTED | TOOL_OBSERVED | SIMULATED | INDEPENDENTLY_VERIFIED | PROPOSED | UNKNOWN
+- **Reviewed-by:** NOT_REVIEWED / SELF_REVIEW_ONLY / independently reviewed
+- **Approved-by:** NOT_CONFIRMED / documented owner approval
+- **Published-by:** shared credential AND submitting agent/process if known
+- **Attribution-confidence:** DECLARED_UNVERIFIED | VERIFIED
 - **Approval reference:** UNKNOWN / reviewed owner decision ID
 - **Purpose / expected behavior:**
 - **Preconditions / safety and privacy impact:**
@@ -26,6 +35,7 @@
 ## Review checklist
 
 - [ ] Execution context and actor are evidenced, not inferred from Git author identity.
+- [ ] Each Hermes instance has distinct stable alias, role and non-sensitive deployment alias (same or different boxes).
 - [ ] Each test has a declared scope; simulated test is not relabeled live validation.
 - [ ] Missing evidence is labeled UNKNOWN or NOT_TESTED.
 - [ ] Public output is synthetic or independently sanitized before upload.
