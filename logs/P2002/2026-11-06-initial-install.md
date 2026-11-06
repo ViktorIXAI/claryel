@@ -342,3 +342,7 @@ Operator supplied the output of a Python test that copied the actual nftables ta
 ## Guest initial DHCP diagnosis
 
 Cloud Hermes is running with a temporary hot-attached VirtIO interface on the isolated admin network, while VM autostart remains disabled. The guest console reaches a login prompt, but no DHCP lease exists and no DHCP handshake was observed in the host journal. The cloud-init seed contains only user-data and meta-data; user-data contains no explicit network configuration, and meta-data identifies the guest hostname and instance. The live CLARYEL firewall validator continues to pass. Because the first boot occurred with no NIC, cloud-init may not have configured DHCP; this remains a hypothesis, not a confirmed cause. Next assess offline guest disk-inspection tooling before attempting guest-only shutdown, static network configuration, or reboot. No changes made.
+
+## Offline guest inspection tooling check
+
+The operator verified that `virt-cat`, `virt-ls`, `virt-filesystems`, and `guestfish` are absent from the host. Cloud Hermes is still running with its temporary, live-only interface; the persistent domain XML has no NIC. No DHCP lease has been observed. CLARYEL firewall policy validation returned OVERALL PASS. The next operation is a read-only host package availability and disk-capacity check for libguestfs utilities. No VM stop, disk modification, or firewall change has occurred.
