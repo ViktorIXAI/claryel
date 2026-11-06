@@ -37,3 +37,29 @@ Record sanitized findings locally and publish only a cleaned, reviewed summary.
 - model/Strata storage budget **100 GB** within the system filesystem, with 32 GB swap planning subject to protection requirements.
 
 All capacity numbers remain targets until the actual installer layout and `lsblk` are inspected.
+
+## Owner installation report: initial install completed, first reboot and display routing under test (2026-11-06)
+
+**Owner observation, not independently verified:** Ubuntu Server installer displayed "Installation complete / Reboot now". The installer then requested removal of installation media; owner deliberately kept the 64 GB recovery/installer USB attached and pressed Enter. First reboot is being checked; later power-off and display cable relocation are planned. Do not mark reboot, SSH access, storage layout, or graphics routing PASS until actual evidence is recorded.
+
+### Dual-GPU console behavior
+- The P2002 motherboard has integrated graphics, and a discrete GPU is installed in the first PCIe slot for AI inference, not graphics workloads.
+- After BIOS factory reset, firmware/BIOS output appeared on the display attached to motherboard video. During Ubuntu Server installation, console output switched to the discrete GPU, requiring temporary monitor reconnection.
+- Owner plans to verify first reboot, then shut down, reconnect the physical monitor to motherboard integrated video output, and fit an existing HDMI/DP dummy-display emulator to the discrete GPU.
+- **Unverified assumption:** the dummy plug does not guarantee that Linux console/fbcon will move to integrated graphics, or that discrete GPU VRAM use will be zero; test driver, kernel console and compute use separately.
+- A future default procedure should keep internal NVMe first in UEFI boot order and invoke the one-time UEFI boot selection menu for USB recovery/install rather than permanently changing boot priority. The firmware-specific key and boot entries must be verified, not assumed.
+- Check that boot does not automatically select the attached recovery USB, and document a recovery path if there is no local console; SSH access must also be tested.
+
+### Suggested post-boot diagnostics (read-only, sanitize before public sharing)
+
+```bash
+hostnamectl
+ip -br addr
+lsblk -o NAME,SIZE,TYPE,FSTYPE,MOUNTPOINTS
+lspci -nn | grep -Ei 'vga|3d|display'
+cat /proc/cmdline
+ls -l /dev/dri 2>/dev/null
+systemctl is-active ssh
+```
+
+Avoid prematurely setting `nomodeset`, blacklisting the discrete GPU module, or forcibly binding/removing drivers: these changes may damage AMD compute availability for Strata or hide the console. Establish whether the selected integrated port receives Linux text output; headless SSH operation is an independent fallback. Physical replugging should be done after power-off, and no physical display dummy is a security control.
