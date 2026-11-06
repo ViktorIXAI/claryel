@@ -1,6 +1,6 @@
 # CLARYEL
 
-**Status: architecture proposal / pre-implementation. No deployment, security certification, or legal compliance is claimed.**
+**Status: architecture proposal with laboratory implementation in progress on P2002. Not production-ready. No security certification or legal compliance is claimed.**
 
 CLARYEL is an experimental, offline-first local AI system intended for privacy-sensitive environments. Development is greenfield, incremental, evidence-led and subject to explicit owner approval at every deployment gate. Previous repositories are untrusted reference material, not code/configuration to import automatically.
 
@@ -15,6 +15,14 @@ CLARYEL is an experimental, offline-first local AI system intended for privacy-s
 - Every update enters quarantine; require provenance, staged testing, explicit approval, rollout and rollback.
 - **AI-assisted and fallible by design:** ChatGPT, Grok, local Hermes-based AI and potentially other agents may contribute and publish over time. Human contributors and all AI systems can make mistakes; preserve reviewable history and analyze errors in both reproduced and newly designed solutions.
 - Publish only in **English**, with secret/PII/operational-information review before any public commit.
+
+## Current implementation evidence
+
+- [Current audit status, evidence index and unresolved gaps](docs/AUDIT-STATUS-AND-EVIDENCE.md)
+- [Forward-looking audit checkpoint template](templates/AUDIT-CHECKPOINT.md)
+- [Tracking issues: security publishing gate, private evidence ledger and reproducibility](https://github.com/ViktorIXAI/claryel/issues)
+
+The P2002 installation journal contains **operator-reported** findings; Git publication does not itself independently verify execution. Pre-publication scanning enforcement and a protected private evidence ledger are **not yet demonstrated**.
 
 ## Project map
 - [Architecture and trust boundaries](docs/ARCHITECTURE.md)
