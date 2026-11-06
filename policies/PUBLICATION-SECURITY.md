@@ -2,6 +2,8 @@
 
 **Status: mandatory publication policy, effective 2026-11-06. Implementation and CI enforcement require separate testing and owner approval.**
 
+> **Temporary fast-log window (owner request):** From 2026-11-06 16:06 UTC through 2026-11-07 16:06 UTC, consult [the temporary 24-hour publication exception](TEMPORARY-FAST-LOG-WINDOW-2026-11-06.md). Non-sensitive technical logs may be published verbatim without editorial delay; secret/credential/third-party-privacy and material infrastructure exposure checks remain mandatory. The exception expires automatically, and this standing policy then applies unchanged.
+
 ## Scope and origin
 
 Applies to **every** public GitHub surface: commit contents and history, branches, tags, diffs, commit messages, issues, PRs, comments, reviews, discussions, release assets, Actions logs/artifacts, dashboards, screenshots, terminal output, binary attachments, model artifacts and AI-agent direct API writes. Publication is **English only**.
