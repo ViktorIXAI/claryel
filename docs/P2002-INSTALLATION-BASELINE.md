@@ -63,3 +63,7 @@ systemctl is-active ssh
 ```
 
 Avoid prematurely setting `nomodeset`, blacklisting the discrete GPU module, or forcibly binding/removing drivers: these changes may damage AMD compute availability for Strata or hide the console. Establish whether the selected integrated port receives Linux text output; headless SSH operation is an independent fallback. Physical replugging should be done after power-off, and no physical display dummy is a security control.
+
+## Requirement for the NEXT install and recovery on equivalent hardware
+
+The owner explicitly requires a **zero-monitor-cable-switch** workflow. A single monitor must remain attached to the motherboard integrated graphics for BIOS/UEFI, USB boot selection, Ubuntu installer, first boot, future offline recovery and encrypted reinstall. The AI compute GPU must never require the physical monitor. Test and record the required firmware settings and installer/recovery kernel console configuration; do not presume the current dummy-display emulator redirects the Linux console or yields zero VRAM usage. The previous P2002 install exposed the problem; a validated fix has not yet been demonstrated. Preserve an accessible local recovery console when networking is unavailable.
