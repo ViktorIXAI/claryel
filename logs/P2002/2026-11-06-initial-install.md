@@ -318,3 +318,7 @@ The owner confirmed valid JSON output from `nft -j list table inet claryel_guard
 ## Exact live firewall policy validation (operator terminal evidence)
 
 A read-only Python validator consumed the live `nft -j list table inet claryel_guard` output and compared the exact set of two base chains (name, hook, filter type, priority -10, policy accept) as well as all five rules in order and with full match/action expressions. Results: PASS for exact chain names, guest_input parameters, guest_forward parameters, and exact ordered rules; overall PASS. This verifies the current IPv4/IPv6 nftables inet policy representation at this checkpoint only. It does not show that policy is enforced against guest-generated packets, that it survives boot, or that the existing loader checks it. Next: stage an independent executable policy validator, validate it, and wire it into the loader before enabling automatic service startup. No VM interface has been attached or libvirt management network started.
+
+## Standalone guard policy verifier staged
+
+The owner staged a Python-based checker of the live CLARYEL nftables policy. The Python syntax check reported no errors. A read-only run of the checker returned PASS for the exact chains, their hook/type/priority/policy settings and the full ordered rule expressions; overall PASS. Host SSH remained active. The checker has not yet been installed in a system directory or integrated into the guard loader, and no negative test against deliberately corrupted rules has occurred. The VM management network remains unactivated.
