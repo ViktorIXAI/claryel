@@ -310,3 +310,7 @@ Owner staged the CLARYEL guard Bash loader script in the VM preparation director
 ## Installed guard loader check
 
 Operator compared the staged and installed firewall rules, loader and systemd service byte-for-byte: all three comparisons passed. Calling the installed loader found the already-present guard table and exited normally. A subsequent live rules listing confirmed the intended input and forward chains remained present, and SSH was active. No service auto-start, reboot, or recovery from a missing or tampered table has been verified. The current loader accepts a table merely because it exists, so acceptance is blocked until the actual policy content is independently validated.
+
+## nftables JSON policy inspection
+
+The owner confirmed valid JSON output from `nft -j list table inet claryel_guard`. The inspected live table contains two expected base chains (`guest_input` for INPUT and `guest_forward` for FORWARD) at priority -10. It contains three ordered input rules (established/related, DHCP client-to-server, then DROP) and two forward-direction DROP rules, all on the proposed management bridge. Host SSH remained active. Next acceptance step is an exact machine-readable policy validation including chain type, policy, hook, priority and ordered rule expressions. No guest interface is attached; no network traffic tests or persistence tests have yet run.
