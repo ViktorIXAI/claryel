@@ -326,3 +326,7 @@ The owner staged a Python-based checker of the live CLARYEL nftables policy. The
 ## Installed firewall policy verifier accepted
 
 The owner installed the previously tested Python policy validator at the designated system location. Byte-for-byte comparison against the staged source succeeded. Running the installed validator returned PASS for exact chain names, chain settings, and complete ordered rule expressions, with OVERALL PASS. Host SSH remained active. The loader has not yet been updated to call this verifier. No service enablement, reboot or guest network attachment is claimed. Next stage is to stage a revised loader that validates either an already-present guard or a newly loaded one and fails on any policy mismatch.
+
+## Guard loader v2 staged, syntax checked
+
+The operator created a second version of the guard loader in the staging directory. Bash syntax validation passed and the displayed file content includes validation of required installed files, nft syntax precheck, a branch for existing versus absent guard table, and a mandatory call to the installed exact-policy validator. The installed validator returned OVERALL PASS and host SSH remained active. This staged loader has not yet been executed, installed, or tested for a missing or tampered policy. Next acceptance: execute it against the already-present valid guard, confirm no unexpected changes, then conduct a safe simulated failure test without modifying live firewall rules.
