@@ -20,6 +20,7 @@ CLARYEL is an experimental, offline-first local AI system intended for privacy-s
 - [Architecture and trust boundaries](docs/ARCHITECTURE.md)
 - [Owner-controlled implementation roadmap](docs/ROADMAP.md)
 - [P2002 and P1005 hardware testbeds](docs/HARDWARE-TESTBEDS.md)
+- [Storage, encrypted keys, state indicators and deferred backup plan](docs/STORAGE-KEYS-AND-BACKUP-PLAN.md)
 - [EU / Italian legal design baseline](docs/LEGAL-BASELINE.md)
 - [Public English-only policy](policies/PUBLICATION-LANGUAGE.md)
 - [AI-assisted authorship, fallibility and historical integrity policy](policies/AI-DEVELOPMENT-AND-HISTORY.md)
