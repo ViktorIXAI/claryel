@@ -1,22 +1,22 @@
 # P2002 Storage, Secrets, Lock States and Deferred Backup Design
 
-**Status: owner-approved design targets, NOT deployed or security-tested. Updated 2026-11-06.** All numbers are approximate GB; distinguish manufacturer decimal GB from GiB shown by Linux. Validate physical NVMe size, current partition table and recoverability before any destructive change.
+**Status: owner-approved testbed design targets, NOT deployed or security-tested. Updated 2026-11-06.** All numbers are approximate GB; distinguish manufacturer decimal GB from GiB shown by Linux. Validate physical NVMe size, current partition table and recoverability before any destructive change.
 
 ## First installation
 
-- Allocate approximately **350 GB** to the LUKS2-encrypted Ubuntu Server 24.04 system environment (including OS, KVM, Docker/Compose, cloud VM, local Strata and models, Hermes agents, GTW, Home Assistant and operational metadata). Aim to reserve **100 GB** of this capacity for model weights and Strata assets; the current main model occupies about **78 GB** per owner report, so this is a capacity *reservation*, not a separate partition or a guarantee for future models.
-- Plan a **32 GB encrypted swapfile** inside the encrypted system filesystem. Swap must never be configured unencrypted; disabling hibernation and monitoring memory pressure are part of acceptance.
+- Allocate approximately **350 GB** to an **UNENCRYPTED Ubuntu Server 24.04 system environment for the initial P2002 testbed only** (including OS, KVM, Docker/Compose, cloud VM, local Strata and models, Hermes agents, GTW, Home Assistant and operational metadata). Aim to reserve **100 GB** of this capacity for model weights and Strata assets; the current main model occupies about **78 GB** per owner report, so this is a capacity *reservation*, not a separate partition or a guarantee for future models.
+- Plan **32 GB swap**, but on the initial unencrypted system do not place actual private data, real client documents, secret keys, sensitive contexts or plaintext credentials in memory/swap. Prefer an explicitly encrypted ephemeral swap mechanism when feasible, or disable swap until it can be protected; verify after each restart. No hibernation with ephemeral swap. This is a temporary test-only security exception.
 - Allocate **16 GB** to an independently passphrase-unlocked LUKS2 secrets volume, to be created after the OS installation.
 - Allocate the remaining capacity to a separate independently passphrase-unlocked LUKS2 private-data volume (documents, sensitive databases, user files and private RAG). For the initial install, leave this capacity unallocated rather than risking complex manual partitioning.
 - Clarify physical meaning: these are **logical encrypted volumes on a single physical NVMe** unless a distinct physical drive is inventoried. Separate volumes/keys protect access, but do not protect against loss of the physical disk or host compromise.
-- Boot partitions may be unencrypted; document Secure Boot and boot integrity limitations. LUKS system unlock may require a local passphrase at boot, affecting unattended restart. Never store private/secrets volume passphrases or raw unlock keys on the system disk or in a public repo.
+- Boot partitions and the initial system partition are **unencrypted**. Document physical-access, offline tampering, log, Docker, VM, crash-dump and swap exposure risks. Later root encryption is possible by offline LUKS2 conversion with reliable backup and bootloader/initramfs changes, or by a fresh encrypted installation and recovery. Prefer clean reinstall for reproducibility. Never store private/secrets volume passphrases or raw unlock keys on the system disk or in a public repo.
 
 ## Storage budget inside 350 GB (planning caps, not measured use)
 
 | Category | Planned budget |
 | --- | ---: |
 | System packages, kernels and base tools | 25 GB |
-| Encrypted swap | 32 GB |
+| Swap (test-only; encryption/disable policy required) | 32 GB |
 | Strata + model weights and model artifacts | **100 GB** |
 | Docker images, containers and writable layers | 45 GB |
 | KVM cloud VM and images | 45 GB |
@@ -61,4 +61,8 @@ Backups can increase exposure and conflict with data retention/deletion if unman
 
 ## Immediate action boundary
 
-Install Ubuntu on the intended 350 GB encrypted system area only; do **not** erase or reformat the remainder unintentionally. Never run partition/cryptsetup commands based on assumed disk names: first inspect actual `lsblk`, storage IDs and the installer preview. Later creation of independently encrypted secrets/data volumes requires explicit review of the actual geometry. No real customer files or production credentials before isolation tests.
+Install Ubuntu on the intended 350 GB **unencrypted** system area only for this first testbed; do **not** erase or reformat the remainder unintentionally. Never run partition/cryptsetup commands based on assumed disk names: first inspect actual `lsblk`, storage IDs and the installer preview. Later creation of independently encrypted secrets/data volumes requires explicit review of the actual geometry. No real customer files or production credentials before isolation tests.
+
+## Owner change decision (2026-11-06)
+
+The project owner explicitly selected an **unencrypted 350 GB system root for the initial P2002 testbed**, to speed initial deployment. This supersedes the earlier encrypted-system recommendation **only for this test phase**. Independently encrypted secrets and private-data volumes remain mandatory before any sensitive material is introduced. Later system encryption is an explicit future milestone and must include recovery planning, verified backups, a rebootable migration test, and renewed review of swap, secrets, logs, VM and container storage. No claim that an unencrypted host disk is adequate for real customer data.
