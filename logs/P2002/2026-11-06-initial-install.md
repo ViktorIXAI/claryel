@@ -80,3 +80,7 @@ Owner requires public, sanitized documentation of each configuration action, out
 - `virsh -c qemu:///system net-list --all` showed a pre-created libvirt `default` network in the **active** state with autostart enabled. No claim is made that this NAT network satisfies CLARYEL isolation.
 - SSH stayed active and UFW stayed active with default-deny incoming, default-allow outgoing and deny routed, and a single administrative source rule. Exact addresses are omitted from this public log.
 - Proposed next operation, **not yet confirmed executed**: disable autostart of libvirt default network; destroy its current active instance (not undefine); verify network is inactive/autostart=no and SSH/UFW remain active. Future cloud VM network must be independently designed and tested.
+
+## Libvirt default network disabled (owner-verified)
+
+The operator executed the planned libvirt commands and reported successful completion. The libvirt `default` network is now **inactive**, **autostart=no**, and **persistent=yes** (configuration retained); no VM was running at the earlier inventory. SSH remains active; UFW remains active with default-deny incoming, default-allow outgoing, deny routed, and the single authorized workstation SSH rule. This confirms the local libvirt default-network state only, **not** network isolation of future guest VMs or Docker containers. Next milestone: review container runtime installation and networking before any guest or container external exposure. No sensitive host addresses are published.
