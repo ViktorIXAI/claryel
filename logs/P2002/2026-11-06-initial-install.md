@@ -143,3 +143,12 @@ The operator executed the planned libvirt commands and reported successful compl
 - SSH and UFW remained active under existing host access restrictions. There were no privileged container flags or published host ports in this step.
 - Crucial security limitation: while the kernel has no default route, a dual-network application may still receive and emit messages on both attached networks and thereby bridge them at application level. No positive application-reachability probe or forwarding bypass has yet been recorded.
 - Next: run test servers separately in zones A/B, check each from the intermediary, and clean up ephemeral containers. Zone addresses are intentionally excluded from the public log.
+
+## Dual-network test completed and cleaned up (owner-verified)
+
+- A temporary, unprivileged, two-network-attached test container successfully fetched the expected HTTP test responses from services on each isolated Docker network. This shows reachability to both networks from the intermediary, but not kernel packet forwarding or production gateway security.
+- All three temporary test containers (the intermediary and two HTTP servers) were subsequently removed. Docker reported no remaining containers. Two isolated Docker test networks were retained.
+- Libvirt reported no VMs. Its standard default network remained inactive with autostart disabled.
+- SSH and UFW remained active with the previously configured restricted administrative connection.
+- Architecture reaffirmed: internet-connected Cloud Hermes will run in its own KVM/QEMU guest, not in a Docker container on P2002. Private services can use Docker; the Security Gateway crossing remains to be designed, implemented, and tested.
+- Next action: inspect available host resources, VM tooling, image sources and storage layout before allocating VM storage or enabling guest networking.
