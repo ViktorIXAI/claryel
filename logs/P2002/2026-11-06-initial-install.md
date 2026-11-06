@@ -306,3 +306,7 @@ The operator staged a dedicated oneshot systemd unit with a non-flushing loader 
 ## Guard loader staging syntax check
 
 Owner staged the CLARYEL guard Bash loader script in the VM preparation directory and inspected its full content. `bash -n` passed; the live CLARYEL firewall table remained present and host SSH remained active. The loader is designed to validate its rules file, return early if the guard table already exists, otherwise load just that rules file and confirm the table exists. No system installation or invocation of the loader has yet been reported. Known gap: existence-only guard detection could mistake a partially configured or stale table for a complete policy; content validation and safe recovery need separate acceptance before production deployment. Next: install staging copies with non-overwrite checks, then inspect systemd verification without starting/enabling the unit.
+
+## Installed guard loader check
+
+Operator compared the staged and installed firewall rules, loader and systemd service byte-for-byte: all three comparisons passed. Calling the installed loader found the already-present guard table and exited normally. A subsequent live rules listing confirmed the intended input and forward chains remained present, and SSH was active. No service auto-start, reboot, or recovery from a missing or tampered table has been verified. The current loader accepts a table merely because it exists, so acceptance is blocked until the actual policy content is independently validated.
