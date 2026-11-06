@@ -100,3 +100,13 @@ The operator executed the planned libvirt commands and reported successful compl
 - Docker inspection confirmed `Internal=true` and the `isolated` IPv4 gateway mode option. No containers were present.
 - SSH and UFW remained active with the existing restrictive host rules.
 - **Network isolation is not yet empirically proven:** no test container, external reachability probe or inter-zone denial test has run. Next validation should run a minimal unprivileged disposable container, check external, LAN and host reachability, and report observed exit status for each probe. Avoid publishing live IPs and machine identifiers.
+
+## First empirical Docker network isolation probe (owner-supplied output)
+
+- Downloaded a pinned BusyBox 1.36.1 test image on the host before the probe.
+- Launched an ephemeral container on the dedicated internal bridge using all Linux capabilities dropped and no-new-privileges; container automatically removed on exit.
+- Inside the container, the route table showed only the directly attached bridge subnet, with **no default route**.
+- Reported TCP connection probes to an external public endpoint, a LAN gateway endpoint and host SSH each returned a blocked outcome, labeled PASS by the test script. Those probes target specific ports and cannot prove universal network isolation.
+- Post-test evidence: no containers remained; SSH and UFW stayed active with the previously authorized administrative source restriction.
+- The pasted shell transcript contained visible line corruption near the final probe command, although output included all three probe outcomes. Treat results as **preliminary PASS with a reproducibility caveat**. Future tests must record independent exit codes and include DNS/UDP, lateral traffic, host reachability and multiple attached networks.
+- No application service, agent or private data was deployed during this test.
