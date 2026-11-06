@@ -346,3 +346,7 @@ Cloud Hermes is running with a temporary hot-attached VirtIO interface on the is
 ## Offline guest inspection tooling check
 
 The operator verified that `virt-cat`, `virt-ls`, `virt-filesystems`, and `guestfish` are absent from the host. Cloud Hermes is still running with its temporary, live-only interface; the persistent domain XML has no NIC. No DHCP lease has been observed. CLARYEL firewall policy validation returned OVERALL PASS. The next operation is a read-only host package availability and disk-capacity check for libguestfs utilities. No VM stop, disk modification, or firewall change has occurred.
+
+## qcow2 disk lock pre-shutdown check
+
+The operator confirmed that Cloud Hermes was running and QEMU exclusively held its qcow2 image open. `qemu-img info` refused access due to a shared write-lock conflict, as expected for a live guest; no attempt was made to override the lock. No NBD block devices were loaded. Host SSH stayed active and the live CLARYEL guard passed validation. The next action is a guest-only graceful ACPI shutdown, followed by state and lock-release verification; forceful VM termination is explicitly excluded. No host reboot or firewall change.
