@@ -3,7 +3,7 @@
 No automatic implementation or release authorization follows from GitHub tasks or AI suggestions. Every milestone requires owner approval, threat/risk review, reproducible evidence, rollback and signed-off acceptance. Prior code is untrusted reference only.
 
 1. **M0 — Publish design:** boundaries, threat model, data flow, legal applicability, offline requirements and synthetic acceptance criteria. No secrets.
-2. **M1 — Establish P2002 test host:** install Ubuntu Server 24.04 with a 350 GB **unencrypted root for this test phase only**, protect SSH and network access, set default-deny boundaries, install KVM and document initial recovery assumptions. Use synthetic data only. Encrypted private data and secret volumes remain separately designed. Demonstrate disconnected operation.
+2. **M1 — Establish P2002 test host:** record firmware settings, perform an owner-controlled factory BIOS/UEFI reset, verify SVM/IOMMU, Secure Boot and storage/boot settings; install from a verified 64 GB USB and leave it attached with NVMe first in normal boot order; install Ubuntu Server 24.04 with a 350 GB **unencrypted root for this test phase only**, protect SSH and network access, set default-deny boundaries, install KVM and document initial recovery assumptions. Use synthetic data only. Encrypted private data and secret volumes remain separately designed. Demonstrate disconnected operation.
 3. **M2 — Isolate Strata/LLM:** inference-only container, model integrity and no direct disk/internet/tools; test with synthetic prompts.
 4. **M3 — Private Hermes:** isolated identity, scoped synthetic data vault, no WAN, independent authorization and audit.
 5. **M4 — Public Hermes VM:** isolated cloud capable VM with limited egress and no routes to private data, LAN or host administration.
@@ -17,3 +17,5 @@ No automatic implementation or release authorization follows from GitHub tasks o
 Never introduce customer documents before security and legal gates are documented and approved. Record measured throughput, latency, overhead, power and cost instead of unsupported estimates.
 
 A recovery test must not begin with disk erasure. Verify independent backup media, restore drills, full scope, recovery keys, target-disk inventory and specific owner approval before any irreversible operation. Do not assume that a successful test proves complete legal or security compliance.
+
+**Cross-box persistent recovery media:** Every CLARYEL box is intended to retain a 64 GB USB originally used for installation. In a later controlled step it becomes an independent offline recovery/test environment with a small non-sensitive configuration/recovery metadata area. See [Persistent Recovery USB Standard](PERSISTENT-RECOVERY-USB.md). Its existence is not proof of a backup; full backups must be independently stored and verified before the destructive M8-R exercise.
