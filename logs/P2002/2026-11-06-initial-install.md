@@ -302,3 +302,7 @@ The owner inspected the installed nftables systemd unit and configuration. The s
 ## Systemd guard unit drafted and verified locally
 
 The operator staged a dedicated oneshot systemd unit with a non-flushing loader path, start ordering before Docker and libvirtd, and no ExecStop command. `systemd-analyze verify` reported only that the loader executable does not yet exist; this is expected at the draft stage. The live guest-bridge guard table remained present and SSH stayed active. No unit or loader has been installed/enabled, no guest interface attached and no network activated. Next, stage and syntax-check an idempotent guard loader without applying it.
+
+## Guard loader staging syntax check
+
+Owner staged the CLARYEL guard Bash loader script in the VM preparation directory and inspected its full content. `bash -n` passed; the live CLARYEL firewall table remained present and host SSH remained active. The loader is designed to validate its rules file, return early if the guard table already exists, otherwise load just that rules file and confirm the table exists. No system installation or invocation of the loader has yet been reported. Known gap: existence-only guard detection could mistake a partially configured or stale table for a complete policy; content validation and safe recovery need separate acceptance before production deployment. Next: install staging copies with non-overwrite checks, then inspect systemd verification without starting/enabling the unit.
