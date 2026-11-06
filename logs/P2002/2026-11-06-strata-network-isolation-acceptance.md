@@ -320,3 +320,74 @@ The current live checksums were recorded by the owner, but the exact checksum va
 - Approved-by: explicit owner request to record and publish the P2002 result during the temporary technical-log window
 - Published-by: GitHub connector via shared ViktorIXAI account
 - Attribution-confidence: DECLARED_UNVERIFIED
+
+
+## 10. Proposed IQ3_S download command — NOT EXECUTED
+
+The selected source is the official Strata-supported `ISTA-DASLab/Qwen3.8-Flash-Next-GSQ-RCO-GGUF` repository. Its IQ3_S folder contains two shards (approximately 54.8 GB and 28.8 GB; 83.6 GB total). The repository root also contains `mmproj-Qwen3.8-Flash-Next-BF16.gguf` (approximately 0.91 GB). The download is intentionally separate from inference: the post-reboot RX 9070 / ROCm state is still unverified under issue #9.
+
+The following command is proposed for the owner to run on P2002. It uses the already tested authorized container address `172.30.250.10`, the Squid proxy, and a persistent Docker volume. It checks for at least 110 GiB free, performs a HEAD-only redirect preflight against the first model shard, and then downloads the two shards plus the vision projector. It does **not** start Strata or access the GPU. If the image has neither the `hf` CLI nor the `huggingface_hub` Python package, it stops without attempting a download. If the HEAD preflight is blocked by a not-yet-allowed Hugging Face/Xet hostname, it stops before the large download; do not widen the Squid allowlist to a wildcard.
+
+```bash
+sudo docker volume create claryel-strata-models >/dev/null
+
+sudo docker run --rm \
+  --network claryel-strata-egress \
+  --ip 172.30.250.10 \
+  -e HTTP_PROXY=http://172.30.250.1:3128 \
+  -e HTTPS_PROXY=http://172.30.250.1:3128 \
+  -e http_proxy=http://172.30.250.1:3128 \
+  -e https_proxy=http://172.30.250.1:3128 \
+  -e HF_HUB_DISABLE_TELEMETRY=1 \
+  -v claryel-strata-models:/models \
+  --entrypoint bash \
+  claryel/strata:0.2.11-rocm-gfx120x \
+  -lc '
+set -euo pipefail
+
+REPO=ISTA-DASLab/Qwen3.8-Flash-Next-GSQ-RCO-GGUF
+DIR=/models/IQ3_S
+FILE1=Qwen3.8-Flash-Next-GSQ-RCO-IQ3_S-00001-of-00002.gguf
+FILE2=Qwen3.8-Flash-Next-GSQ-RCO-IQ3_S-00002-of-00002.gguf
+MMPROJ=mmproj-Qwen3.8-Flash-Next-BF16.gguf
+
+command -v curl >/dev/null
+mkdir -p "$DIR"
+
+AVAILABLE_KB=$(df -Pk /models | awk "NR==2 {print \$4}")
+if (( AVAILABLE_KB < 110 * 1024 * 1024 )); then
+    echo "STOP: less than 110 GiB free in the persistent model volume"
+    df -h /models
+    exit 1
+fi
+
+curl -fsSIL --max-time 60 \
+  "https://huggingface.co/$REPO/resolve/main/IQ3_S/$FILE1" >/dev/null
+echo "PASS: Hugging Face first-shard redirect preflight"
+
+if command -v hf >/dev/null 2>&1; then
+    hf download "$REPO" "IQ3_S/$FILE1" "IQ3_S/$FILE2" --local-dir /models
+    hf download "$REPO" "$MMPROJ" --local-dir "$DIR"
+elif python3 -c "import huggingface_hub" >/dev/null 2>&1; then
+    python3 - <<PY
+from huggingface_hub import hf_hub_download
+repo = "$REPO"
+hf_hub_download(repo_id=repo, filename="IQ3_S/$FILE1", local_dir="/models")
+hf_hub_download(repo_id=repo, filename="IQ3_S/$FILE2", local_dir="/models")
+hf_hub_download(repo_id=repo, filename="$MMPROJ", local_dir="$DIR")
+PY
+else
+    echo "STOP: neither hf CLI nor huggingface_hub is installed in this image"
+    exit 127
+fi
+
+test -s "$DIR/$FILE1"
+test -s "$DIR/$FILE2"
+test -s "$DIR/$MMPROJ"
+echo "PASS: all three requested files are present"
+du -sh "$DIR"
+df -h /models
+'
+```
+
+Persistent destination: Docker volume `claryel-strata-models`, mounted at `/models`; model folder `/models/IQ3_S`. The same named volume must be mounted by the later Strata launch container. The command has not been run and no model download is claimed by this checkpoint.
