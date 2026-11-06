@@ -322,3 +322,7 @@ A read-only Python validator consumed the live `nft -j list table inet claryel_g
 ## Standalone guard policy verifier staged
 
 The owner staged a Python-based checker of the live CLARYEL nftables policy. The Python syntax check reported no errors. A read-only run of the checker returned PASS for the exact chains, their hook/type/priority/policy settings and the full ordered rule expressions; overall PASS. Host SSH remained active. The checker has not yet been installed in a system directory or integrated into the guard loader, and no negative test against deliberately corrupted rules has occurred. The VM management network remains unactivated.
+
+## Installed firewall policy verifier accepted
+
+The owner installed the previously tested Python policy validator at the designated system location. Byte-for-byte comparison against the staged source succeeded. Running the installed validator returned PASS for exact chain names, chain settings, and complete ordered rule expressions, with OVERALL PASS. Host SSH remained active. The loader has not yet been updated to call this verifier. No service enablement, reboot or guest network attachment is claimed. Next stage is to stage a revised loader that validates either an already-present guard or a newly loaded one and fails on any policy mismatch.
