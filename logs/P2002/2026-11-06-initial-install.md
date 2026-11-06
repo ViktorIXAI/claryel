@@ -178,3 +178,11 @@ The operator executed the planned libvirt commands and reported successful compl
 - qemu-img recognized QCOW2, 3.5 GiB virtual capacity and about 593 MiB disk usage, with the corrupt flag false.
 - No guest virtual disk clone, cloud-init seed, domain definition or VM boot has yet occurred. The planned first guest profile is 2 vCPU, 4 GiB RAM and 40 GiB virtual storage, with networking initially disconnected.
 - Before creating guest credentials, independently inspect the administrative ASUS workstation for a suitable existing guest-specific SSH public key. Never create the administrative guest private key on P2002; this protects against recurrence of the earlier wrong-terminal incident.
+
+## Guest-specific SSH key created on administrator workstation (operator evidence)
+
+- Operator confirmed their active terminal was on the designated ASUS administrative workstation rather than P2002, before invoking ssh-keygen.
+- A distinct Ed25519 key pair for the planned Cloud Hermes VM was generated on ASUS, with no overwrite of an existing guest key.
+- The new public-key fingerprint differs from the previously verified P2002 administrative key. Owner verified private-key mode 0600 and public-key mode 0644. Public fingerprints are deliberately omitted from this public journal to minimize unnecessary operational metadata.
+- The guest private key remains on ASUS. The next prescribed step is to copy only the .pub file to the P2002 staging directory and verify its fingerprint there before preparing guest cloud-init.
+- At this point public-key transfer, guest creation and guest boot have not yet been confirmed.
