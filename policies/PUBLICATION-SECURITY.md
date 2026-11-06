@@ -2,7 +2,7 @@
 
 **Status: mandatory publication policy, effective 2026-11-06. Implementation and CI enforcement require separate testing and owner approval.**
 
-> **Temporary fast-log window (owner request):** From 2026-11-06 16:06 UTC through 2026-11-07 16:06 UTC, consult [the temporary 24-hour publication exception](TEMPORARY-FAST-LOG-WINDOW-2026-11-06.md). Non-sensitive technical logs may be published verbatim without editorial delay; secret/credential/third-party-privacy and material infrastructure exposure checks remain mandatory. The exception expires automatically, and this standing policy then applies unchanged.
+> **Temporary owner authorization:** From 2026-11-06T17:09:44+01:00 through 2026-11-07T17:09:44+01:00, the owner authorizes comprehensive P2002/CLARYEL technical-log publication, including non-secret operational identifiers, actual network details and firewall/access configuration. Passwords and secret authentication material remain strictly excluded. See [the time-limited owner authorization](TEMPORARY-FAST-LOG-WINDOW-2026-11-06.md). This does not prove technical gate enforcement or change the future acceptance criteria for issues #1 and #4.
 
 ## Scope and origin
 
