@@ -5,6 +5,8 @@
 ## Scope
 Applies to the current P2002 system and every subsequent CLARYEL Box throughout installation, configuration, experiments, debugging, rollback, updates, recovery and security checks. The default is **publicly documented, independently auditable work**, not undocumented "successful" deployment. Public prose, scripts, commits, issues and technical reports are **in English**.
 
+All public writers must follow the [contributor provenance policy](CONTRIBUTOR-PROVENANCE.md): distinct chats, models, automation processes and **each Hermes instance** (including public/private and same-role agents on different hosts) declare persistent writer aliases, roles and non-sensitive deployment aliases even when using the same GitHub login. This policy is documentary until the publication gate implements verified enforcement.
+
 ## Every consequential step must record
 1. Box identifier, date/time with timezone when known, stage and initiator/actor (human, ChatGPT, Hermes or other model), with attribution only when evidenced.
 2. Objective, rationale, security/privacy implications, preconditions and exact execution context (target machine, user, shell, environment).
