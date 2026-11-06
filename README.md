@@ -24,6 +24,8 @@ CLARYEL is an experimental, offline-first local AI system intended for privacy-s
 - [Persistent 64 GB recovery USB standard](docs/PERSISTENT-RECOVERY-USB.md)
 - [EU / Italian legal design baseline](docs/LEGAL-BASELINE.md)
 - [Public English-only policy](policies/PUBLICATION-LANGUAGE.md)
+- [Two-ledger secure publication and reproducibility policy](policies/PUBLICATION-SECURITY.md)
+- [Security disclosure and incident policy](SECURITY.md)
 - [AI-assisted authorship, fallibility and historical integrity policy](policies/AI-DEVELOPMENT-AND-HISTORY.md)
 - [Update quarantine](policies/UPDATE-QUARANTINE.md)
 - [Synthetic security test plan](tests/SECURITY-TEST-PLAN.md)
