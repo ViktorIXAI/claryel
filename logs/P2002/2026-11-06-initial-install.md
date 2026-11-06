@@ -366,3 +366,7 @@ The operator confirmed that Cloud Hermes is shut off and no process holds its di
 ## Host NBD module prepared for read-only guest disk inspection
 
 The operator loaded the standard kernel `nbd` module with an eight-partition limit. Sixteen block devices were enumerated, all showing zero size; `/dev/nbd0` was present with no active client PID. Cloud Hermes remained shut off. The CLARYEL guard exact-policy verifier returned OVERALL PASS. No guest image has yet been attached or mounted. Next operation: make a fresh offline-state and NBD-device-use check, connect the qcow2 image with qemu-nbd in read-only mode only, and inspect detected partitions without mounting.
+
+## qcow2 attached via read-only NBD for offline guest inspection
+
+The operator confirmed Cloud Hermes was shut off and its image was not in use before attaching the qcow2 using qemu-nbd with `--read-only` and explicit qcow2 format. `/dev/nbd0` appeared as a 40 GiB read-only block device (RO=1), with GPT partitions including a 39 GiB Linux filesystem partition, EFI and boot partitions. The disk was not mounted. Host SSH remained active and exact CLARYEL nftables guard verification returned OVERALL PASS. Next: identify partition filesystems and confirm no mounts before any read-only filesystem mount; avoid copying raw disk identifiers to public logs.
