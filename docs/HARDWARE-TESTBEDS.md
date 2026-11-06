@@ -7,9 +7,9 @@ CLARYEL uses two distinct physical machines with complementary purposes. **The f
 | Host | Owner description | Approximate system cost | Planned purpose |
 | --- | --- | ---: | --- |
 | **P2002** | ASUS ATX, 64 GB RAM, AMD GPU with 16 GB VRAM | **€2,500** | Primary architecture deployment, system configuration, integration, security controls and end-to-end verification |
-| **P1005** | ASUS server, 32 GB DDR4 RAM, Tesla 16 GB GPU | **€1,000** | Budget hardware performance, feasibility and real-world task testing; selectively reproduce only what each experiment requires |
+| **P1005** | ASUS server, 32 GB DDR4 RAM, NVIDIA Tesla P100 16 GB GPU | **€1,000** | Budget hardware performance, feasibility and real-world task testing; selectively reproduce only what each experiment requires |
 
-**GPU model verification:** The latest owner message refers to a “Tesla T100 16GB”; earlier equipment notes identify P1005 as equipped with a **Tesla P100 16GB**. This discrepancy must be resolved against a local hardware inventory (e.g., `nvidia-smi`) before specifying drivers, runtimes or benchmark comparisons. No automatic correction of owner-reported facts is assumed.
+**GPU identification:** The owner confirmed that P1005 uses an **NVIDIA Tesla P100 16 GB** GPU. A live inventory check remains part of benchmark reproducibility; no uncertainty about the intended model name remains.
 
 ## Evaluation design
 
