@@ -1,0 +1,60 @@
+# P2002 — pre-reboot backup inventory and validation
+
+- **Checkpoint ID:** CLARYEL-BOX-20261106-003
+- **Event time (UTC):** UNKNOWN (no timestamp emitted by the supplied diagnostic)
+- **Publication time (UTC):** UNKNOWN
+- **Target role:** BOX_TEST_HOST
+- **Writer-instance:** CHATGPT-REVIEW-01
+- **Writer-role:** REPOSITORY_AUDITOR
+- **Hermes-runtime-machine-ID:** NOT_APPLICABLE (host backup inventory; no Hermes runtime action)
+- **Target-machine-ID:** P2002
+- **Deployment-alias:** P2002
+- **Prepared-by:** ChatGPT GPT-6 (declared)
+- **Executed-by:** OWNER_REPORTED_OPERATOR (not independently authenticated)
+- **Evidence-source:** OWNER_REPORTED
+- **Reviewed-by:** SELF_REVIEW_ONLY
+- **Approved-by:** Owner's ongoing P2002 installation and backup-first instruction; no reboot authorization exercised by this diagnostic
+- **Published-by:** GitHub connector via shared ViktorIXAI account
+- **Attribution-confidence:** DECLARED_UNVERIFIED
+- **Approval reference:** Owner's P2002 installation workflow, 2026-11-06
+- **Purpose / expected behavior:** Inventory existing pre-reboot backup artifacts, validate XML and archive integrity, check qcow2 consistency, and identify missing checkpoint files without modifying existing backups.
+- **Preconditions / safety and privacy impact:** Target alias P2002. Cloud Hermes VM reported shut off. The diagnostic used a temporary directory and removed it on exit. No VM, network, firewall, disk image or existing backup was modified by the shown commands.
+- **Operation status:** EXECUTED (read-only inventory and validation)
+- **Sanitized exact commands or versioned script reference:** Owner-supplied shell diagnostic used `virsh domstate`, `stat`, `virsh dumpxml --inactive`, `virsh net-dumpxml`, Python XML parsing, `cmp`, `gzip -t`, `tar -tzf`, `qemu-img check`, and the CLARYEL guard verifier.
+- **Command exit code(s):** UNKNOWN (not separately captured in the supplied transcript)
+- **Observed output (owner-reported):**
+  - Guest state: `shut off`.
+  - `cloud-hermes-pre-reboot.xml`: EXISTS; 6,615 bytes; modified 2026-11-06 16:30:52.660007944 +0000. XML parsed successfully and byte-for-byte matched the current inactive VM XML.
+  - `cloud-admin-pre-reboot.xml`: EXISTS; 336 bytes; modified 2026-11-06 16:30:52.688007923 +0000. XML parsed successfully and byte-for-byte matched the current libvirt network XML.
+  - `p2002-guard-boot-config.tar.gz`: EXISTS; 2,116 bytes; modified 2026-11-06 16:30:52.696007917 +0000. `gzip -t` passed. Archive listing contained:
+    - `etc/claryel/firewall.nft`
+    - `usr/local/sbin/claryel-guard-load`
+    - `usr/local/sbin/claryel-guard-verify`
+    - `etc/systemd/system/claryel-guard.service`
+    - `etc/systemd/system/docker.service.d/10-claryel-guard.conf`
+    - `etc/systemd/system/libvirtd.service.d/10-claryel-guard.conf`
+    - `etc/systemd/system/claryel-cloud-network.service`
+  - `pre-reboot-state.txt`: MISSING.
+  - `cloud-hermes-before-netplan.qcow2`: EXISTS; 1,898,774,528 bytes; modified 2026-11-06 15:35:26.168718882 +0000. `qemu-img check`: no errors.
+  - `cloud-hermes-netplan-checkpoint.qcow2`: EXISTS; 1,898,840,064 bytes; modified 2026-11-06 15:50:29.274840907 +0000. `qemu-img check`: no errors.
+  - `cloud-hermes-pre-reboot-20261106.qcow2`: EXISTS; 1,898,905,600 bytes; modified 2026-11-06 16:30:52.174008308 +0000. `qemu-img check`: no errors.
+  - Final CLARYEL guard verifier: exact chains PASS; chain settings PASS; ordered rules PASS; overall PASS.
+  - SSH service: active.
+- **Validation method and independent verifier:** Owner-reported XML parse plus byte comparison against live inactive definitions; gzip integrity test and archive listing; QEMU qcow2 consistency checks; installed guard verifier. No independent host access, archive content comparison against every live source, or restore-and-boot test was performed.
+- **Result:** PASS for the reported XML equivalence, gzip integrity, three qcow2 structural checks, guard policy check and SSH active check. Inventory is incomplete because `pre-reboot-state.txt` is absent. Restore boot and host reboot ordering remain NOT_TESTED.
+- **Limitations, assumptions and negative evidence:** The output is supplied by the owner and not independently collected. Qcow2 structural checks do not prove guest bootability. XML equivalence establishes that the backups match the current definitions at the time of this diagnostic, not that libvirt will successfully restore every host dependency. Archive gzip validity does not by itself prove semantic correctness of every archived configuration. No reboot occurred.
+- **Rollback / recovery status:** Three qcow2 copies, two XML files and the Guard boot-configuration archive exist and passed the specific checks above. A textual pre-reboot state record is missing. Actual restore remains NOT_TESTED.
+- **Public sanitized artifact digest (SHA-256):** UNKNOWN
+- **Private evidence checkpoint mapping:** NOT_DEPLOYED
+- **Related issues, commits, test fixtures and version pins:** Issues #1 (pre-publication gate), #2 (private evidence ledger), #3 (checkpoint schema), #5 (evidence index), #6 (writer attribution).
+- **Next action (not authorization):** Create only the missing `pre-reboot-state.txt` using a no-overwrite operation and mode 0600; verify it; then perform the separately owner-approved controlled reboot and capture actual boot chronology. Do not repeat or overwrite existing backups. Keep Guard-table-loss-after-Docker-startup fault injection deferred.
+
+## Review checklist
+
+- [x] Owner-supplied evidence labeled OWNER_REPORTED.
+- [x] Missing execution timestamp and exit code marked UNKNOWN.
+- [x] Existing artifacts validated individually; no overwrite or deletion.
+- [x] Missing state record identified separately from backup validity.
+- [x] Reboot and restore boot are NOT_TESTED, not inferred.
+- [ ] Exact-byte fail-closed publication gate verified — issue #1 remains open.
+- [ ] Protected private evidence ledger deployed — issue #2 remains open.
