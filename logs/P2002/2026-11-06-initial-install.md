@@ -201,3 +201,11 @@ The operator executed the planned libvirt commands and reported successful compl
 - The original downloaded source image remains a separate 3.5 GiB virtual disk and was not resized.
 - Libvirt VM list remains empty: the guest domain has not yet been defined or booted.
 - Planned resources: 2 virtual CPUs, 4 GiB RAM and 40 GiB storage, initially with no guest network interface. Cloud-init credentials must include only the separate administrative public SSH key, never the ASUS private key; password SSH and root login are disabled. Without any guest NIC, serial console is for observing boot until a separate permitted management channel is established.
+
+## Cloud-init seed ISO byte-for-byte validation (owner terminal evidence)
+
+- Read-only mounted the generated cidata ISO and inspected its contents. The seed contained the expected user-data and meta-data files.
+- Byte-for-byte comparisons (`cmp`) of each file inside the mounted ISO against its staged source returned PASS for both files.
+- Operator unmounted the ISO without reported error.
+- This validates seed contents prior to VM definition, but not successful cloud-init execution at guest boot. No guest has been booted yet.
+- Next controlled stage: check the libvirt staging destination does not exist and ISO is unmounted, copy seed to the libvirt images directory, and compare SHA256 hashes of the copy before VM creation. No secret/private SSH key should be placed in the seed image.
