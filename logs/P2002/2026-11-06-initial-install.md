@@ -72,3 +72,11 @@ Owner requires public, sanitized documentation of each configuration action, out
 - Update query: no pending updates shown. Reboot-required marker: absent.
 - This confirms base host SSH/firewall persistence after reboot, **not** completed application, network isolation, or compute GPU acceptance.
 - Next: install vetted QEMU/KVM and libvirt user-space packages without configuring a public bridge or starting cloud VM; check libvirt virtual networks before accepting any internet-enabled guest.
+
+## KVM/libvirt installation checkpoint (owner output)
+
+- `kvm-ok` reports that /dev/kvm exists and KVM acceleration is usable.
+- `virsh -c qemu:///system list --all` returned no virtual machines.
+- `virsh -c qemu:///system net-list --all` showed a pre-created libvirt `default` network in the **active** state with autostart enabled. No claim is made that this NAT network satisfies CLARYEL isolation.
+- SSH stayed active and UFW stayed active with default-deny incoming, default-allow outgoing and deny routed, and a single administrative source rule. Exact addresses are omitted from this public log.
+- Proposed next operation, **not yet confirmed executed**: disable autostart of libvirt default network; destroy its current active instance (not undefine); verify network is inactive/autostart=no and SSH/UFW remain active. Future cloud VM network must be independently designed and tested.
