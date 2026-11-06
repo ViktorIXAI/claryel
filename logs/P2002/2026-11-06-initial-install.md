@@ -62,3 +62,13 @@ Owner requires public, sanitized documentation of each configuration action, out
 - OpenSSH remained active. UFW remained active with default-deny incoming and only the previously authorized administrative workstation SSH source over the wired interface; IPv6 ingress remains denied by default.
 - **Reboot and post-reboot verification have not yet been reported.** Because local integrated video console remains unavailable, a fresh SSH login from the authorized workstation is required immediately before reboot. After reboot verify new kernel, uptime/boot, SSH, firewall, network and reboot-required flag.
 - No upgrade to Ubuntu 26.04 was requested or performed, and no successful reboot or service deployment is claimed.
+
+## Verified reboot checkpoint following package updates (owner evidence, 2026-11-06)
+
+- The host rebooted successfully after Ubuntu 24.04 updates and a fresh SSH connection from the authorized administrative ASUS was established.
+- Operating system now reports Ubuntu Server **24.04.5 LTS**, kernel **6.8.0-149-generic**.
+- systemd reports `running`, the wired network is UP, wireless is DOWN.
+- OpenSSH service is active. UFW remains active across reboot, default-deny incoming, default-allow outgoing, only wired interface inbound TCP/22 from the designated administrative client address. **Actual IPs intentionally omitted from public log**.
+- Update query: no pending updates shown. Reboot-required marker: absent.
+- This confirms base host SSH/firewall persistence after reboot, **not** completed application, network isolation, or compute GPU acceptance.
+- Next: install vetted QEMU/KVM and libvirt user-space packages without configuring a public bridge or starting cloud VM; check libvirt virtual networks before accepting any internet-enabled guest.
