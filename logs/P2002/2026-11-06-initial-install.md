@@ -290,3 +290,7 @@ This checkpoint reconciles the earlier chronological installation notes with new
 - Host ssh systemd service remained active after the change, but an independent new SSH connection from the administrative workstation has not yet been observed for this checkpoint.
 - Both libvirt networks remain inactive and the Cloud Hermes VM still has no NIC. The firewall rules' actual packet-level effectiveness against guest traffic and persistence across reboot remain UNTESTED.
 - Next acceptance gate: verify a new SSH login from the ASUS admin workstation while retaining the existing connection, then establish narrowly scoped persistence and negative/positive network tests before attaching a VM NIC.
+
+## Fresh SSH check after guard activation
+
+An independent new SSH session from the ASUS administrator workstation reached P2002 and confirmed the SSH service remained active. Persistence of the guard and guest traffic behavior are not yet tested.
