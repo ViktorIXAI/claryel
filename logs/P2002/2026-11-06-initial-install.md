@@ -26,3 +26,13 @@ Status: owner-reported observations, not independently verified by remote machin
 - UNKNOWN: current DHCP lease and identity, exact root filesystem, SSH hardening, graphics driver/DRM ownership, GPU compute, boot order, firewall and virtualization.
 - Next action: read-only diagnostics over existing SSH, redacted before publication. Do not disable/blacklist GPU drivers or change network/firewall until the initial inventory is reviewed.
 - Do not publish IP addresses, MAC addresses, usernames, router identifiers, credentials or raw unreviewed command outputs.
+
+## SSH key incident and verified remediation (owner-reported, 2026-11-06)
+
+- During setup, the operator unintentionally generated a client authentication key on the target P2002 itself because commands were entered in the wrong terminal window. This was a human-execution-context error, not evidence of a cryptographic defect.
+- With AI-assisted guidance, the operator compared ED25519 public-key fingerprints from the server and the intended ASUS administrative workstation. The records showed two distinct keys with identical human-readable comments. The ASUS key was positively matched to its public key on the workstation.
+- The operator removed the accidental P2002 private/public key pair and only its matching entry in authorized_keys. Subsequent authorized_keys fingerprint output contained only the confirmed ASUS workstation key. No private key material is recorded here.
+- Subsequent login from ASUS to P2002 succeeded. The effective OpenSSH configuration was independently printed by sshd -T and showed pubkeyauthentication=yes, passwordauthentication=no, kbdinteractiveauthentication=no, permitrootlogin=no, authenticationmethods=publickey.
+- Mac Studio backup access is **explicitly not granted** at this stage because another autonomous AI agent operates on that computer. The single authorized SSH public key is for the ASUS workstation. Network-level source filtering has not yet been proven.
+- **Lessons learned:** label every command with its execution machine; run read-only preflight and compare expected state; use small changes followed by checks; preserve a safe rollback route; redact operational output before public publication. AI guidance can make mistakes and must not be considered intrinsically trustworthy. The operator remains the authorizer for destructive and access-changing commands.
+- Next step: perform a read-only host/security/virtualization inventory, then controlled software updates and hypervisor/container setup after review. The end-to-end deployment is not yet complete.
