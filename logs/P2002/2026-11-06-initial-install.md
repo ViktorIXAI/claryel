@@ -362,3 +362,7 @@ A subsequent operator check confirmed that Cloud Hermes reached the `shut off` s
 ## Offline qcow2 image preflight verified
 
 The operator confirmed that Cloud Hermes is shut off and no process holds its disk image. `qemu-img info --output=json` succeeded: qcow2 format, virtual size 40 GiB, actual allocated size approximately 1.77 GiB, dirty flag false, and no backing filename reported by the selected fields. The NBD module was not yet loaded. Host SSH remained active and CLARYEL guard policy verification passed. Next: load the standard kernel NBD module and inspect free devices before a read-only image attach. No qcow2 writes or mounts were performed.
+
+## Host NBD module prepared for read-only guest disk inspection
+
+The operator loaded the standard kernel `nbd` module with an eight-partition limit. Sixteen block devices were enumerated, all showing zero size; `/dev/nbd0` was present with no active client PID. Cloud Hermes remained shut off. The CLARYEL guard exact-policy verifier returned OVERALL PASS. No guest image has yet been attached or mounted. Next operation: make a fresh offline-state and NBD-device-use check, connect the qcow2 image with qemu-nbd in read-only mode only, and inspect detected partitions without mounting.
