@@ -13,6 +13,7 @@ CLARYEL is an experimental, offline-first local AI system intended for privacy-s
 - **Inference only:** local Strata + LLM has no document-store mount, shell/MCP/tool execution privilege or internet access. One physical GPU is a cost target, **not** proof that a shared inference process safely isolates users, context, cache and logs.
 - Home Assistant, identity, backups, updates, telemetry and administration receive separate restricted security boundaries.
 - Every update enters quarantine; require provenance, staged testing, explicit approval, rollout and rollback.
+- **AI-assisted and fallible by design:** ChatGPT, Grok, local Hermes-based AI and potentially other agents may contribute and publish over time. Human contributors and all AI systems can make mistakes; preserve reviewable history and analyze errors in both reproduced and newly designed solutions.
 - Publish only in **English**, with secret/PII/operational-information review before any public commit.
 
 ## Project map
@@ -20,6 +21,7 @@ CLARYEL is an experimental, offline-first local AI system intended for privacy-s
 - [Owner-controlled implementation roadmap](docs/ROADMAP.md)
 - [EU / Italian legal design baseline](docs/LEGAL-BASELINE.md)
 - [Public English-only policy](policies/PUBLICATION-LANGUAGE.md)
+- [AI-assisted authorship, fallibility and historical integrity policy](policies/AI-DEVELOPMENT-AND-HISTORY.md)
 - [Update quarantine](policies/UPDATE-QUARANTINE.md)
 - [Synthetic security test plan](tests/SECURITY-TEST-PLAN.md)
 
