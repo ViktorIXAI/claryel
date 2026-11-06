@@ -36,3 +36,13 @@ Status: owner-reported observations, not independently verified by remote machin
 - Mac Studio backup access is **explicitly not granted** at this stage because another autonomous AI agent operates on that computer. The single authorized SSH public key is for the ASUS workstation. Network-level source filtering has not yet been proven.
 - **Lessons learned:** label every command with its execution machine; run read-only preflight and compare expected state; use small changes followed by checks; preserve a safe rollback route; redact operational output before public publication. AI guidance can make mistakes and must not be considered intrinsically trustworthy. The operator remains the authorizer for destructive and access-changing commands.
 - Next step: perform a read-only host/security/virtualization inventory, then controlled software updates and hypervisor/container setup after review. The end-to-end deployment is not yet complete.
+
+## Security and virtualization preflight (owner-provided terminal output)
+
+- Confirmed account/hostname correspond to intended P2002 session (identity details sanitized here).
+- UFW reports **inactive**; no firewall hardening has been claimed or executed at this checkpoint.
+- Effective SSH configuration: root login disabled; public-key authentication enabled; password and keyboard-interactive authentication disabled; public-key-only authentication required.
+- **/dev/kvm exists**, with kvm and kvm_intel kernel modules loaded. KVM-capable hardware/kernel confirmed, but hypervisor userspace not yet installed or tested.
+- Package query returned no installed qemu-kvm, libvirt-daemon-system, docker-ce, docker.io or containerd.io in the queried package set. This does not prove there are no other VM/container runtimes.
+- Multiple Ubuntu 24.04 security/maintenance updates are pending. No updates or reboot performed for this report; do not upgrade to Ubuntu 26.04 as part of this checkpoint.
+- Next safe step: verify source address of the current ASUS SSH connection, pre-authorize that exact address for port 22 on both relevant protocol families, then enable firewall with rollback and new-connection verification. Do not configure source-specific firewall solely from earlier IP claims. Docker and libvirt network behavior will need subsequent security review.
