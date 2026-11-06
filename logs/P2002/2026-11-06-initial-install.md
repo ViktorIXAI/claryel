@@ -231,3 +231,10 @@ The operator executed the planned libvirt commands and reported successful compl
 - This confirms that guest boot reached a login prompt and that the serial console is operational while no NIC is attached.
 - It does not independently establish full cloud-init success, authorized-key enrollment or an administrative login. The account has password login disabled, so no serial password login was attempted.
 - Next: detach serial console with Ctrl+] without powering down; confirm domain stays running, then design a narrowly scoped management network that does not bridge the cloud guest onto the private LAN.
+
+## Proposed isolated management network XML validated
+
+- Operator created `cloud-admin-network.xml` for proposed libvirt network `claryel-cloud-admin`, bridge `virbr240`, host-side address 172.30.240.1/24, and DHCP range 172.30.240.10-20. The XML omits a libvirt forwarding element.
+- A read-only structural Python check returned five PASS checks and OVERALL PASS. The guest remained running.
+- No new network has been started, no VM NIC has been attached, and libvirt network registration is not yet confirmed.
+- Security caveat: libvirt isolated-network configuration alone does not prove confinement on a host with IPv4 forwarding enabled by Docker. Verify effective host firewall and east-west access controls before activating/attaching the guest.
