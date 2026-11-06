@@ -9,7 +9,7 @@
 
 The owner explicitly authorizes comprehensive, prompt publication of technical activity and evidence for the scope above. During this window, publish technical logs and diagnostic outputs without suppressing non-secret operational detail, including actual host/network identifiers, private IP addresses, MAC addresses, hostnames, VM identifiers, topology, interface mappings, firewall/access rules, service configuration, command output, failures, warnings, and agent mistakes.
 
-This is a time-limited owner override of contrary non-secret infrastructure-disclosure restrictions in the standing publication and installation-logging policies and the logging restrictions referenced by issues #1 and #4. It applies only to public technical reporting for the stated P2002/CLARYEL work. It does not amend the permanent acceptance criteria for the publishing gate or reproducibility tests.
+This is a time-limited owner override of contrary non-secret technical-log disclosure restrictions in the standing publication and installation-logging policies and the temporary withholding restrictions relevant to issues #1, #2 and #4. It authorizes this public technical-log stream while the private evidence ledger in issue #2 remains undeployed; it does not claim that issue #2's private-ledger acceptance criteria have been met. It applies only to public technical reporting for the stated P2002/CLARYEL work. It does not amend the permanent acceptance criteria for the publishing gate or reproducibility tests.
 
 ## The only excluded material
 
