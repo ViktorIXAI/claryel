@@ -29,3 +29,5 @@ CLARYEL is an experimental, offline-first local AI system intended for privacy-s
 - [Synthetic security test plan](tests/SECURITY-TEST-PLAN.md)
 
 **Security principle:** controls are enforced by deterministic systems outside AI agents. Never treat passing tests as proof of absolute safety. Never expose actual customer material or infrastructure secrets in this public repository.
+
+- [Mandatory installation audit logging](policies/INSTALLATION-AUDIT-LOGGING.md)
