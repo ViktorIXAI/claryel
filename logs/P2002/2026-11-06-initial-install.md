@@ -50,3 +50,7 @@ Status: owner-reported observations, not independently verified by remote machin
 ## Pre-UFW activation client and interface validation
 
 Operator output showed the SSH client is connected over wired Ethernet to TCP port 22. The client IPv4 address was identified locally but is intentionally omitted from this public log. Host UFW has IPv6 support enabled but reports inactive. Wi-Fi is down; the host also has globally routed IPv6, therefore ingress rules must be reviewed for both address families. Next staged operation: default-deny incoming, default-allow outgoing, then allow inbound TCP/22 on the named Ethernet interface *only from the active administrative workstation IPv4*. Validate the rules while UFW remains inactive. Only after review, activate with controlled rollback and establish a fresh authenticated connection before closing the prior session. **No firewall activation is claimed here.**
+
+## Permanent logging directive
+
+Owner requires public, sanitized documentation of each configuration action, outcome, error and correction on P2002 and future CLARYEL boxes, for independent AI review. Policy: policies/INSTALLATION-AUDIT-LOGGING.md. At this checkpoint, the UFW SSH allow rule has been verified but firewall activation remains unconfirmed.
