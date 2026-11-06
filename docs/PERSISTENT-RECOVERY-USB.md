@@ -32,3 +32,9 @@
 - Independently stored backup restores a full test installation, including model artifacts and service policies, onto a freshly encrypted system. No customer data is used.
 
 **Current state:** requirement documented only. No claim that the USB is already a functioning recovery system or validated backup.
+
+## Mandatory display routing acceptance for next installation and recovery
+
+**Owner requirement:** On systems with motherboard integrated graphics and a dedicated AI compute GPU, the user must never need to physically move a display cable between the GPUs during the installer, normal boot, or boot from recovery media. The monitor stays connected to the motherboard video port throughout; the compute GPU must remain available for AI. The current P2002 installation needed a workaround; this requirement is **NOT YET MET OR TESTED**.
+
+Test firmware primary-display/iGPU-multimonitor settings and Linux installer/recovery console routing (including DRM/framebuffer, kernel and installer boot options), comparing screenshots/console visibility at UEFI, boot menu, installer, system login and offline recovery. Do not assume an HDMI dummy plug solves console assignment or frees all compute VRAM. Check that any driver/console change does not disable AI GPU compute. Prefer a prevalidated recovery USB image with deterministic display routing and a documented local fallback; a remote SSH recovery option alone is insufficient when networking fails. Preserve the normal NVMe-first and one-time USB boot policy. Record platform-specific BIOS/UEFI settings for a reproducible, low-touch setup.
