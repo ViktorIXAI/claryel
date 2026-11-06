@@ -186,3 +186,10 @@ The operator executed the planned libvirt commands and reported successful compl
 - The new public-key fingerprint differs from the previously verified P2002 administrative key. Owner verified private-key mode 0600 and public-key mode 0644. Public fingerprints are deliberately omitted from this public journal to minimize unnecessary operational metadata.
 - The guest private key remains on ASUS. The next prescribed step is to copy only the .pub file to the P2002 staging directory and verify its fingerprint there before preparing guest cloud-init.
 - At this point public-key transfer, guest creation and guest boot have not yet been confirmed.
+
+## Cloud VM administrative public key successfully staged (operator verification)
+
+- The administrative workstation's separate Cloud Hermes VM public key was copied onto P2002. The operator independently verified that its ED25519 SHA256 fingerprint matches the one generated on the ASUS workstation. The public-key staging file has mode 0644.
+- The private key remains on the trusted administrative workstation. The pre-existing P2002 host SSH key remains separate.
+- The next planned operation is to copy the checksum-verified Ubuntu cloud image to a dedicated guest QCOW2 under libvirt images and resize the copy to a 40 GiB virtual capacity, leaving the downloaded source unchanged. The guest is not yet created, booted or network-attached.
+- An initially networkless guest requires an independent serial-console/recovery plan because SSH cannot work without guest networking.
