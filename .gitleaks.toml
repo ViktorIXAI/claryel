@@ -1,0 +1,40 @@
+# CLARYEL public publication policy. Built-in Gitleaks rules remain enabled.
+# Adapted from claryel-autonomous; all sample identifiers are synthetic.
+title = "CLARYEL public publication security"
+[extend]
+useDefault = true
+
+[[rules]]
+id = "rfc1918-ipv4"
+description = "Private IPv4 infrastructure address must be replaced with a parameter"
+regex = '''\b(?:10(?:\.[0-9]{1,3}){3}|192\.168(?:\.[0-9]{1,3}){2}|172\.(?:1[6-9]|2[0-9]|3[01])(?:\.[0-9]{1,3}){2})\b'''
+
+[[rules]]
+id = "ipv4-link-local"
+description = "Link-local IPv4 address"
+regex = '''\b169\.254(?:\.[0-9]{1,3}){2}\b'''
+
+[[rules]]
+id = "mac-address"
+description = "Hardware MAC address"
+regex = '''(?i)\b[0-9a-f]{2}(?::[0-9a-f]{2}){5}\b'''
+
+[[rules]]
+id = "local-user-home"
+description = "Named local home directory"
+regex = '''(?:/home/[A-Za-z][A-Za-z0-9_.-]+|/Users/[A-Za-z][A-Za-z0-9_.-]+|C:\\Users\\[A-Za-z][A-Za-z0-9_.-]+)'''
+
+[[rules]]
+id = "ssh-real-host-target"
+description = "SSH username and numeric endpoint should use parameter substitution"
+regex = '''\bssh(?:\s+[-a-zA-Z0-9_./=]+)*\s+[A-Za-z0-9_.-]+@(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b'''
+
+[[rules]]
+id = "machine-identity-line"
+description = "Machine, boot or storage ID in an exported diagnostic"
+regex = '''(?im)^\s*(?:Machine ID|Boot ID|machine-id|boot_id|serial(?: number)?|UUID)\s*[:=]\s*[A-Za-z0-9-]{8,}\s*$'''
+
+[[rules]]
+id = "credential-variable"
+description = "Do not publish assignment of likely credential variables"
+regex = '''(?im)^\s*(?:OPENAI_API_KEY|ANTHROPIC_API_KEY|GITHUB_TOKEN|HASS_TOKEN|AWS_SECRET_ACCESS_KEY|ACCESS_TOKEN|PRIVATE_TOKEN|DATABASE_PASSWORD)\s*[:=]\s*\S+'''
