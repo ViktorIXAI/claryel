@@ -6,7 +6,7 @@
 
 - Architecture: design proposal; isolation, security gateway, local inference and offline recovery have not passed end-to-end acceptance.
 - P2002: laboratory host installation and incremental security/network validation are **in progress**, per owner-supplied public narrative.
-- Cloud Hermes: guest deployment and network diagnosis are in progress; latest reviewed public checkpoint reported guest disk read-only inspection and unresolved DHCP configuration. **Do not treat this as live state:** concurrent installation may already have progressed.
+- Cloud Hermes: guest disk networking configuration was edited offline after verified image backups; a persistent VirtIO management interface was attached to the isolated libvirt network. The latest P2002 owner-supplied checkpoint records UFW/Guard source inspection. The VM was last reported shut off; DHCP after boot, UFW/Guard boot ordering, packet-level isolation and reboot persistence remain **NOT_TESTED**.
 - Hardware benchmark comparisons and production/customer use: not established by this evidence index.
 
 ## Evidence and issues
@@ -15,6 +15,7 @@
 | --- | --- | --- | --- |
 | Installation sequence | [P2002 journal](../logs/P2002/2026-11-06-initial-install.md) | Owner-provided observations, not live independent shell audit | [#3](https://github.com/ViktorIXAI/claryel/issues/3) |
 | Firewall validation | Same journal: exact JSON checker and simulated missing DROP rule | No universal packet-level or boot-persistence proof | [#4](https://github.com/ViktorIXAI/claryel/issues/4) |
+| UFW / Guard integration | [UFW and Guard checkpoint](../logs/P2002/2026-11-06-ufw-guard-audit.md) | UFW restore behavior and UFW-to-Guard boot order unresolved; source inspection only | [#1](https://github.com/ViktorIXAI/claryel/issues/1), [#4](https://github.com/ViktorIXAI/claryel/issues/4) |
 | Publication safety | [Two-ledger policy](../policies/PUBLICATION-SECURITY.md) | Mandatory prepublication enforcement not verified | [#1](https://github.com/ViktorIXAI/claryel/issues/1) |
 | Private evidence | Two-ledger policy | Protected full-fidelity ledger not deployed | [#2](https://github.com/ViktorIXAI/claryel/issues/2) |
 | Project status | [README](../README.md) | Not production-ready; documentation subject to concurrent changes | [#5](https://github.com/ViktorIXAI/claryel/issues/5) |
