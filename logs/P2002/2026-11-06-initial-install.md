@@ -170,3 +170,11 @@ The operator executed the planned libvirt commands and reported successful compl
 - The shell transcript includes a malformed/interleaved apt command line followed by an interrupt (^C). No system failure was observed; package manager consistency is **not yet verified**.
 - Next action is read-only `dpkg --audit`, installed-package status, and apt/dpkg process inspection. Do not create a guest or run new package installations until the package state is verified.
 - Planned first test Cloud Hermes VM remains 2 vCPU, 4 GiB RAM, 40 GiB disk, with no initial network interface and no credentials on the current unencrypted host filesystem.
+
+## Ubuntu Cloud Image downloaded and checksum checked (owner terminal evidence)
+
+- On P2002, the Ubuntu Noble amd64 server cloud QCOW2 image and its SHA256SUMS manifest were downloaded from Ubuntu cloud image distribution.
+- sha256sum reported the image `OK` against the downloaded manifest. The manifest signature was not separately verified, so this does not yet independently authenticate its publisher.
+- qemu-img recognized QCOW2, 3.5 GiB virtual capacity and about 593 MiB disk usage, with the corrupt flag false.
+- No guest virtual disk clone, cloud-init seed, domain definition or VM boot has yet occurred. The planned first guest profile is 2 vCPU, 4 GiB RAM and 40 GiB virtual storage, with networking initially disconnected.
+- Before creating guest credentials, independently inspect the administrative ASUS workstation for a suitable existing guest-specific SSH public key. Never create the administrative guest private key on P2002; this protects against recurrence of the earlier wrong-terminal incident.
