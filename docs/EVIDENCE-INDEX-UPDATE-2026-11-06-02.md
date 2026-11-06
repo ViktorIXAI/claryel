@@ -33,3 +33,15 @@ This file supplements, and does not rewrite, `AUDIT-STATUS-AND-EVIDENCE.md`. It 
 ## Explicitly not claimed
 
 No reboot has occurred in this checkpoint; no Hermes runtime has been installed or started; no restore boot has been tested; and the Guard-table-loss-after-Docker-startup experiment remains deferred.
+
+
+## Latest P2002 Strata model-download checkpoint — 2026-11-06
+
+4. [Strata IQ3_S download bring-up log](../logs/P2002/2026-11-06-strata-iq3s-download-bringup.md) — append-only record of the CLI investigation, first failed launch, and GPU-device-passthrough retry.
+   - The existing [network isolation acceptance](../logs/P2002/2026-11-06-strata-network-isolation-acceptance.md) already records the full firewall/Squid/Guard candidate, verifier corrections, production deployment, UFW reload, positive/negative container tests, real reboot, backup discrepancy and the earlier **unexecuted** proposed download command.
+   - The first actual `strata launch` attempt failed with exit code 5 before any model files were written. Its diagnostic reported missing model shards, prepared IQ3_S pack and tokenizer. The first Docker run omitted `/dev/kfd` and `/dev/dri`.
+   - The retry passed `/dev/kfd` and `/dev/dri` and the available render/video groups. The replacement container started and showed those device nodes inside the container; the last supplied log was still checking the engine for this PC.
+   - **Current status: IN PROGRESS / NOT VERIFIED.** No GGUF shard, mmproj, DFlash2 file, prepared pack or tokenizer has yet been confirmed downloaded or checksum-verified. No inference result is claimed.
+   - The earlier `strata install -- --help` attempt reported that the image directory has no `setup.py`; the subsequent help commands in that shell block did not execute because `set -e` stopped at that error.
+   - Continue by inspecting the existing detached container and volume without removing or restarting the container while it may still be working. Keep the explicit proxy allowlist; do not widen it to a wildcard.
+
