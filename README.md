@@ -32,6 +32,7 @@ The P2002 installation journal contains **operator-reported** findings; Git publ
 - [Persistent 64 GB recovery USB standard](docs/PERSISTENT-RECOVERY-USB.md)
 - [EU / Italian legal design baseline](docs/LEGAL-BASELINE.md)
 - [Public English-only policy](policies/PUBLICATION-LANGUAGE.md)
+- [Mandatory per-chat, AI-agent and per-Hermes-instance contributor provenance](policies/CONTRIBUTOR-PROVENANCE.md)
 - [Two-ledger secure publication and reproducibility policy](policies/PUBLICATION-SECURITY.md)
 - [Security disclosure and incident policy](SECURITY.md)
 - [AI-assisted authorship, fallibility and historical integrity policy](policies/AI-DEVELOPMENT-AND-HISTORY.md)
