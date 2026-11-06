@@ -54,3 +54,11 @@ Operator output showed the SSH client is connected over wired Ethernet to TCP po
 ## Permanent logging directive
 
 Owner requires public, sanitized documentation of each configuration action, outcome, error and correction on P2002 and future CLARYEL boxes, for independent AI review. Policy: policies/INSTALLATION-AUDIT-LOGGING.md. At this checkpoint, the UFW SSH allow rule has been verified but firewall activation remains unconfirmed.
+
+## Ubuntu package update checkpoint (owner terminal report)
+
+- Owner ran system package upgrades within Ubuntu 24.04 LTS. Afterwards apt reported no further upgradable packages in the displayed query.
+- The system reported a required reboot. needrestart reported service restarts deferred and existing SSH sessions using older binaries; no containers or running VM guests required updates.
+- OpenSSH remained active. UFW remained active with default-deny incoming and only the previously authorized administrative workstation SSH source over the wired interface; IPv6 ingress remains denied by default.
+- **Reboot and post-reboot verification have not yet been reported.** Because local integrated video console remains unavailable, a fresh SSH login from the authorized workstation is required immediately before reboot. After reboot verify new kernel, uptime/boot, SSH, firewall, network and reboot-required flag.
+- No upgrade to Ubuntu 26.04 was requested or performed, and no successful reboot or service deployment is claimed.
