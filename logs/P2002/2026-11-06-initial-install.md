@@ -126,3 +126,12 @@ The operator executed the planned libvirt commands and reported successful compl
 - `docker ps -a` showed zero remaining containers. The two isolated internal test networks remain configured for further reverse-direction testing.
 - SSH and UFW remained active with default-deny ingress and restricted authorized workstation SSH access.
 - Next verification is the reverse A-to-B connectivity attempt with a positive control inside Zone B; no result for that direction is claimed yet.
+
+## Reverse-direction Docker isolation test (operator output)
+
+- A temporary HTTP server was started on isolated Zone B, without publishing host ports.
+- **Positive control passed:** an ephemeral client in Zone B retrieved `CLARYEL_B_OK` over HTTP from the server.
+- **Negative control passed:** an ephemeral client on Zone A could not connect to the Zone B HTTP endpoint. The reported error was `Network is unreachable`.
+- Combined with the earlier A-zone positive control and B-to-A negative test, this shows successful TCP/HTTP checks in both zones and blocked tested cross-zone connections in each direction.
+- Scope limitation: this is not proof of isolation for a dual-homed container, privileged container, host service, additional route or alternate protocol.
+- As of this report, **removal of the temporary Zone B server has not been confirmed**. Cleanup and inventory checks are required before further tests.
