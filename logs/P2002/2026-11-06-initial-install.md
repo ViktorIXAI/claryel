@@ -238,3 +238,32 @@ The operator executed the planned libvirt commands and reported successful compl
 - A read-only structural Python check returned five PASS checks and OVERALL PASS. The guest remained running.
 - No new network has been started, no VM NIC has been attached, and libvirt network registration is not yet confirmed.
 - Security caveat: libvirt isolated-network configuration alone does not prove confinement on a host with IPv4 forwarding enabled by Docker. Verify effective host firewall and east-west access controls before activating/attaching the guest.
+
+## Retrospective verification and correction of missing checkpoints
+
+This checkpoint reconciles the earlier chronological installation notes with newly supplied operator output. Earlier sections are historical snapshots, not current-state assertions.
+
+- Cloud-init user-data was inspected with its public SSH key redacted. The expected guest-specific public key was found, and the installed cloud-init schema command returned `Valid schema user-data`. This validates the input file, not the outcome inside the booted guest.
+- The cloud-init seed ISO was copied into the libvirt images directory. The operator's SHA256 output showed the source ISO and its destination copy had identical hashes. A prior attempt to compare before actually copying produced a file-not-found error; this was a command-sequencing mistake, later corrected.
+- A dry-run virt-install produced the VM XML. Initial AI-authored validation falsely failed the 4 GiB memory check because it required an explicit `unit="KiB"` attribute. The actual XML omitted `unit`, which means KiB by default, and specified 4194304 KiB; a corrected check returned 4096 MiB PASS. This was an error in the AI validation script, not an actual resource mismatch.
+- The KVM domain was defined persistently with 2 vCPU, 4 GiB, a 40 GiB QCOW2 system disk, a cloud-init seed device, serial console, no NIC and disabled autostart. The operator subsequently confirmed first boot to a serial login prompt; VM remained running after leaving the console.
+- Guest cloud-init completion, guest user/SSH-key installation, and SSH login have **not** yet been independently verified. The guest has no network interface at this checkpoint.
+
+## Administrative libvirt network registration verified
+
+- Operator executed `virsh net-define` using the previously structurally checked XML. Libvirt reported success.
+- `virsh net-list --all` showed `claryel-cloud-admin` as **inactive**, **autostart=no**, **persistent=yes**. The standard libvirt `default` network is also inactive and has autostart disabled.
+- `virsh domiflist claryel-cloud-hermes` remained empty: the guest has not been attached to the management network.
+- The proposed libvirt network intentionally omits `<forward>`, but **network isolation is not yet accepted**. Host IPv4 forwarding is enabled for Docker, and libvirt/UFW/Docker effective packet-filtering interactions remain to be tested before connecting the VM.
+- Current operational decision: do not activate the network, enable its autostart or attach a VM NIC until firewall policy and test methodology are reviewed.
+
+## Open acceptance gaps
+
+1. Verify effective guest initialization and access after a controlled management channel exists; the serial login prompt alone is insufficient.
+2. Verify robust isolation against host services, the LAN, the Internet and Docker zones, including both protocol families and actual packet-filtering order; a no-forward libvirt XML is not a security proof.
+3. Review confidential-data protection: the host root filesystem is presently unencrypted, and the guest images were observed with mode 0644 before boot. Do not load private production data or cloud credentials yet.
+4. Validate the eventual Security Gateway as the exclusive authorized crossing, including application-layer relaying, logging and deny-by-default controls.
+5. Outstanding host acceptance: local console through the intended integrated graphics connection is not working; host GPU/Strata workloads and recovery procedure are not yet validated.
+6. Verify the cloud image manifest signature separately if independently authenticated supply-chain integrity is required. The SHA256 manifest was downloaded alongside the image, but its signature was not checked.
+
+**Audit basis:** terminal output supplied by operator to ChatGPT, reviewed against the sequential public installation log. No direct shell access to P2002 was used for this retrospective audit.
