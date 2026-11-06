@@ -354,3 +354,7 @@ The operator confirmed that Cloud Hermes was running and QEMU exclusively held i
 ## Guest ACPI shutdown requested
 
 The operator issued a normal libvirt shutdown command to Cloud Hermes. Libvirt acknowledged that the guest is being shut down, but an immediate state check still reported running. Host SSH remained active and the exact nftables guard validator returned OVERALL PASS. A stopped state and disk lock release have not yet been verified. Do not force-stop the guest or access the qcow2 disk until shutdown completion is confirmed.
+
+## Graceful Cloud Hermes shutdown completed
+
+A subsequent operator check confirmed that Cloud Hermes reached the `shut off` state following the previously acknowledged ACPI shutdown request. `fuser` reported no holder of the guest qcow2 image. Host SSH remained active, and the exact nftables CLARYEL guard verifier returned OVERALL PASS. The temporary live-only guest NIC is no longer active with the stopped VM. Next phase is to inspect the offline qcow2 image strictly read-only using existing QEMU/NBD tools. No image mounting, host reboot, or guest network change has yet occurred.
