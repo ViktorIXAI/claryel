@@ -135,3 +135,11 @@ The operator executed the planned libvirt commands and reported successful compl
 - Combined with the earlier A-zone positive control and B-to-A negative test, this shows successful TCP/HTTP checks in both zones and blocked tested cross-zone connections in each direction.
 - Scope limitation: this is not proof of isolation for a dual-homed container, privileged container, host service, additional route or alternate protocol.
 - As of this report, **removal of the temporary Zone B server has not been confirmed**. Cleanup and inventory checks are required before further tests.
+
+## Dual-homed test intermediary creation (owner-provided terminal output)
+
+- Operator started a temporary BusyBox container with all Linux capabilities dropped and no-new-privileges, initially attached to isolated Zone A, then connected it to isolated Zone B.
+- Docker inspection and `ip addr` showed two live Ethernet interfaces, one in each distinct Docker isolated subnet. `ip route` showed only the two directly connected subnet routes and no default gateway.
+- SSH and UFW remained active under existing host access restrictions. There were no privileged container flags or published host ports in this step.
+- Crucial security limitation: while the kernel has no default route, a dual-network application may still receive and emit messages on both attached networks and thereby bridge them at application level. No positive application-reachability probe or forwarding bypass has yet been recorded.
+- Next: run test servers separately in zones A/B, check each from the intermediary, and clean up ephemeral containers. Zone addresses are intentionally excluded from the public log.
