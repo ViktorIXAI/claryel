@@ -13,3 +13,5 @@ Use invented customer profiles, uniquely tagged canary secrets and test-only cre
 - **Legal/process:** record controller/processor responsibilities, processing inventory, DPIA decision, incident simulations, retention and user-right workflows.
 
 For each test preserve versioned preconditions, exact steps, sanitized outcomes, evidence hashes, residual risks and owner sign-off. Never fabricate a pass.
+
+- **No cable-swapping acceptance (future installer and recovery):** on a dual-GPU CLARYEL box, keep the monitor attached only to motherboard iGPU from power-on UEFI through one-time USB boot, installer, completed OS boot and offline recovery; the dedicated AI GPU must remain available for inference. Verify behavior after firmware defaults and with/without any dummy display adapter. Any required physical monitor reconnection fails the acceptance test. This remains planned and unverified for P2002.
