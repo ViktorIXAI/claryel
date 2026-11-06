@@ -1,0 +1,18 @@
+# No secrets, customer data, local artifacts, or operational logs
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.p12
+*.pfx
+secrets/
+private/
+customer-data/
+backups/
+logs/
+*.log
+*.db
+*.sqlite*
+__pycache__/
+.DS_Store
