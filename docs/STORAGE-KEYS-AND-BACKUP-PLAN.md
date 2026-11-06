@@ -4,14 +4,14 @@
 
 ## First installation
 
-- Allocate approximately **350 GB** to an **UNENCRYPTED Ubuntu Server 24.04 system environment for the initial P2002 testbed only** (including OS, KVM, Docker/Compose, cloud VM, local Strata and models, Hermes agents, GTW, Home Assistant and operational metadata). Aim to reserve **100 GB** of this capacity for model weights and Strata assets; the current main model occupies about **78 GB** per owner report, so this is a capacity *reservation*, not a separate partition or a guarantee for future models.
+- Allocate approximately **400 GB** to an **UNENCRYPTED Ubuntu Server 24.04 system environment for the initial P2002 testbed only** (including OS, KVM, Docker/Compose, cloud VM, local Strata and models, Hermes agents, GTW, Home Assistant and operational metadata). Aim to reserve **100 GB** of this capacity for model weights and Strata assets; the current main model occupies about **78 GB** per owner report, so this is a capacity *reservation*, not a separate partition or a guarantee for future models.
 - Plan **32 GB swap**, but on the initial unencrypted system do not place actual private data, real client documents, secret keys, sensitive contexts or plaintext credentials in memory/swap. Prefer an explicitly encrypted ephemeral swap mechanism when feasible, or disable swap until it can be protected; verify after each restart. No hibernation with ephemeral swap. This is a temporary test-only security exception.
 - Allocate **16 GB** to an independently passphrase-unlocked LUKS2 secrets volume, to be created after the OS installation.
 - Allocate the remaining capacity to a separate independently passphrase-unlocked LUKS2 private-data volume (documents, sensitive databases, user files and private RAG). For the initial install, leave this capacity unallocated rather than risking complex manual partitioning.
 - Clarify physical meaning: these are **logical encrypted volumes on a single physical NVMe** unless a distinct physical drive is inventoried. Separate volumes/keys protect access, but do not protect against loss of the physical disk or host compromise.
 - Boot partitions and the initial system partition are **unencrypted**. Document physical-access, offline tampering, log, Docker, VM, crash-dump and swap exposure risks. **No in-place root encryption will be attempted.** The owner selected a complete disk reinstallation with LUKS2 during an integrated backup, disaster recovery, and encryption exercise, using independently verified recovery data. Never store private/secrets volume passphrases or raw unlock keys on the system disk or in a public repo.
 
-## Storage budget inside 350 GB (planning caps, not measured use)
+## Storage budget inside 400 GB (planning caps, not measured use)
 
 | Category | Planned budget |
 | --- | ---: |
@@ -22,8 +22,8 @@
 | KVM cloud VM and images | 45 GB |
 | Hermes, Home Assistant, GTW auxiliary state and application binaries | 18 GB |
 | Logs, update quarantine, temporary working space | 30 GB |
-| Free growth/headroom | **55 GB** |
-| **Total** | **350 GB** |
+| Free growth/headroom | **105 GB** |
+| **Total** | **400 GB** |
 
 Budgets overlap in implementation (Docker layers may contain application files); use them only as capacity ceilings/monitoring categories, not an automatic quota map. In particular keep private customer data and secrets out of container writable layers, VM snapshots, model files, rootfs logs and backup artifacts. Do not rely on the initial 100 GB model allocation for arbitrarily larger models. Use disk alerts, safe container log rotation and measured size reports.
 
@@ -61,17 +61,20 @@ Backups can increase exposure and conflict with data retention/deletion if unman
 
 ## Immediate action boundary
 
-Install Ubuntu on the intended 350 GB **unencrypted** system area only for this first testbed; do **not** erase or reformat the remainder unintentionally. Never run partition/cryptsetup commands based on assumed disk names: first inspect actual `lsblk`, storage IDs and the installer preview. Later creation of independently encrypted secrets/data volumes requires explicit review of the actual geometry. No real customer files or production credentials before isolation tests.
+Install Ubuntu on the intended 400 GB **unencrypted** system area only for this first testbed; do **not** erase or reformat the remainder unintentionally. Never run partition/cryptsetup commands based on assumed disk names: first inspect actual `lsblk`, storage IDs and the installer preview. Later creation of independently encrypted secrets/data volumes requires explicit review of the actual geometry. No real customer files or production credentials before isolation tests.
 
 ## Owner change decision (2026-11-06)
 
-The project owner explicitly selected an **unencrypted 350 GB system root for the initial P2002 testbed**, to speed initial deployment. This supersedes the earlier encrypted-system recommendation **only for this test phase**. Independently encrypted secrets and private-data volumes remain mandatory before any sensitive material is introduced. **In-place conversion is explicitly excluded.** Later system encryption will be introduced **only through a destructive clean reinstall** of the test system, then restoration from separately stored and verified backup material, with an end-to-end rebootable recovery test. This future exercise will test backup, restore, LUKS2 root encryption, swap, secrets, logs, VM and container state **as one integrated workflow**. No claim that an unencrypted host disk is adequate for real customer data.
+The project owner explicitly selected an **unencrypted 400 GB system root for the initial P2002 testbed**, to speed initial deployment. This supersedes the earlier encrypted-system recommendation **only for this test phase**. Independently encrypted secrets and private-data volumes remain mandatory before any sensitive material is introduced. **In-place conversion is explicitly excluded.** Later system encryption will be introduced **only through a destructive clean reinstall** of the test system, then restoration from separately stored and verified backup material, with an end-to-end rebootable recovery test. This future exercise will test backup, restore, LUKS2 root encryption, swap, secrets, logs, VM and container state **as one integrated workflow**. No claim that an unencrypted host disk is adequate for real customer data.
 
 ## Future integrated backup–wipe–reinstall–restore–encrypt exercise (owner decision, 2026-11-06)
 
-- **Now:** deploy the P2002 testbed on the unencrypted 350 GB system volume using synthetic data only. Do not configure automatic backup jobs or encrypt the system root as part of initial deployment.
+- **Now:** deploy the P2002 testbed on the unencrypted 400 GB system volume using synthetic data only. Do not configure automatic backup jobs or encrypt the system root as part of initial deployment.
 - **Later, as a separate explicitly approved test:** design and implement independent backup destinations, encryption/key custody, immutable/configuration and state exports, VM/container/database-consistent backup methods, retention and restoration procedures. This design is currently unverified.
 - **Mandatory pre-wipe gates:** complete at least one independent trial restore on a separate test location; verify image/manifests/database and secret-store coverage, file integrity and recoverability; confirm independent copies exist off the target disk; inventory ALL disks and relevant partitions; confirm recovery keys are available independently; record owner authorization specifically for irreversible erasure. A backup report alone is insufficient.
 - **Destructive exercise (not authorized yet):** deliberately wipe only the owner-approved target system after prerequisites pass; reinstall a fresh Ubuntu system with LUKS2-encrypted root and protected swap; restore services, configs, models and synthetic test data from verified backups; re-establish separate protected secrets/private-data volumes and boundaries. **Never perform an in-place cryptsetup re-encryption of the existing root.**
 - **Acceptance:** boot/reboot with LUKS, verify locked/unlocked indicators, recover SSH and administration, check service isolation and offline operation, test KVM/Docker/Hermes/Strata/GTW/HA, integrity/permissions, restore speed and data completeness, encrypted-at-rest state and rollback/failure drills. Publish only sanitized evidence.
 - If any recovery gate fails, **STOP without erasing anything**. No customer data or production credentials are allowed in the unencrypted test environment.
+
+## Installation amendment, 2026-11-06
+The latest owner-selected initial layout is **400 GB unencrypted ext4 root** on the intended internal NVMe, with UEFI boot support and remaining disk capacity unallocated. The previous 350 GB target is superseded. Consult [P2002 Installation Baseline](P2002-INSTALLATION-BASELINE.md). This is a test-only configuration; encryption and backup/restore remain future combined trials.
