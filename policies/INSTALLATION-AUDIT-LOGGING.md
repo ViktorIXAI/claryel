@@ -2,6 +2,8 @@
 
 **Status: owner-directed policy — effective 2026-11-06 until explicitly revoked by the owner.**
 
+> **Temporary publication exception:** From 2026-11-06T17:09:44+01:00 through 2026-11-07T17:09:44+01:00, the owner has explicitly authorized public P2002/CLARYEL technical-log publication including non-secret infrastructure details. Passwords and secret authentication material remain excluded. See [the time-limited owner authorization](TEMPORARY-FAST-LOG-WINDOW-2026-11-06.md). This exception governs publication only; it does not authorize host changes.
+
 ## Scope
 Applies to the current P2002 system and every subsequent CLARYEL Box throughout installation, configuration, experiments, debugging, rollback, updates, recovery and security checks. The default is **publicly documented, independently auditable work**, not undocumented "successful" deployment. Public prose, scripts, commits, issues and technical reports are **in English**.
 
