@@ -294,3 +294,7 @@ This checkpoint reconciles the earlier chronological installation notes with new
 ## Fresh SSH check after guard activation
 
 An independent new SSH session from the ASUS administrator workstation reached P2002 and confirmed the SSH service remained active. Persistence of the guard and guest traffic behavior are not yet tested.
+
+## Stock nftables systemd unit review
+
+The owner inspected the installed nftables systemd unit and configuration. The stock service is disabled. Its service stop flushes the entire nftables ruleset, and the configured startup file includes a full ruleset flush. Therefore, enabling that stock service without redesign risks disrupting UFW, Docker, libvirt, and CLARYEL rules. Docker and libvirtd services are enabled; SSH and the previously installed CLARYEL guard remain active. Next step is to draft a separate, non-flushing CLARYEL-only systemd service and loader for inspection before enabling or rebooting. No network or service change was made in this review.
