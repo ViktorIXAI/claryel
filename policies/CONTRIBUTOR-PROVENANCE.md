@@ -6,8 +6,23 @@
 
 Different ChatGPT conversations, model providers, human operators, Hermes agents, automated scripts and other assistants can all use the same GitHub account. The GitHub author/committer account records the credential that published a change, **not a verifiable individual writer or executor**. Never attribute an action to the repository owner merely because the GitHub account is theirs.
 
+## Multiple Hermes instances: exact declared instance required
+
+**The generic label `Hermes` is not sufficient.** Every deployed Hermes instance (cloud/public, private/internal, staging, recovery, or other) must have a distinct persistent **public-safe instance alias** plus its role and deployment/box alias. Examples are illustrative, not claims of deployment:
+
+| Writer instance alias | Security role | Deployment alias |
+| --- | --- | --- |
+| `HERMES-PUBLIC-01` | `PUBLIC_CLOUD_AGENT` | `BOX-LAB-A` |
+| `HERMES-PRIVATE-01` | `PRIVATE_LOCAL_AGENT` | `BOX-LAB-A` |
+| `HERMES-PRIVATE-02` | `PRIVATE_LOCAL_AGENT` | `BOX-LAB-B` |
+
+Different Hermes instances on the **same host** still require distinct instance aliases; the **same agent role on different hosts** also requires separate aliases. Do not publish actual hostnames, addresses, MACs, VM IDs, sensitive topology or hidden network mappings. Store any real-instance-to-public-alias mapping only in the secured private ledger after it is deployed. Until that mapping exists, describe the alias as `DECLARED_UNVERIFIED`, not authenticated.
+
+Record `Writer-instance`, `Writer-role` and `Deployment-alias` on each contribution. For a non-Hermes writer use equivalent fields (e.g. `CHATGPT-REVIEW-01`, `REPOSITORY_AUDITOR`, `NOT_APPLICABLE`). Do not reuse an instance alias after it has been retired; log role or deployment changes without overwriting history. A separate publisher/relay may submit on behalf of the Hermes instance; name both and never assume the relay authored the content.
+
 ## Required declarations for every new contribution
 
+- **Writer-instance / writer-role / deployment-alias:** unique declared writer instance, security/task role and safe box/environment alias (or `NOT_APPLICABLE`). For Hermes all three are mandatory; see above.
 - **Prepared-by:** entity that authored the contribution: human, model/agent or process. Name the provider/product/model **only if actually known**; otherwise use `UNKNOWN`. Different chat instances must have separate safe *declared* writer aliases, for example `CHATGPT-REVIEW-01` versus `CHATGPT-INSTALL-01`, without exposing private chat/session URLs or IDs.
 - **Executed-by:** entity that ran the command on a real machine, or `NOT_APPLICABLE` / `UNKNOWN`. A remote assistant receiving user-pasted output is **not** the executor.
 - **Evidence-source:** `OWNER_REPORTED`, `TOOL_OBSERVED`, `SIMULATED`, `INDEPENDENTLY_VERIFIED`, `PROPOSED`, or `UNKNOWN`; indicate scope and any limitations.
@@ -48,6 +63,9 @@ One contribution can involve several entities: an AI authors a proposed command;
 
 ## Provenance of this policy publication
 
+- Writer-instance: CHATGPT-REVIEW-01 (declared; not authenticated)
+- Writer-role: REPOSITORY_AUDITOR
+- Deployment-alias: NOT_APPLICABLE
 - Prepared-by: ChatGPT (this repository-audit conversation; model GPT-6, declared)
 - Executed-by: NOT_APPLICABLE (documentation only)
 - Evidence-source: TOOL_OBSERVED (GitHub repository files and commits)
