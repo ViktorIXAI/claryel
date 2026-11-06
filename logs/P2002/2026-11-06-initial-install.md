@@ -282,3 +282,11 @@ This checkpoint reconciles the earlier chronological installation notes with new
 - `nft --check --file` printed no syntax errors; full intended file content was displayed in the local terminal. The operator's follow-up `nft list tables` confirmed no CLARYEL table applied yet.
 - Both libvirt networks remain inactive. The VM has no guest NIC.
 - IMPORTANT: syntax validity is not runtime policy validation or persistence. Before any guest network is activated, apply guard with explicit rollback, verify rules in the live kernel and test ASUS admin SSH remains available. Later arrange independent service persistence without enabling a stock nftables configuration that flushes other stacks' rules.
+
+## CLARYEL guest-bridge guard applied to live nftables (operator evidence)
+
+- Operator checked and loaded the previously staged inet claryel_guard table using nft. The live kernel table was printed afterwards and contains guest_input and guest_forward base chains at hook priority -10.
+- guest_input accepts established/related IPv4/IPv6 conntrack responses and DHCP requests from the named future guest bridge, then drops other traffic entering from that bridge. guest_forward drops forwarded traffic entering or leaving that bridge.
+- Host ssh systemd service remained active after the change, but an independent new SSH connection from the administrative workstation has not yet been observed for this checkpoint.
+- Both libvirt networks remain inactive and the Cloud Hermes VM still has no NIC. The firewall rules' actual packet-level effectiveness against guest traffic and persistence across reboot remain UNTESTED.
+- Next acceptance gate: verify a new SSH login from the ASUS admin workstation while retaining the existing connection, then establish narrowly scoped persistence and negative/positive network tests before attaching a VM NIC.
