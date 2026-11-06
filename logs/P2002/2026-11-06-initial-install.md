@@ -267,3 +267,10 @@ This checkpoint reconciles the earlier chronological installation notes with new
 6. Verify the cloud image manifest signature separately if independently authenticated supply-chain integrity is required. The SHA256 manifest was downloaded alongside the image, but its signature was not checked.
 
 **Audit basis:** terminal output supplied by operator to ChatGPT, reviewed against the sequential public installation log. No direct shell access to P2002 was used for this retrospective audit.
+
+## nftables readiness for independent Cloud VM guard (owner terminal evidence)
+
+- nftables v1.0.9 is available. The stock nftables systemd service is disabled/inactive; /etc/nftables.conf exists. No existing table named for CLARYEL was reported.
+- Existing UFW early INPUT rules include established/related traffic acceptance and a UDP DHCP client response allowance; those host-side rules alone do not determine future guest DHCP behavior.
+- Both libvirt networks remain inactive, and the Cloud Hermes VM has no NIC. No guest reachability is claimed.
+- Next stage: prepare an independent inet table with input and forward hooks and validate its syntax only. Avoid enabling the stock nftables service or running an unreviewed `flush ruleset`, which could interfere with UFW/Docker/libvirt. Apply rules and arrange persistence only after deliberate review and rollback controls.
