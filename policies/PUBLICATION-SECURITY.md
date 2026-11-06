@@ -2,7 +2,7 @@
 
 **Status: mandatory publication policy, effective 2026-11-06. Implementation and CI enforcement require separate testing and owner approval.**
 
-> **Temporary owner authorization:** From 2026-11-06T17:09:44+01:00 through 2026-11-07T17:09:44+01:00, the owner authorizes comprehensive P2002/CLARYEL technical-log publication, including non-secret operational identifiers, actual network details and firewall/access configuration. Passwords and secret authentication material remain strictly excluded. See [the time-limited owner authorization](TEMPORARY-FAST-LOG-WINDOW-2026-11-06.md). This does not prove technical gate enforcement or change the future acceptance criteria for issues #1 and #4.
+> **Temporary owner authorization:** From 2026-11-06T17:09:44+01:00 through 2026-11-07T17:09:44+01:00, the owner authorizes comprehensive P2002/CLARYEL technical-log publication, including non-secret operational identifiers, actual network details and firewall/access configuration. Passwords and secret authentication material remain strictly excluded. See [the time-limited owner authorization](TEMPORARY-FAST-LOG-WINDOW-2026-11-06.md). This does not prove technical gate enforcement, deploy the private evidence ledger, or change the future acceptance criteria for issues #1, #2 and #4.
 
 ## Scope and origin
 
