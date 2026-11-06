@@ -370,3 +370,7 @@ The operator loaded the standard kernel `nbd` module with an eight-partition lim
 ## qcow2 attached via read-only NBD for offline guest inspection
 
 The operator confirmed Cloud Hermes was shut off and its image was not in use before attaching the qcow2 using qemu-nbd with `--read-only` and explicit qcow2 format. `/dev/nbd0` appeared as a 40 GiB read-only block device (RO=1), with GPT partitions including a 39 GiB Linux filesystem partition, EFI and boot partitions. The disk was not mounted. Host SSH remained active and exact CLARYEL nftables guard verification returned OVERALL PASS. Next: identify partition filesystems and confirm no mounts before any read-only filesystem mount; avoid copying raw disk identifiers to public logs.
+
+## Guest root mounted read-only without journal replay
+
+The operator mounted the stopped Cloud Hermes root partition from an NBD device that was already read-only. Mount options were reported as `ro,relatime,norecovery`, the kernel's representation of ext4 mounting without journal replay (`noload`). Guest `/etc`, `/usr`, and `/var` directories were accessible. Host SSH remained active and CLARYEL guard verification returned OVERALL PASS. The offline disk is still attached and mounted read-only. Next read configuration file names and selected non-secret network configuration metadata; do not boot the guest until filesystem unmount and NBD disconnect are confirmed.
