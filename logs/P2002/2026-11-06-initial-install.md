@@ -152,3 +152,13 @@ The operator executed the planned libvirt commands and reported successful compl
 - SSH and UFW remained active with the previously configured restricted administrative connection.
 - Architecture reaffirmed: internet-connected Cloud Hermes will run in its own KVM/QEMU guest, not in a Docker container on P2002. Private services can use Docker; the Security Gateway crossing remains to be designed, implemented, and tested.
 - Next action: inspect available host resources, VM tooling, image sources and storage layout before allocating VM storage or enabling guest networking.
+
+## KVM guest capacity preflight (operator-reported)
+
+- The P2002 host exposes 24 logical CPUs and approximately 61 GiB physical memory, with about 60 GiB reported available at this checkpoint; swap is 8 GiB.
+- The unencrypted root filesystem is approximately 393 GiB with about 361 GiB currently available. The internal NVMe is approximately 1.9 TiB total, with capacity beyond the current root partition not allocated.
+- virt-install and libvirt/QEMU management tools respond normally. No preexisting guest disk images or virtual machines were found. Libvirt default network remains inactive and not configured for autostart.
+- Cloud image preparation utilities were not installed at the moment of the package query.
+- Proposed test VM allocation: 4 vCPU, 8 GiB RAM and a sparse 40 GiB virtual disk. The future cloud-connected Hermes is intended to run in a KVM virtual machine, not directly as a host Docker container.
+- The host root remains unencrypted in this prototype stage. No genuine cloud credentials or private workloads should be put into the VM until secure storage and networking controls are implemented and tested.
+- No guest has been created or booted at this checkpoint.
