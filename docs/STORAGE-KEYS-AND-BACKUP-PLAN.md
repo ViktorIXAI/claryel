@@ -9,7 +9,7 @@
 - Allocate **16 GB** to an independently passphrase-unlocked LUKS2 secrets volume, to be created after the OS installation.
 - Allocate the remaining capacity to a separate independently passphrase-unlocked LUKS2 private-data volume (documents, sensitive databases, user files and private RAG). For the initial install, leave this capacity unallocated rather than risking complex manual partitioning.
 - Clarify physical meaning: these are **logical encrypted volumes on a single physical NVMe** unless a distinct physical drive is inventoried. Separate volumes/keys protect access, but do not protect against loss of the physical disk or host compromise.
-- Boot partitions and the initial system partition are **unencrypted**. Document physical-access, offline tampering, log, Docker, VM, crash-dump and swap exposure risks. Later root encryption is possible by offline LUKS2 conversion with reliable backup and bootloader/initramfs changes, or by a fresh encrypted installation and recovery. Prefer clean reinstall for reproducibility. Never store private/secrets volume passphrases or raw unlock keys on the system disk or in a public repo.
+- Boot partitions and the initial system partition are **unencrypted**. Document physical-access, offline tampering, log, Docker, VM, crash-dump and swap exposure risks. **No in-place root encryption will be attempted.** The owner selected a complete disk reinstallation with LUKS2 during an integrated backup, disaster recovery, and encryption exercise, using independently verified recovery data. Never store private/secrets volume passphrases or raw unlock keys on the system disk or in a public repo.
 
 ## Storage budget inside 350 GB (planning caps, not measured use)
 
@@ -48,9 +48,9 @@ Evaluate two different types of components without equating them:
 
 Do not automatically install either service in the first storage provisioning step. Initial secrets can be manually managed on an isolated encrypted volume while a narrowly privileged Secrets Broker is designed and tested. An encrypted vault protects secrets *at rest*, not while applications use them in memory.
 
-## Backups: design recorded, owner has NOT reviewed or approved implementation
+## Backups and disaster recovery: implementation deferred
 
-**Explicit owner status: DEFERRED / NOT YET OWNER-REVIEWED / NOT TESTED.** Create no automatic backup service yet. Document intent only:
+**Explicit owner status: CONCEPT APPROVED; IMPLEMENTATION DETAILS NOT YET REVIEWED; NOT DEPLOYED OR TESTED.** The owner requires a future combined backup, destructive reinstall, encrypted restore and verification exercise. Create no automatic backup service yet. Document intent only:
 - System configuration and reproducible manifests: at changes and periodic versioned snapshots;
 - Encrypted private data: incremental and periodic full snapshots with retention/erasure policy;
 - Secret vault and LUKS recovery/header material: tightly controlled independent encrypted offline recoverability;
@@ -65,4 +65,13 @@ Install Ubuntu on the intended 350 GB **unencrypted** system area only for this 
 
 ## Owner change decision (2026-11-06)
 
-The project owner explicitly selected an **unencrypted 350 GB system root for the initial P2002 testbed**, to speed initial deployment. This supersedes the earlier encrypted-system recommendation **only for this test phase**. Independently encrypted secrets and private-data volumes remain mandatory before any sensitive material is introduced. Later system encryption is an explicit future milestone and must include recovery planning, verified backups, a rebootable migration test, and renewed review of swap, secrets, logs, VM and container storage. No claim that an unencrypted host disk is adequate for real customer data.
+The project owner explicitly selected an **unencrypted 350 GB system root for the initial P2002 testbed**, to speed initial deployment. This supersedes the earlier encrypted-system recommendation **only for this test phase**. Independently encrypted secrets and private-data volumes remain mandatory before any sensitive material is introduced. **In-place conversion is explicitly excluded.** Later system encryption will be introduced **only through a destructive clean reinstall** of the test system, then restoration from separately stored and verified backup material, with an end-to-end rebootable recovery test. This future exercise will test backup, restore, LUKS2 root encryption, swap, secrets, logs, VM and container state **as one integrated workflow**. No claim that an unencrypted host disk is adequate for real customer data.
+
+## Future integrated backup–wipe–reinstall–restore–encrypt exercise (owner decision, 2026-11-06)
+
+- **Now:** deploy the P2002 testbed on the unencrypted 350 GB system volume using synthetic data only. Do not configure automatic backup jobs or encrypt the system root as part of initial deployment.
+- **Later, as a separate explicitly approved test:** design and implement independent backup destinations, encryption/key custody, immutable/configuration and state exports, VM/container/database-consistent backup methods, retention and restoration procedures. This design is currently unverified.
+- **Mandatory pre-wipe gates:** complete at least one independent trial restore on a separate test location; verify image/manifests/database and secret-store coverage, file integrity and recoverability; confirm independent copies exist off the target disk; inventory ALL disks and relevant partitions; confirm recovery keys are available independently; record owner authorization specifically for irreversible erasure. A backup report alone is insufficient.
+- **Destructive exercise (not authorized yet):** deliberately wipe only the owner-approved target system after prerequisites pass; reinstall a fresh Ubuntu system with LUKS2-encrypted root and protected swap; restore services, configs, models and synthetic test data from verified backups; re-establish separate protected secrets/private-data volumes and boundaries. **Never perform an in-place cryptsetup re-encryption of the existing root.**
+- **Acceptance:** boot/reboot with LUKS, verify locked/unlocked indicators, recover SSH and administration, check service isolation and offline operation, test KVM/Docker/Hermes/Strata/GTW/HA, integrity/permissions, restore speed and data completeness, encrypted-at-rest state and rollback/failure drills. Publish only sanitized evidence.
+- If any recovery gate fails, **STOP without erasing anything**. No customer data or production credentials are allowed in the unencrypted test environment.
