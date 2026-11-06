@@ -93,3 +93,10 @@ The operator executed the planned libvirt commands and reported successful compl
 - iptables v1.8.10 uses nf_tables compatibility backend. DOCKER-USER chain exists; top FORWARD rules jump into DOCKER-USER and DOCKER-FORWARD before UFW chains, and FORWARD default policy is DROP. These observations do not prove container traffic isolation or public-port restrictions.
 - The host listens on SSH over IPv4 and IPv6, but UFW currently limits permitted inbound SSH to the designated administrative workstation IPv4. Loopback DNS and an additional loopback listener were also observed. Exact private host addresses and generated IDs deliberately omitted.
 - No new containers, exposed ports, traffic policies or firewall modifications have yet been performed. Next: read-only review of Docker forwarding/NAT rules, then a narrowly scoped security configuration and explicit tests before applications are deployed.
+
+## Isolated Docker test network created (owner terminal evidence)
+
+- An empty test Docker bridge named `claryel-test-isolated` was successfully created using `--internal` and `com.docker.network.bridge.gateway_mode_ipv4=isolated`.
+- Docker inspection confirmed `Internal=true` and the `isolated` IPv4 gateway mode option. No containers were present.
+- SSH and UFW remained active with the existing restrictive host rules.
+- **Network isolation is not yet empirically proven:** no test container, external reachability probe or inter-zone denial test has run. Next validation should run a minimal unprivileged disposable container, check external, LAN and host reachability, and report observed exit status for each probe. Avoid publishing live IPs and machine identifiers.
