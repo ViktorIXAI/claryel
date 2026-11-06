@@ -274,3 +274,11 @@ This checkpoint reconciles the earlier chronological installation notes with new
 - Existing UFW early INPUT rules include established/related traffic acceptance and a UDP DHCP client response allowance; those host-side rules alone do not determine future guest DHCP behavior.
 - Both libvirt networks remain inactive, and the Cloud Hermes VM has no NIC. No guest reachability is claimed.
 - Next stage: prepare an independent inet table with input and forward hooks and validate its syntax only. Avoid enabling the stock nftables service or running an unreviewed `flush ruleset`, which could interfere with UFW/Docker/libvirt. Apply rules and arrange persistence only after deliberate review and rollback controls.
+
+## CLARYEL guard nftables rules staged and syntax checked
+
+- Operator created a dedicated nftables configuration file for an `inet claryel_guard` table, with `input` and `forward` hooks at priority -10.
+- Proposed guard limits ingress from the future guest bridge to established/related replies plus DHCP client-to-server UDP, dropping other guest-to-host IP input. Forwarding rules drop IP forwarding both into and out of the proposed guest bridge.
+- `nft --check --file` printed no syntax errors; full intended file content was displayed in the local terminal. The operator's follow-up `nft list tables` confirmed no CLARYEL table applied yet.
+- Both libvirt networks remain inactive. The VM has no guest NIC.
+- IMPORTANT: syntax validity is not runtime policy validation or persistence. Before any guest network is activated, apply guard with explicit rollback, verify rules in the live kernel and test ASUS admin SSH remains available. Later arrange independent service persistence without enabling a stock nftables configuration that flushes other stacks' rules.
