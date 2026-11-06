@@ -358,3 +358,7 @@ The operator issued a normal libvirt shutdown command to Cloud Hermes. Libvirt a
 ## Graceful Cloud Hermes shutdown completed
 
 A subsequent operator check confirmed that Cloud Hermes reached the `shut off` state following the previously acknowledged ACPI shutdown request. `fuser` reported no holder of the guest qcow2 image. Host SSH remained active, and the exact nftables CLARYEL guard verifier returned OVERALL PASS. The temporary live-only guest NIC is no longer active with the stopped VM. Next phase is to inspect the offline qcow2 image strictly read-only using existing QEMU/NBD tools. No image mounting, host reboot, or guest network change has yet occurred.
+
+## Offline qcow2 image preflight verified
+
+The operator confirmed that Cloud Hermes is shut off and no process holds its disk image. `qemu-img info --output=json` succeeded: qcow2 format, virtual size 40 GiB, actual allocated size approximately 1.77 GiB, dirty flag false, and no backing filename reported by the selected fields. The NBD module was not yet loaded. Host SSH remained active and CLARYEL guard policy verification passed. Next: load the standard kernel NBD module and inspect free devices before a read-only image attach. No qcow2 writes or mounts were performed.
