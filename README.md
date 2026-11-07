@@ -19,13 +19,15 @@ CLARYEL is an experimental, offline-first local AI system intended for privacy-s
 ## Current implementation evidence
 
 - [Current audit status, evidence index and unresolved gaps](docs/AUDIT-STATUS-AND-EVIDENCE.md)
+- [P2002 log inventory and missing-evidence register (2026-11-07)](docs/LOG-INVENTORY-AND-GAPS-2026-11-07.md)
 - [Forward-looking audit checkpoint template](templates/AUDIT-CHECKPOINT.md)
 - [Tracking issues: security publishing gate, private evidence ledger and reproducibility](https://github.com/ViktorIXAI/claryel/issues)
 
 The P2002 installation journal contains **operator-reported** findings; Git publication does not itself independently verify execution. Pre-publication scanning enforcement and a protected private evidence ledger are **not yet demonstrated**.
 
 ## Project map
-- [Architecture and trust boundaries](docs/ARCHITECTURE.md)
+- [Architecture v0.1 — original trust boundaries](docs/ARCHITECTURE.md)
+- [Architecture v0.2 — vendor-neutral replaceable platform, artifact admission and fail-closed lifecycle](docs/ARCHITECTURE-V0.2-REPLACEABLE-PLATFORM.md)
 - [Owner-controlled implementation roadmap](docs/ROADMAP.md)
 - [P2002 and P1005 hardware testbeds](docs/HARDWARE-TESTBEDS.md)
 - [Storage, encrypted keys, state indicators and deferred backup plan](docs/STORAGE-KEYS-AND-BACKUP-PLAN.md)
@@ -36,7 +38,11 @@ The P2002 installation journal contains **operator-reported** findings; Git publ
 - [Two-ledger secure publication and reproducibility policy](policies/PUBLICATION-SECURITY.md)
 - [Security disclosure and incident policy](SECURITY.md)
 - [AI-assisted authorship, fallibility and historical integrity policy](policies/AI-DEVELOPMENT-AND-HISTORY.md)
-- [Update quarantine](policies/UPDATE-QUARANTINE.md)
+- [Update quarantine policy](policies/UPDATE-QUARANTINE.md)
+- [Artifact supply-chain admission — issue #11](https://github.com/ViktorIXAI/claryel/issues/11)
+- [Fail-closed boot/restart/service replacement — issue #12](https://github.com/ViktorIXAI/claryel/issues/12)
+- [Vendor-neutral replaceable service roles — issue #13](https://github.com/ViktorIXAI/claryel/issues/13)
+- [Portable agent state and migration — issue #14](https://github.com/ViktorIXAI/claryel/issues/14)
 - [Synthetic security test plan](tests/SECURITY-TEST-PLAN.md)
 
 **Security principle:** controls are enforced by deterministic systems outside AI agents. Never treat passing tests as proof of absolute safety. Never expose actual customer material or infrastructure secrets in this public repository.
