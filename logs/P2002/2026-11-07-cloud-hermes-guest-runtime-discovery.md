@@ -1135,3 +1135,72 @@ No PM operation is authorized by this checkpoint. Only after outer wheel validat
 - Published-by: GitHub connector via shared ViktorIXAI account
 - Attribution-confidence: DECLARED_UNVERIFIED
 - Related-checkpoint: CLARYEL-P2002-20261107-PM-WHEELHOUSE-CREATED-VERIFY-INCONCLUSIVE-001
+
+## Corrected wheel archives passed outer distribution validation
+
+- **Checkpoint ID:** CLARYEL-P2002-20261107-PM-WHEELHOUSE-OUTER-RECORD-VERIFIED-001
+- **Target-machine-ID:** P2002-CLOUD-GUEST
+- **Deployment-alias:** P2002-LAB
+- **Event time:** UNKNOWN (owner transcript did not include a timestamp)
+- **Operation:** READ_ONLY_VALIDATION_OF_EXISTING_LOCAL_WHEEL_ARCHIVES
+- **Evidence-source:** OWNER_SUPPLIED_TERMINAL_TRANSCRIPT
+- **Executed-by:** Owner in the already-open guest shell; ChatGPT did not execute guest commands.
+- **Prepared-by:** ChatGPT GPT-6 (declared)
+- **Writer-instance:** CHATGPT-INSTALL-01 (declared; unauthenticated)
+- **Writer-role:** INSTALLATION_COORDINATOR
+- **Reviewed-by:** SELF_REVIEW_ONLY
+- **Approved-by:** OWNER_REQUEST_2026-11-07 (continue controlled local dependency recovery)
+- **Published-by:** GitHub connector via shared ViktorIXAI account
+- **Attribution-confidence:** DECLARED_UNVERIFIED
+- **Related-issue:** #10
+- **Related-checkpoint:** CLARYEL-P2002-20261107-PM-WHEELHOUSE-CREATED-VERIFY-INCONCLUSIVE-001
+
+### Owner-supplied results
+
+The owner reran archive validation against the two existing wheel files in `$HOME/.cache/claryel-wheelhouse.uzfQLK`.
+
+**setuptools 84.1.0**
+- Filename: `setuptools-84.1.0-py3-none-any.whl`
+- SHA-256: `d013b065157296ddc7b354801a2eae5880fc7e01cc3b01207bc6fd5fdf0d2987`
+- ZIP integrity: PASS
+- Outer METADATA Name/Version: setuptools 84.1.0
+- WHEEL tag: `py3-none-any`
+- Outer RECORD entries: 343
+- Outer RECORD missing entries: 0
+- Outer RECORD hash/size mismatches: 0
+- Nested vendored distribution RECORD files were enumerated. Their paths are relative to their own vendored distributions and are not the outer wheel's RECORD. The previous first-RECORD validator incorrectly treated one nested zipp RECORD as the outer RECORD.
+
+**wheel 0.48.0**
+- Filename: `wheel-0.48.0-py3-none-any.whl`
+- SHA-256: `2d5a9504744e8a321f1a798e4eb15eb2a71a2b052b97df46699755399f4488de`
+- ZIP integrity: PASS
+- Outer METADATA Name/Version: wheel 0.48.0
+- WHEEL tag: `py3-none-any`
+- Outer RECORD entries: 29
+- Outer RECORD missing entries: 0
+- Outer RECORD hash/size mismatches: 0
+- No nested RECORD files.
+
+### Assessment
+
+- **CONFIRMED:** Both locally reconstructed outer wheel archives pass ZIP integrity, distribution identity/version, pure-Python WHEEL tag, and outer RECORD file/size/hash validation.
+- **NOT_CLAIMED:** Nested vendored RECORD manifests were not validated as independent wheels and are not used as the outer archive's integrity criterion.
+- **NO_CHANGES:** The validation was read-only. No PM repair, wheel installation, lockfile/source edit, cache mutation, or network-policy change occurred.
+
+### Next step
+
+Before attempting Hermes PM repair, resolve the supported way to force its UV subprocess to use only the local wheelhouse and never query PyPI. Official uv documentation lists `UV_FIND_LINKS` and `UV_OFFLINE`; `--no-index` is a CLI flag and is not listed as a `UV_NO_INDEX` environment variable. Hermes PM source previously reviewed forwards `UV_FIND_LINKS` but filters out `UV_OFFLINE`. Do not repeat the unsupported `UV_NO_INDEX=1` experiment. Determine whether a supported per-process `UV_CONFIG_FILE` with `no-index = true` can be passed through Hermes PM's environment allowlist, or whether a different supported local-index approach is required. Validate exact behavior with the installed uv 0.13.5 help/config before any repair. No PM repair yet.
+
+### Contribution provenance
+
+- Writer-instance: CHATGPT-INSTALL-01 (declared; unauthenticated)
+- Writer-role: INSTALLATION_COORDINATOR
+- Deployment-alias: P2002-LAB
+- Prepared-by: ChatGPT GPT-6 (declared)
+- Executed-by: Owner for guest archive validation; ChatGPT for interpretation and documentation
+- Evidence-source: OWNER_SUPPLIED_TERMINAL_TRANSCRIPT
+- Reviewed-by: SELF_REVIEW_ONLY
+- Approved-by: OWNER_REQUEST_2026-11-07 (continue controlled recovery; next PM mutation remains separately controlled)
+- Published-by: GitHub connector via shared ViktorIXAI account
+- Attribution-confidence: DECLARED_UNVERIFIED
+- Related-checkpoint: CLARYEL-P2002-20261107-PM-WHEELHOUSE-OUTER-RECORD-VERIFIED-001
