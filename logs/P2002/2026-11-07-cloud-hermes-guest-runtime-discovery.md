@@ -158,3 +158,61 @@ The following results were visible:
 ### Next action
 
 Use the known absolute executable path `/home/claryelvm/.local/bin/hermes` for read-only `--version`, top-level `--help`, and `gateway --help` inspection. Do not reinstall, reauthorize, print secret-bearing configuration, or create a service until the actual supported persistent Gateway invocation is confirmed.
+
+
+## Owner-supplied Hermes CLI and Gateway capability check — 2026-11-07 03:29 UTC
+
+- **Checkpoint ID:** CLARYEL-P2002-20261107-HERMES-GATEWAY-CLI-001
+- **Operation:** READ_ONLY_CLI_INSPECTION
+- **Target-machine-ID:** P2002-CLOUD-GUEST
+- **Evidence source:** OWNER_SUPPLIED_TERMINAL_TRANSCRIPT
+- **Executed-by:** Owner, in the already-open guest shell; ChatGPT did not execute commands on the guest.
+- **Prepared-by:** ChatGPT GPT-6 (declared)
+- **Writer-instance:** CHATGPT-INSTALL-01 (declared; unauthenticated)
+- **Writer-role:** INSTALLATION_COORDINATOR
+- **Deployment-alias:** P2002-LAB
+- **Reviewed-by:** SELF_REVIEW_ONLY
+- **Approved-by:** OWNER_REQUEST_2026-11-07 (read-only CLI inspection)
+- **Published-by:** GitHub connector via shared ViktorIXAI account
+- **Attribution-confidence:** DECLARED_UNVERIFIED
+- **Related-issue:** #10
+- **Related-checkpoint:** CLARYEL-P2002-20261107-GUEST-PATH-CHECK-001
+
+The owner invoked the already-installed Hermes executable by its known user-local absolute path (not relying on the non-interactive shell PATH).
+
+### Observed CLI version
+
+```text
+Hermes Agent v0.23.0 (2026.9.24) · stable · local 2bd378ed1b8d
+Install method: git
+Python: 3.14.9
+OpenAI SDK: 2.54.0
+Up to date
+```
+
+The installation reported its existing Git installation directory; this record intentionally does not repeat the guest's absolute home-directory path.
+
+### Observed Gateway command surface
+
+The top-level CLI help exposes `gateway` as the messaging gateway management command. Its supported subcommands are:
+
+- `run` — run the gateway in the foreground (CLI help describes this as recommended for WSL and Docker).
+- `ensure` — ensure a local runtime without installing or replacing a service.
+- `start`, `stop`, `restart`, `status`.
+- `install` — install the gateway as a systemd/launchd background service.
+- `uninstall`, `list`, `setup`, `migrate-legacy`, `migrate`, `enroll`.
+
+The presence of `gateway install` is a supported CLI capability. It is **not** evidence that a service has already been installed or enabled. The owner has not yet run the installer.
+
+### Result
+
+- **PASS:** Existing Hermes CLI is executable when invoked by its known absolute path.
+- **PASS:** Hermes version is v0.23.0, stable, Git installation.
+- **PASS:** CLI explicitly supports a Gateway systemd/launchd service installation command.
+- **NOT_TESTED:** Current Gateway service status from Hermes' own status command.
+- **NOT_TESTED:** Exact install options, service scope, unit name, systemd user-manager requirements, and behavior when user lingering is disabled.
+- **NO_CHANGES:** No Gateway installation, start/stop, service, user-linger, package, configuration, credential, VM, or network changes were made.
+
+### Next action
+
+Run read-only `gateway status`, `gateway install --help`, `gateway ensure --help`, and `gateway run --help` using the existing CLI. Determine the service scope and exact installer behavior before approving any installation. Preserve the existing Grok authorization and Hermes home/configuration. Do not invoke `gateway install` yet.
