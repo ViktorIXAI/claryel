@@ -411,3 +411,88 @@ The owner also listed nftables tables: `ip filter`, `inet claryel_guard`, `ip6 f
 - Approved-by: owner direction to continue documenting the P2002 public security architecture
 - Published-by: GitHub connector via shared ViktorIXAI account
 - Attribution-confidence: DECLARED_OWNER_SUPPLIED
+
+
+## 10. Exact running-container configuration snapshot — 2026-11-07
+
+The owner supplied the following output from `docker inspect` and `docker image inspect`. This is owner-supplied terminal evidence; the GitHub author did not access the P2002 host.
+
+### Container identity and launch configuration
+
+- Container name: `claryel-inference`
+- Full container ID: `30efe186c08874e96413439fae6bf2c46f08255d6725d75df733428ebcfdee5b`
+- Image tag: `claryel/strata:0.2.11-rocm-gfx120x`
+- Immutable image ID: `sha256:932700126d693662cbd11623555b9c451c7c678da138455b36bb05607f8d061b`
+- Repo digest: `claryel/strata@sha256:932700126d693662cbd11623555b9c451c7c678da138455b36bb05607f8d061b`
+- Container `Config.User`: empty string (no explicit user value shown in the container configuration). **This does not establish the effective UID until the image's own `Config.User` and the running process identity are inspected.**
+- Entrypoint: `["bash"]`
+- Command: `bash -lc 'exec strata serve --profile /data/state/strata/launch/iq3_s-128k.json --host 0.0.0.0 --port 8080 --offline'`
+- Restart policy: `unless-stopped`
+- Network mode: `claryel-private-ai`
+- Container address: `172.31.250.2/24`
+- Published host port bindings: empty (`{}`)
+
+### Runtime privileges and devices
+
+- `Privileged=false`
+- `ReadonlyRootfs=false`
+- `CapAdd=null`
+- `CapDrop=null`
+- `SecurityOpt=null`
+- `DeviceRequests=null`
+- Additional groups: `993`, `44`
+- Explicit device mappings:
+  - `/dev/kfd` → `/dev/kfd`, cgroup permissions `rwm`
+  - `/dev/dri` → `/dev/dri`, cgroup permissions `rwm`
+
+The empty CapAdd/CapDrop and SecurityOpt values mean no explicit additions/drops/security options were displayed in this inspect output; they do not establish the image's full process privilege requirements or every effective kernel control.
+
+### Health check
+
+- Test: `CMD /opt/strata/healthcheck.sh`
+- Interval: 30 seconds
+- Timeout: 8 seconds
+- Retries: 3
+- Start period: 7,200 seconds (2 hours)
+
+Preserve this health check and timing unless a separately tested change is approved.
+
+### Persistent mounts
+
+| Container path | Type / name | Host source | Access |
+| --- | --- | --- | --- |
+| `/data` | Docker named volume `9fc66e4f52e6c379e22fa03df3e9b685c3f808e5d8ea79a614a4331bb862669b` | `/var/lib/docker/volumes/9fc66e4f52e6c379e22fa03df3e9b685c3f808e5d8ea79a614a4331bb862669b/_data` | Read-write |
+| `/models` | Docker named volume `claryel-strata-models` | `/var/lib/docker/volumes/claryel-strata-models/_data` | Read-only |
+
+The two host-side volume root directories were printed as mode `0755`, owner/group `root:root`. This is only the metadata of those two mount-root directories; it does not describe every file below them or the in-container ownership of the Strata profile.
+
+### Incomplete part of the supplied diagnostic
+
+The pasted shell/output becomes truncated or malformed during the mount-permission loop. It shows a subsequent empty source path and a failed `stat` attempt (`cannot statx '': No such file or directory`). The environment-variable-name listing and final container-status command are not reliably present in the supplied output.
+
+Therefore:
+- do not infer the environment variable names from this transcript;
+- do not infer that the final `docker ps` check completed;
+- do not claim that every mount path or file permission was successfully inspected;
+- the image's own default `Config.User` and actual in-container process UID/GID remain UNKNOWN.
+
+### Change-planning consequence
+
+The current container's image digest, GPU device mappings, supplemental groups, health check, restart policy, network, port bindings and persistent volume identities are now documented. Any replacement must preserve these settings unless a separately approved and tested change explicitly alters them.
+
+The empty container `Config.User` is not sufficient evidence to choose ownership for a mounted API-key file. Before finalizing a secret-file mount or startup wrapper, inspect the image-level `Config.User`, run a read-only `id` inside the existing container, and verify that the intended runtime identity can read a test file with the proposed numeric owner/group and mode. Do not create or mount a real API key during this preflight.
+
+No container, image, volume, profile, secret, network, firewall or host configuration was changed.
+
+## Provenance
+
+- Writer-instance: CHATGPT-REVIEW-01
+- Writer-role: REPOSITORY_AUDITOR
+- Deployment-alias: P2002-LAB
+- Prepared-by: ChatGPT GPT-6 (declared)
+- Executed-by: owner (terminal commands and output supplied in conversation); GitHub author did not access P2002
+- Evidence-source: OWNER_SUPPLIED_TERMINAL_OUTPUT
+- Reviewed-by: SELF_REVIEW_ONLY
+- Approved-by: owner direction to continue the P2002 security review
+- Published-by: GitHub connector via shared ViktorIXAI account
+- Attribution-confidence: DECLARED_OWNER_SUPPLIED
