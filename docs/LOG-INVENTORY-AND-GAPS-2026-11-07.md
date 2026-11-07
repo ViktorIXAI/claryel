@@ -24,7 +24,7 @@ The current logs root contains only one machine directory: logs/P2002/. It conta
 | 13 | logs/P2002/2026-11-07-cloud-hermes-autostart.md | Libvirt network and Cloud Hermes VM autostart enabled; later addendum corrects the proposed reinstall step | No host reboot or guest application readiness test in that checkpoint |
 | 14 | logs/P2002/2026-11-07-cloud-hermes-guest-runtime-discovery.md | Guest SSH, existing Hermes installation context, prior-conversation recovery and read-only runtime discovery | Earlier snapshot found no matching running process/unit and linger disabled; later Gateway installation supersedes that service-state snapshot; reboot persistence remains untested |
 | 15 | logs/P2002/2026-11-07-host-boot-state-snapshot.md | Host boot/service state snapshot | Snapshot only; not a substitute for a later reboot acceptance test |
-| 16 | logs/P2002/2026-11-07-cloud-hermes-network-pm-repair-gateway.md | Guest DNS/default-route diagnosis; Guard/libvirt/proxy separation; offline UV wheelhouse repair using hash-verified original packaging/setuptools; successful Hermes PM repair; Gateway installation, linger and SIGKILL auto-restart test | Guest remains without default route/upstream DNS; no messaging platforms enabled; auxiliary xAI OAuth and Nous credentials unavailable; actual logout/reboot persistence and end-to-end messaging NOT_TESTED |
+| 16 | logs/P2002/2026-11-07-cloud-hermes-network-pm-repair-gateway.md | Guest DNS/default-route diagnosis; isolated Guard/libvirt/proxy separation; offline UV wheelhouse repair using lock-hash-verified original packaging/setuptools; successful Hermes PM repair; Gateway user service, linger and SIGKILL auto-restart; primary Grok OAuth/model selection and latest DNS-blocked OIDC request | Guest still has no default route/upstream DNS; owner explicitly does not want messaging platforms; primary Grok credentials are present but live request is blocked before model response by DNS; actual host/guest reboot persistence NOT_TESTED |
 
 ## 2. Other evidence surfaces
 
@@ -132,3 +132,18 @@ Next: grouped read-only inventory of binaries, package managers, containers, ins
 A targeted prior-conversation retrieval recovered Hermes v0.23.0 at `/home/claryelvm/.hermes/hermes-agent`, CLI `/home/claryelvm/.local/bin/hermes`, config paths `~/.hermes/config.yaml` and `~/.hermes/.env`, xAI OAuth configuration, selected model `grok-4.6`, base URL `https://api.x.ai/v1`, and a reported successful `hermes chat --oneshot` test. Classification: **PRIOR_CONVERSATION_RECOVERED**, not fresh shell evidence. No credential values or OAuth credential object identifiers are published.
 
 No persistent service/container/autostart mechanism was documented in the recovered history. This reconciles the current no-process/no-matching-unit diagnostic: the CLI can exist and have passed a one-shot test without a persistent daemon. Do not reinstall or reauthorize. Inspect the existing CLI's supported gateway/daemon mode and configure its actual supported boot-start mechanism.
+
+
+## 7. Late 2026-11-07 Cloud Hermes correction
+
+The latest owner-supplied evidence has been appended to the existing row-16 Cloud Hermes log and reflected in `docs/AUDIT-STATUS-AND-EVIDENCE.md`.
+
+- The owner explicitly states that Telegram and all other messaging platforms are not required. The Gateway warning `No messaging platforms enabled` is expected, not an open task.
+- `hermes model` reports primary model `grok-4.6`, provider `xAI Grok OAuth (SuperGrok / Premium+)`, credentials ✓, and reasoning effort `max`.
+- Restarting `hermes-gateway.service` returned `active`.
+- A live `hermes chat --oneshot` request failed at xAI OIDC discovery with `Temporary failure in name resolution`. This is a DNS/connectivity blocker, not evidence of rejected OAuth credentials.
+- Existing guest diagnostics show `172.30.240.12/24`, no default route, no upstream DNS scope, an isolated libvirt network and Guard forwarding drops. No firewall/network change was made.
+- The host-side libvirt network and VM autostart flags are enabled; this is configuration evidence only. No controlled host reboot has been performed.
+- The Hermes Gateway user unit is enabled, active and configured with `Restart=always`; `Linger=yes`. The SIGKILL restart test passed, but actual guest/host reboot persistence remains NOT_TESTED.
+
+The updated row-16 log is the source of detailed command/output evidence. The standing publication rule in `policies/INSTALLATION-AUDIT-LOGGING.md` remains effective until a later explicit owner instruction changes it; routine non-secret engineering logs must not wait for an automated publisher or publication-gate implementation.
