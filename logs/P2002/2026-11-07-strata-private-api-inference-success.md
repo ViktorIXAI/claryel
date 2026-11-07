@@ -581,3 +581,71 @@ No secret was generated, mounted or configured. No container, profile, volume, n
 - Approved-by: owner direction to continue the P2002 security review
 - Published-by: GitHub connector via shared ViktorIXAI account
 - Attribution-confidence: DECLARED_OWNER_SUPPLIED
+
+
+## 12. Installed Strata entrypoint and native API_KEY_FILE support — 2026-11-07
+
+The owner supplied the output of a read-only inspection of the installed image's /opt/strata/entrypoint.sh and source references under /opt/strata/terminal.
+
+### Native entrypoint behavior observed
+
+The installed image entrypoint documents both API_KEY and API_KEY_FILE as supported settings. Relevant source lines:
+
+```sh
+APP=/opt/strata
+STRATA="$APP/terminal/bin/strata"
+KEY_FILE="${STRATA_KEY_FILE:-/data/state/api-key}"
+...
+key="${API_KEY:-}"
+if [ -z "$key" ] && [ -n "${API_KEY_FILE:-}" ]; then
+  [ -r "$API_KEY_FILE" ] || die "API_KEY_FILE=$API_KEY_FILE cannot be read."
+  key=$(tr -d '\r\n' < "$API_KEY_FILE")
+fi
+...
+[ -n "$key" ] && { set -- "$@" --api-key-env STRATA_LAUNCH_KEY; }
+```
+
+The entrypoint therefore has a built-in file-input path. It reads the file into a shell variable and passes the environment-variable name STRATA_LAUNCH_KEY to the strata launch CLI; the secret itself is not placed in the visible CLI argument shown in this code.
+
+The provided excerpt stops at entrypoint source line 240. It does NOT show the remaining code that sets/exports STRATA_LAUNCH_KEY or the final launch/exec behavior. Those details remain to be inspected before relying on this native path.
+
+### API-key source references observed in the installed tree
+
+The owner's grep output showed:
+- launch/cmd.py reads the variable named by --api-key-env and assigns its value to the launch settings.
+- launch/runner.py writes s.api_key into a run config's api_key field and stores the API key in the private preset mechanism. Therefore, switching the current deployment to the image launcher may persist a copy of the credential in writable /data state; the exact paths, permissions and backup implications must be reviewed before using that route.
+- serve/server.py accepts STRATA_API_KEY as the default for its --api-key argument and otherwise reads the profile config's api_key. The API server source uses the environment key or profile value for request authentication.
+- serve/server.py documents Bearer and x-api-key authentication for /v1/*.
+
+### Critical distinction: native entrypoint is bypassed by the live container
+
+The live container's inspected configuration is:
+- Entrypoint override: ["bash"]
+- Cmd: ["-lc","exec strata serve --profile /data/state/strata/launch/iq3_s-128k.json --host 0.0.0.0 --port 8080 --offline"]
+
+Thus the currently running container does NOT invoke the image's default /usr/bin/tini -- /opt/strata/entrypoint.sh path. Its actual launch goes directly to strata serve --profile ....
+
+Consequently, the image's native API_KEY_FILE feature is not active in the current container merely because the image contains it. Do not set API_KEY_FILE and assume the running strata serve command will consume it.
+
+The current direct strata serve path is compatible in principle with the server's native STRATA_API_KEY environment input. A file-reading wrapper that exports STRATA_API_KEY and then execs the exact existing command remains a candidate for the current deployment, but it is not yet validated. Preserve the existing profile, host, port, offline mode, GPU devices, groups, mounts, private network, static address, restart and healthcheck settings.
+
+### Updated implementation decision
+
+Do not replace the current launch path with the image's native API_KEY_FILE launcher without a separate test: that path runs strata launch, may update private presets/run config, and could alter model setup behavior or persist the key in /data.
+
+Next read-only step: inspect the remaining lines of /opt/strata/entrypoint.sh (241 onward), especially all occurrences of STRATA_LAUNCH_KEY, plus the final launch/exec section. Also inspect the exact server argument/key loading and preset/config persistence paths relevant to the current strata serve --profile path.
+
+Then validate a candidate wrapper with a harmless dummy key in a disposable container before creating or installing a production credential. No secret was generated, mounted or configured. No live container, profile, volume, network, firewall or host configuration was changed.
+
+## Provenance
+
+- Writer-instance: CHATGPT-REVIEW-01
+- Writer-role: REPOSITORY_AUDITOR
+- Deployment-alias: P2002-LAB
+- Prepared-by: ChatGPT GPT-6 (declared)
+- Executed-by: owner (read-only commands and output supplied in conversation); GitHub author did not access P2002
+- Evidence-source: OWNER_SUPPLIED_TERMINAL_OUTPUT
+- Reviewed-by: SELF_REVIEW_ONLY
+- Approved-by: owner direction to continue the P2002 security review
+- Published-by: GitHub connector via shared ViktorIXAI account
+- Attribution-confidence: DECLARED_OWNER_SUPPLIED
