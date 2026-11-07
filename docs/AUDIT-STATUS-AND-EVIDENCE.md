@@ -45,3 +45,5 @@ For future events use [the checkpoint template](../templates/AUDIT-CHECKPOINT.md
 - [#13 — vendor-neutral replaceable service roles and APIs](https://github.com/ViktorIXAI/claryel/issues/13)
 - [#14 — portable agent state and migration](https://github.com/ViktorIXAI/claryel/issues/14)
 - [#15 — complete log inventory and missing GPU/Strata evidence](https://github.com/ViktorIXAI/claryel/issues/15)
+- [#16 — authenticate Strata API and verify inference-network exposure](https://github.com/ViktorIXAI/claryel/issues/16)
+- [#17 — generate unique deployment identity and network namespace for every client Box](https://github.com/ViktorIXAI/claryel/issues/17)
