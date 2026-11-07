@@ -462,3 +462,23 @@ Interpretation and limitations:
 4. No Gateway, network, firewall, Squid, VM or boot configuration was changed as part of this diagnostic.
 
 Next read-only checks: search the known Git installation tree and its `.hermes` environment for `hermes_cli/auth_xai.py`; inspect the install commit and entry-point wrapper; inspect the exact unit file while printing only environment variable names (never values); then inspect the installed HTTPX version and OAuth plus inference transport code. Do not mutate the service until those facts are established.
+
+
+### 10.10 Owner-supplied Hermes launcher and Python-environment evidence
+
+Read-only output supplied from `claryel-cloud-vm`:
+
+- Hermes install Git HEAD is `2bd378ed1b8d6bf2192cb26e0a55ff3091e6bd19`; `git status --short` produced no changes.
+- The configured service entry point exists and is executable: `~/.hermes/hermes-agent/.hermes/bin/hermes`.
+- The entry point is a generated shell/Python launcher. Its first lines invoke the managed Python 3.14 interpreter with `-I` (isolated mode), then explicitly insert `/home/claryelvm/.hermes/hermes-agent` into `sys.path`.
+- The installed OAuth source exists at `~/.hermes/hermes-agent/hermes_cli/auth_xai.py`.
+- Running `python3.14 -m pip show httpx` against the bare managed interpreter returned `Package(s) not found: httpx`; `importlib.metadata.distribution("hermes-agent")` and `("httpx")` against that same bare interpreter also returned not found.
+- The systemd unit's three `Environment=` lines were redacted in the supplied output; no values were disclosed.
+
+Interpretation:
+
+The bare-interpreter package checks do **not** establish that Hermes or HTTPX is missing from the running Gateway. The service uses the generated Hermes launcher, which starts Python in isolated mode and modifies its import path. The launcher may establish a package/runtime environment later in its bootstrap code; this has not yet been inspected. Therefore the prior `pip show httpx` and `importlib.metadata` checks were against the wrong execution context for proving Gateway dependencies.
+
+The exact OAuth source file is now located. Next read-only inspection must establish (a) how the launcher completes bootstrap and selects dependency paths, (b) which Python executable and import paths the live Gateway process actually uses, (c) the installed HTTPX version in that context, and (d) whether OAuth and inference clients honor proxy environment variables.
+
+No configuration, service, firewall, Squid, VM or boot state was changed.
