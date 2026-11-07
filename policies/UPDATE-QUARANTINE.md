@@ -11,3 +11,14 @@ Apply to OS/firmware, hypervisor, GPU drivers, container images, Hermes, Strata,
 7. No agent can approve its own update, alter its permission policy or bypass the quarantine to access private files or cloud services.
 
 Offline systems require an owner-controlled removable-media or otherwise reviewed update workflow; offline capability must persist after every update.
+
+
+## Implementation status and required admission profile
+
+This file is a high-level policy, **not proof that a quarantine pipeline exists or is enforced**. The detailed owner-directed design is in [Architecture v0.2, Section 5](../docs/ARCHITECTURE-V0.2-REPLACEABLE-PLATFORM.md#5-artifact-supply-chain-admission); implementation/analysis is tracked by [issue #11](https://github.com/ViktorIXAI/claryel/issues/11).
+
+The policy applies to every artifact, not only application binaries: container images, source releases, OS/kernel/firmware/GPU packages, inference runtimes, model weights, tokenizers, vision projectors, drafter packs, agent frameworks, skills, MCP tools, plugins and HA integrations. Require source and immutable digest, publisher/signature evidence where available, SBOM/dependency/license inventory, vulnerability review, file-format validation, sandbox testing, explicit owner promotion and rollback. Missing signatures or scanner coverage must be disclosed as a risk, not silently marked PASS.
+
+ClamAV/YARA or equivalent file scanning is a supplemental signal. It does not establish model weights are benign, does not test model behavior, and does not replace sandboxed parsing, provenance/hash verification, prompt-injection/exfiltration evaluation or runtime least privilege. Executable skills and installers require code/dependency review and must never be run with production credentials in quarantine.
+
+No current P2002 component is to be replaced, stopped or restarted as part of the policy clarification. The current live Strata installation remains outside this documentation-only change.
