@@ -75,3 +75,12 @@ The owner successfully SSH-connected through the existing ASUS jump host to gues
 The owner reports that Hermes is already installed, connected/authorized with Grok, and has passed response tests. Do not reinstall it or repeat authorization. However, the current guest diagnostics returned no Hermes/Nous-matching system or user service units and no matching process; `loginctl show-user claryelvm -p Linger` returned `Linger=no`. These filtered checks do not prove the software is absent: its executable may be installed but stopped, use another name, or be managed by a container, supervisor, cron, tmux or custom launcher. No changes were made.
 
 The new read-only checkpoint is [Cloud Hermes guest runtime discovery](../logs/P2002/2026-11-07-cloud-hermes-guest-runtime-discovery.md). **Next:** one grouped inventory of existing guest installation footprints and runtime managers, with secret values excluded. Then enable the actual existing startup mechanism if needed and continue local-inference integration.
+
+
+## Recovered existing Cloud Hermes installation and Grok test (prior conversation, 2026-11-06)
+
+A targeted prior-conversation retrieval recovered historical setup facts not yet present in the public logs: Hermes v0.23.0 was installed at `/home/claryelvm/.hermes/hermes-agent`, with CLI `/home/claryelvm/.local/bin/hermes`; configuration files were `~/.hermes/config.yaml` and `~/.hermes/.env`. xAI OAuth had been configured, `grok-4.6` selected, API base URL `https://api.x.ai/v1`, and `hermes chat --oneshot` reportedly succeeded. This is classified as **PRIOR_CONVERSATION_RECOVERED**, not a fresh terminal transcript; no token or credential object identifier is published.
+
+The retrieved history did not document a persistent service/container or autostart mechanism. The current owner-supplied guest diagnostics show no matching process or Hermes/Nous-named system/user unit and `Linger=no`, which is consistent with an installed CLI that was tested in one-shot mode but not configured as a persistent boot-time agent.
+
+**Do not reinstall Hermes or repeat Grok authorization.** Next inspect the existing CLI's help for its persistent/gateway mode and establish a boot-start service for the existing installation. See [the updated guest runtime discovery checkpoint](../logs/P2002/2026-11-07-cloud-hermes-guest-runtime-discovery.md).
