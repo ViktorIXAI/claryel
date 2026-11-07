@@ -46,4 +46,5 @@ For future events use [the checkpoint template](../templates/AUDIT-CHECKPOINT.md
 - [#14 — portable agent state and migration](https://github.com/ViktorIXAI/claryel/issues/14)
 - [#15 — complete log inventory and missing GPU/Strata evidence](https://github.com/ViktorIXAI/claryel/issues/15)
 - [#16 — authenticate Strata API and verify inference-network exposure](https://github.com/ViktorIXAI/claryel/issues/16)
+- [P2002 Strata API authentication change and rollback plan](P2002-STRATA-API-AUTH-CHANGE-PLAN.md) — proposed only; no live change authorized/performed
 - [#17 — generate unique deployment identity and network namespace for every client Box](https://github.com/ViktorIXAI/claryel/issues/17)
