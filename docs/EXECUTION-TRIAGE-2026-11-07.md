@@ -169,3 +169,14 @@ Owner-supplied output confirms a clean Hermes Git checkout at `2bd378ed1b8d6bf21
 The bare managed interpreter reports no installed `httpx` or `hermes-agent` distribution. This is not evidence of a broken Hermes installation: those checks did not execute the generated launcher bootstrap or reproduce the live Gateway import context. The launcher's remaining bootstrap and actual runtime import paths still need read-only inspection. The systemd unit's Environment values were redacted; no secrets were requested or recorded.
 
 No configuration or service changes were made. Continue by inspecting launcher bootstrap, live process import context, HTTPX version and OAuth/inference proxy behavior before proposing a narrowly scoped proxy change.
+
+
+## 2026-11-07 — xAI OAuth transport and HTTPX inventory
+
+Owner-supplied guest output now locates HTTPX 0.28.1 in the uv cache and in two Hermes environment trees (c349a12bceef4e6290b7d183c0b32e2d and fcc6015261fa40b4891cdeb11eb08cfe). The output does not identify which environment the live Gateway launcher selected. The generated launcher grep shows that it rewrites sys.path using a closure variable, but the surrounding bootstrap and selected path were not captured.
+
+The installed auth_xai.py imports HTTPX from hermes_cli.auth_constants. OIDC discovery uses default httpx.get; token refresh and device-code login use default httpx.Client without an explicit trust_env=False or explicit proxy. This is consistent with standard HTTPX environment-proxy support, but it is not proof of the active runtime or the Grok inference transport. auth_constants.py, live process import paths, selected environment metadata and inference client construction remain to be inspected.
+
+Network failure is still independently explained by the guest's lack of default route/DNS and the host Guard's current virbr240 input drop. Existing Strata Squid must remain unchanged; Cloud Hermes should use a separate Squid instance on its dedicated bridge/listener after a reviewed exact Guard/UFW exception.
+
+Next read-only checks: launcher bootstrap/closure; auth_constants.py; active process command line, imported HTTPX path/version and proxy-variable names only; selected pyvenv.cfg; Grok inference client transport. No configuration or service changes were made or authorized.
