@@ -90,3 +90,17 @@ Reviewed-by: SELF_REVIEW_ONLY
 Approved-by: owner request for repository inventory
 Published-by: GitHub connector via shared ViktorIXAI account
 Attribution-confidence: DECLARED_UNVERIFIED
+
+
+## 7. Cloud Hermes guest runtime discovery — 2026-11-07
+
+New record: `logs/P2002/2026-11-07-cloud-hermes-guest-runtime-discovery.md`.
+
+- Guest SSH is confirmed at `172.30.240.12` as `claryelvm`; hostname `claryel-cloud-vm`, Ubuntu 24.04.5.
+- QEMU Guest Agent is not connected; SSH works.
+- Owner reports existing Hermes installation, Grok authorization and response tests.
+- Filtered guest diagnostics found no Hermes/Nous-named process or system/user service; user linger is disabled. This is **not** proof that Hermes is absent; installed-but-stopped binaries and other runtime managers have not been inspected.
+- The public initial-install narrative and issue #8 do not contain the missing Hermes/Grok installation evidence. This is a provenance gap, not a reason to reinstall.
+- No guest configuration or service was changed.
+
+Next: grouped read-only inventory of binaries, package managers, containers, installation directories and alternative service/supervisor mechanisms. Never display credentials or secret values; do not reinstall or repeat Grok authorization.
