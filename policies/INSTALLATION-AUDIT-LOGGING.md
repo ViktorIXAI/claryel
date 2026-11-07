@@ -58,3 +58,12 @@ All public writers must follow the [contributor provenance policy](CONTRIBUTOR-P
 
 ## Revocation and change control
 Continue this standard for **all boxes until the owner explicitly instructs otherwise**. Changes to policy require dated, public, attributable revisions, except safety-mandated redaction and handling of unauthorized disclosure.
+
+
+## Owner reaffirmation after the Cloud Hermes incident — 2026-11-07
+
+The owner has again explicitly directed that this publication rule remain in force until further explicit instruction. This reaffirmation does not create a new expiry date or a temporary exception.
+
+For the current Cloud Hermes/P2002 work, publish the full non-secret record of the VM and guest autostart diagnosis, Hermes PM dependency failures and corrections, local wheelhouse recovery, Gateway service installation/restart tests, Grok OAuth configuration status, DNS/OIDC failure, and subsequent corrections. Do not wait for an automated publisher, a scanner integration, CI, or a publication gate. The absence of Telegram/other messaging integrations is intentional because the owner does not want messaging on this VM.
+
+Continue to publish authorized P2002 lab topology and operational identifiers, including actual internal IPs, service/network names, routes and firewall rules. Continue to exclude passwords, OAuth/API tokens, private keys, cookies, recovery material, secret environment values, customer data and unrelated personal information. This is publication authorization only; it does not authorize changing the VM, network, DNS, routing, Guard, nftables, firewall or host services.
