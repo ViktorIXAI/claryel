@@ -1204,3 +1204,71 @@ Before attempting Hermes PM repair, resolve the supported way to force its UV su
 - Published-by: GitHub connector via shared ViktorIXAI account
 - Attribution-confidence: DECLARED_UNVERIFIED
 - Related-checkpoint: CLARYEL-P2002-20261107-PM-WHEELHOUSE-OUTER-RECORD-VERIFIED-001
+
+## Verified local-index strategy for Hermes PM (before repair)
+
+- **Checkpoint ID:** CLARYEL-P2002-20261107-PM-LOCAL-DEFAULT-INDEX-STRATEGY-001
+- **Target-machine-ID:** P2002-CLOUD-GUEST
+- **Deployment-alias:** P2002-LAB
+- **Event time:** 2026-11-07 (exact time not asserted)
+- **Operation:** REVIEW_UV_ENVIRONMENT_VARIABLES_AND_HERMES_PM_FORWARDING
+- **Evidence-source:** TOOL_OBSERVED_UPSTREAM_SOURCE + OFFICIAL_UV_DOCUMENTATION
+- **Executed-by:** ChatGPT reviewed source/documentation; no guest command executed.
+- **Prepared-by:** ChatGPT GPT-6 (declared)
+- **Writer-instance:** CHATGPT-INSTALL-01 (declared; unauthenticated)
+- **Writer-role:** INSTALLATION_COORDINATOR
+- **Reviewed-by:** SELF_REVIEW_ONLY
+- **Approved-by:** OWNER_REQUEST_2026-11-07 (continue controlled dependency recovery)
+- **Published-by:** GitHub connector via shared ViktorIXAI account
+- **Attribution-confidence:** DECLARED_UNVERIFIED
+- **Related-issue:** #10
+- **Related-checkpoint:** CLARYEL-P2002-20261107-PM-WHEELHOUSE-OUTER-RECORD-VERIFIED-001
+
+### Source findings
+
+Official uv documentation:
+- `UV_DEFAULT_INDEX` is documented as the environment equivalent of `--default-index`.
+- `UV_FIND_LINKS` is documented as the environment equivalent of `--find-links`.
+- `--default-index` accepts a PEP 503-compliant repository or a local directory laid out in that format.
+- `UV_NO_INDEX` is not listed in the official uv environment-variable reference; `--no-index` is a CLI option.
+- `UV_CONFIG_FILE` is a documented environment variable, but the Hermes PM child environment does not forward it.
+
+Hermes Agent source commit `2bd378ed1b8d6bf2192cb26e0a55ff3091e6bd19`:
+- `pm/index_config.py::FORWARDED_UV_SETTINGS` includes `UV_DEFAULT_INDEX` and `UV_FIND_LINKS`, and also includes `UV_NO_INDEX` (which uv docs do not list).
+- It does not include `UV_CONFIG_FILE`.
+- `pm/environment.py::_base_environment` drops non-allowlisted `UV_*` environment variables.
+- `PythonEnvironment._run` creates a temporary `XDG_CONFIG_HOME` and `XDG_CONFIG_DIRS` for each uv child process, so relying on a persistent user uv config file is not a reliable per-repair override.
+- `Packages.apply` constructs the managed environment without `offline=True`; the repair path does not automatically append uv's `--offline` flag.
+- The package repair path does not expose the separate wheelhouse-install method as a repair argument.
+
+References:
+- https://docs.astral.sh/uv/configuration/environment/
+- https://docs.astral.sh/uv/reference/cli/
+- https://docs.astral.sh/uv/concepts/configuration-files/
+- https://github.com/NousResearch/hermes-agent/blob/2bd378ed1b8d6bf2192cb26e0a55ff3091e6bd19/pm/index_config.py
+- https://github.com/NousResearch/hermes-agent/blob/2bd378ed1b8d6bf2192cb26e0a55ff3091e6bd19/pm/environment.py
+- https://github.com/NousResearch/hermes-agent/blob/2bd378ed1b8d6bf2192cb26e0a55ff3091e6bd19/pm/packages.py
+
+### Proposed next action — local PEP 503 index smoke test only
+
+Create a minimal local simple index under the already-existing temporary wheelhouse:
+- `simple/setuptools/index.html` links to the verified setuptools wheel.
+- `simple/wheel/index.html` links to the verified wheel wheel.
+- Run the PM-managed uv 0.13.5 binary directly with `UV_DEFAULT_INDEX=file://<wheelhouse>/simple/` and `UV_FIND_LINKS=<wheelhouse>`.
+- Use an isolated temporary UV cache and `uv pip compile --no-deps` against a two-line requirements file, writing output only into the same temporary wheelhouse. This tests index resolution without installing packages or touching the PM environment, lockfile, Hermes cache, or system configuration.
+- If the smoke test passes, separately propose the same two supported variables for one owner-approved `hermes pm repair` attempt. Because the local index contains only setuptools and wheel, any other uncached runtime dependency will fail closed rather than be fetched from PyPI; investigate such a failure before expanding the local index.
+- No repair has been run after wheel validation. No network policy was changed.
+
+### Contribution provenance
+
+- Writer-instance: CHATGPT-INSTALL-01 (declared; unauthenticated)
+- Writer-role: INSTALLATION_COORDINATOR
+- Deployment-alias: P2002-LAB
+- Prepared-by: ChatGPT GPT-6 (declared)
+- Executed-by: ChatGPT for source/documentation review; owner has not yet run the local-index smoke test
+- Evidence-source: TOOL_OBSERVED_UPSTREAM_SOURCE + OFFICIAL_UV_DOCUMENTATION
+- Reviewed-by: SELF_REVIEW_ONLY
+- Approved-by: OWNER_REQUEST_2026-11-07 (continue controlled recovery; repair itself remains a separate step)
+- Published-by: GitHub connector via shared ViktorIXAI account
+- Attribution-confidence: DECLARED_UNVERIFIED
+- Related-checkpoint: CLARYEL-P2002-20261107-PM-LOCAL-DEFAULT-INDEX-STRATEGY-001
