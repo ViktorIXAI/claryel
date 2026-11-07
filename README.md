@@ -4,6 +4,16 @@
 
 CLARYEL is an experimental, offline-first local AI system intended for privacy-sensitive environments. Development is greenfield, incremental, evidence-led and subject to explicit owner approval at every deployment gate. Previous repositories are untrusted reference material, not code/configuration to import automatically.
 
+## Open security research: external and internal threats
+
+**We publish our experimental architecture and detailed test evidence to invite independent scrutiny by security professionals and the technical community. Our intended customer deployments will preserve the same foundational security principles while keeping sensitive, customer-specific operational configurations confidential. Our long-term objective is independent, confidential professional security assessment and, where applicable, formal certification.**
+
+**Every container and every AI workload is treated as a potential source of risk—not only a possible target of external attacks.** Models, agent frameworks, inference engines, plugins, skills, dependencies, installers, and updates may contain vulnerabilities, malicious behavior, or simply unexpected functionality. Even a legitimate model or agent can inadvertently disclose data through outputs, tool calls, network requests, logs, caches, or shared state. Containerization alone is not a security guarantee.
+
+**CLARYEL is designed to contain the consequences of compromise or failure inside its own components**, using independently enforced least privilege, default-deny networking, separated trust zones, strict data access, controlled cross-zone operations, quarantined updates, and fail-closed lifecycle controls. No AI model or agent should be able to authorize its own privileges or bypass those boundaries. These are security objectives under test, **not claims that all controls have already been implemented or independently validated**.
+
+Read the complete [Public Security Review and Production Security Strategy](docs/PUBLIC-SECURITY-REVIEW-STRATEGY.md), including internal workload threats, responsible disclosure, customer-specific protections, and independent assessment goals.
+
 ## Foundational rules
 - **Assume compromise:** no software component, model, agent, plugin, device, update or external response is inherently trusted. Minimize and verify the unavoidable trusted computing base (firmware, host, hypervisor, isolation and keys).
 - **Default deny:** enforce least privilege independently of model instructions at the OS/hypervisor/network/storage layers.
