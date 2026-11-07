@@ -160,3 +160,12 @@ Owner-supplied guest output confirms the Gateway is active (PID 3380) and runs u
 The first source search was incomplete: it searched `~/.local`, `~/.cache/uv` and `~/.local/pipx`, but omitted the known Git install root `~/.hermes/hermes-agent` and service entry point `~/.hermes/hermes-agent/.hermes/bin/hermes`. The `ModuleNotFoundError` from invoking the bare process interpreter with `-c` is not evidence of a broken install because that invocation does not reproduce the installed entry-point import path.
 
 Next: read-only inspection of the Git install root, exact service entry point, unit environment variable names (values must remain redacted), installed HTTPX version, and OAuth/inference transport implementations. No service or network configuration change is authorized by this evidence.
+
+
+## 2026-11-07 — Hermes launcher and interpreter-context clarification
+
+Owner-supplied output confirms a clean Hermes Git checkout at `2bd378ed1b8d6bf2192cb26e0a55ff3091e6bd19`, an executable generated launcher at `~/.hermes/hermes-agent/.hermes/bin/hermes`, and the installed OAuth source at `hermes_cli/auth_xai.py`. The launcher starts managed Python with isolated mode (`-I`) and explicitly inserts the Hermes repository root into `sys.path`.
+
+The bare managed interpreter reports no installed `httpx` or `hermes-agent` distribution. This is not evidence of a broken Hermes installation: those checks did not execute the generated launcher bootstrap or reproduce the live Gateway import context. The launcher's remaining bootstrap and actual runtime import paths still need read-only inspection. The systemd unit's Environment values were redacted; no secrets were requested or recorded.
+
+No configuration or service changes were made. Continue by inspecting launcher bootstrap, live process import context, HTTPX version and OAuth/inference proxy behavior before proposing a narrowly scoped proxy change.
