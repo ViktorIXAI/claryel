@@ -180,3 +180,14 @@ The installed auth_xai.py imports HTTPX from hermes_cli.auth_constants. OIDC dis
 Network failure is still independently explained by the guest's lack of default route/DNS and the host Guard's current virbr240 input drop. Existing Strata Squid must remain unchanged; Cloud Hermes should use a separate Squid instance on its dedicated bridge/listener after a reviewed exact Guard/UFW exception.
 
 Next read-only checks: launcher bootstrap/closure; auth_constants.py; active process command line, imported HTTPX path/version and proxy-variable names only; selected pyvenv.cfg; Grok inference client transport. No configuration or service changes were made or authorized.
+
+
+## 2026-11-07 — launcher and Grok inference transport follow-up
+
+Owner-supplied output shows that the Hermes launcher starts Python 3.14.9 with `-I`, inserts the Hermes checkout into `sys.path`, and normally attempts `import hermes_bootstrap`. The recovery-closure `sys.path` replacement is inside `_hermes_closure_repair()` and is reached in the launcher exception-recovery path; it is not shown as the normal active import path. The captured launcher ends at line 125, so the remaining bootstrap/dispatch path is still needed.
+
+`hermes_cli/auth_constants.py` uses a lazy HTTPX proxy that imports `httpx` on first access. It does not itself configure a proxy or disable `trust_env`. The installed HTTPX 0.28.1 was found in cache and two environment trees, but the active Gateway's selected environment and actual imported HTTPX file/version remain unconfirmed. Live Gateway PID 3380 uses the managed Python 3.14.9 executable, and its environment contains none of `HTTP_PROXY`, `HTTPS_PROXY`, `ALL_PROXY`, or `NO_PROXY`; the supplied `ps` command line was truncated.
+
+The source search located the xAI inference-related modules (`agent/transports/codex.py`, `agent/transports/chat_completions.py`, `agent/client_lifecycle.py`, `agent/chat_completion_helpers.py`, and `tools/xai_http.py`) but did not trace actual client construction. Do not assume OAuth and inference share the same transport. Next inspect launcher remainder, full process argv without secrets, process maps for HTTPX/site-packages, client lifecycle, xAI HTTP helper, and both inference transports to establish the precise client and its proxy semantics.
+
+No configuration or service changes were made or authorized. Keep network, Guard, UFW, Squid, VM and Strata untouched.
