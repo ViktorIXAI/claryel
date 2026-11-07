@@ -14,8 +14,11 @@ Owner-supplied terminal output establishes:
 - The active profile is root-owned, mode 0600, and has neither api_key nor allowed_hosts.
 - The service is unauthenticated; Strata health reported api_key=false.
 - Prior owner-supplied source inspection identified native Bearer and x-api-key enforcement for /v1/* when a key is configured, with STRATA_API_KEY or profile api_key as configuration sources.
-- Direct host-to-container access returned HTTP 200 through the Docker bridge. No host port binding or host TCP listener on 8080 was found in the earlier inspection.
+- Direct host-to-container access returned HTTP 200 through bridge br-ffbceca294f9. No host port binding or host TCP listener on 8080 was found in the earlier inspection.
 - The displayed Guard table does not include the new inference bridge. Host OUTPUT policy is ACCEPT.
+- The current container uses image digest sha256:932700126d693662cbd11623555b9c451c7c678da138455b36bb05607f8d061b, supplemental groups 993 and 44, devices /dev/kfd and /dev/dri, restart policy unless-stopped, and healthcheck /opt/strata/healthcheck.sh (30-second interval, 8-second timeout, 3 retries, 2-hour start period). It has no published ports, is not privileged, has ReadonlyRootfs=false, and has no explicit CapAdd, CapDrop, SecurityOpt or DeviceRequests in the supplied inspect output.
+- The writable /data volume is named 9fc66e4f52e6c379e22fa03df3e9b685c3f808e5d8ea79a614a4331bb862669b; the read-only /models volume is claryel-strata-models. Both host-side mount-root directories were shown as 0755 root:root. The transcript became malformed during the mount loop; environment variable names and final docker ps output are NOT VERIFIED.
+- Container Config.User was empty. The image-level Config.User and effective in-container UID/GID were not inspected, so the runtime identity remains UNKNOWN.
 
 This plan does not treat DNS-rebinding/Host validation as authentication. It does not claim that the host is isolated from its bridge or that LAN/WAN reachability has been tested.
 
@@ -29,11 +32,11 @@ The Strata key is a backend credential for this lab service. It is not a substit
 
 Capture and review the following without printing secret values:
 
-1. Container image ID/digest, user, entrypoint, command, restart policy, health check, capabilities, security options, devices, mounts, network mode and static IP.
-2. Exact network attachments and whether the container has any additional network.
-3. Host source paths and permissions for the writable data volume and read-only model volume.
-4. Current container ID and a tested way to start the existing container again.
-5. Confirm API-key absence in the profile and Docker environment by printing field presence and variable names only.
+1. The container image digest, launch command, restart policy, healthcheck, devices, supplemental groups, network, no-port-publication state and named volume identities are now recorded in the dated log. Capture a fresh sanitized snapshot before any change and compare it with this baseline.
+2. Inspect the image-level Config.User, Entrypoint and Cmd, then run read-only id and process identity checks inside the existing container. Container Config.User being empty does not by itself establish the effective runtime UID for this image.
+3. Inspect exact mount source paths and permissions with a robust loop that skips empty paths. The two mount-root directories were shown as 0755 root:root, but their contents and the profile's host-side ownership remain to be verified.
+4. Re-run the environment-variable-name-only check; the previous pasted diagnostic did not reliably complete this section. Do not print values.
+5. Record current container ID, image digest, all network attachments, and a tested rollback launch procedure. Keep the exact original volumes and static IP.
 6. Capture a redacted inspect snapshot and checksum of the current profile.
 
 **Stop condition:** if the exact container recreation command, runtime user, mount paths, IP assignment or rollback procedure cannot be reconstructed, do not proceed.
@@ -44,16 +47,16 @@ Prefer Strata's native STRATA_API_KEY support, injected at process start from a 
 
 Proposed pattern, subject to preflight:
 
-- Generate a random high-entropy key locally on P2002. Do not echo, display, copy into chat or commit it.
-- Store it in a root-owned host directory mode 0700; the key file should be root-owned mode 0600.
-- Bind-mount only that file into the inference container at a fixed path such as /run/secrets/inference-api-key, read-only.
-- Use a minimal root-owned startup wrapper that checks the file is present and non-empty, reads it at runtime, exports STRATA_API_KEY, then executes the same Strata serve command with the existing profile, host, port and offline options.
-- Verify the actual container runtime UID can read the mounted file. Do not assume it runs as root until Config.User is inspected.
+- Generate a random high-entropy key locally on P2002 only after the change is explicitly approved. Do not echo, display, copy into chat or commit it.
+- Keep the host-side secret in a root-controlled directory outside the model and data volumes. A host directory mode 0700 is a reasonable starting point, but the mounted file's numeric owner/group and mode must be chosen for the actual container process identity.
+- Bind-mount only the secret file into the inference container at a fixed path such as /run/secrets/inference-api-key, read-only. A read-only bind mount prevents writes from the container; it does not automatically make the file readable to a non-root process.
+- Container Config.User is currently empty in the container inspect output. The image-level Config.User and effective runtime UID/GID have not yet been inspected. Therefore, do not assume a root-owned 0600 file will be readable. If the process is non-root, a file owned by the matching numeric UID with restrictive read permissions, or a carefully selected group-readable file with a verified supplemental group, may be required. Verify access using a harmless temporary test file before creating any real credential.
+- The wrapper must run as the same effective identity as Strata or otherwise have a narrowly justified permission model. It should read the file without printing it, export STRATA_API_KEY in its own process environment, and exec the original Strata command. Mount the wrapper read-only as well. Do not put the key in the wrapper text or command arguments.
+- Verify that the exact Strata 0.2.11 process reads STRATA_API_KEY and that the key is not emitted in logs, crash output or health responses. Check whether a process environment can be read by other container processes under the actual UID/security model.
 - Keep the secret file outside model and data volumes. Do not place it in public repository content or publication-oriented backups.
-- Confirm from installed 0.2.11 source/runtime that the environment value is honored and not logged.
 - Do not rely on allowed_hosts for authentication.
 
-This is a proposed pattern only; no secret file or wrapper currently exists as a result of this plan.
+This is a conditional proposal only. The image's default user, effective UID/GID, file-read permissions, wrapper execution model and runtime secret exposure have not yet been verified. No secret file or wrapper currently exists as a result of this plan.
 
 ## 5. Controlled replacement and rollback
 
@@ -68,7 +71,7 @@ The current container must remain recoverable until acceptance passes.
 7. If startup or acceptance fails: stop and remove only the replacement container (never remove volumes), restore the original container name and start the original container.
 8. Do not delete the rollback container until the owner reviews the evidence and explicitly accepts the new state.
 
-The exact commands are intentionally not finalized until preflight captures the current Docker configuration. Reconstructing a run command from incomplete output risks silently dropping GPU devices, groups, security options, mounts, health checks or restart behavior.
+The exact commands are intentionally not finalized until preflight captures the current Docker configuration and image default user. Reconstructing a run command from incomplete output risks silently dropping GPU devices, groups, security options, mounts, health checks, restart behavior or the image's default process identity.
 
 ## 6. Acceptance matrix
 
