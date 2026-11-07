@@ -55,3 +55,14 @@ For future events use [the checkpoint template](../templates/AUDIT-CHECKPOINT.md
 The owner has reaffirmed that the immediate objective is to finish installing and starting the complete working P2002 stack. The successful owner-supplied Strata/Qwen inference is the first-inference milestone; the next operational priority is to resume Cloud Hermes startup, install/start Hermes, connect it to the existing local Strata endpoint over the current private lab network using synthetic data, and demonstrate one end-to-end request/reply.
 
 Do not block this integration sprint on deep API-auth research, wrapper development, exhaustive route audits, standalone GPU evidence recovery, broad benchmarking or non-blocking security test suites. These remain open follow-up work, especially issues #9 and #16. Preserve the current Guard/firewall, private network and no-published-port configuration; do not expose the inference endpoint outside the lab or use real private/customer data before the authentication/Security Gateway boundary is completed. Record each actual installation/change step and its evidence. This is a priority change, not a security approval or authorization to weaken existing controls.
+
+
+## Owner correction — Cloud Hermes guest agent already installed (2026-11-07)
+
+The owner reports that Hermes is **already installed inside** the existing `claryel-cloud-hermes` VM, is connected to Grok with provider authorization completed, and has passed response tests. This supersedes the earlier forward-looking wording above that said to install/start Hermes. **Do not reinstall Hermes or repeat provider authorization.**
+
+Evidence classification is **OWNER_REPORTED**: the public repository snapshot reviewed at this checkpoint did not yet contain the original guest installation transcript, exact Hermes version/service-unit name, Grok authorization evidence, or response-test output. The new append-only correction is recorded in [the guest-agent correction checkpoint](../logs/P2002/2026-11-07-cloud-hermes-agent-existing-correction.md).
+
+The host-side libvirt network and VM autostart flags have now been enabled and recorded in [the autostart checkpoint](../logs/P2002/2026-11-07-cloud-hermes-autostart.md). This is separate from guest Hermes service autostart, which remains to be inspected.
+
+**Next operational step:** inspect the already-installed guest Hermes service and enable its existing boot-start mechanism if needed; then proceed to connect this existing agent to the already-working local inference API. Do not perform a reinstall. Preserve the current Guard/firewall and network boundaries.
