@@ -285,3 +285,24 @@ if p.is_file():
 ```
 
 This prints only presence/status and file metadata, never the credential. Then inspect the actual Strata route/authentication coverage and prepare a change/rollback proposal. No write action is authorized by this evidence checkpoint.
+
+
+## 8. Existing Guard evidence versus the new inference subnet
+
+Cross-checking the earlier public Guard records shows that they must not be treated as proof that the new inference subnet is filtered:
+
+- The documented `inet claryel_guard` verifier covers the Cloud Hermes/libvirt interface `virbr240` with its `guest_input` and `guest_forward` chains.
+- The documented Strata egress/proxy firewall work refers to the separate Docker network `claryel-strata-egress`, bridge `br-strata-eg`, subnet `172.30.250.0/24`, and authorized proxy client `172.30.250.10`.
+- The newly created inference network is `claryel-private-ai`, subnet `172.31.250.0/24`, and the inference endpoint is `172.31.250.2`.
+
+The prior records do not demonstrate a specific Guard/nftables rule for `172.31.250.0/24` or `172.31.250.2`. The latest filtered nftables output also did not show a matching explicit IP/port rule, but that grep is not a complete policy dump.
+
+**Assessment:** Docker's `Internal=true` and single-peer membership are useful isolation controls, but do not substitute for testing host-to-container reachability or proving the effective host firewall path. Treat enforcement of the new inference subnet by CLARYEL Guard as **NOT VERIFIED**, not as PASS.
+
+The next read-only check must:
+1. Test direct host-to-container access to `172.31.250.2:8080` without using any proxy.
+2. Identify the Docker bridge interface for `claryel-private-ai` and inspect the host route.
+3. Inspect the relevant IPv4 INPUT/OUTPUT/FORWARD and Docker chains, including `DOCKER-USER`, plus the full applicable nftables table/chain context.
+4. Compare the effective rules with the documented Guard policy and explicitly identify whether the new inference bridge is covered.
+
+No firewall changes are authorized by this finding.
