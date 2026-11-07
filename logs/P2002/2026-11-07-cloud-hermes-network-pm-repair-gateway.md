@@ -446,3 +446,118 @@ Then identify the intended messaging platform and inspect only non-secret config
 - Approved-by: explicit owner request to publish all technical logs, 2026-11-07
 - Published-by: GitHub connector via shared ViktorIXAI account
 - Attribution-confidence: DECLARED_UNVERIFIED
+
+
+## 10. Owner correction and primary Grok OAuth verification — 2026-11-07
+
+The owner clarified the intended operating mode: **this Cloud Hermes VM is not to connect to Telegram or any other messaging platform.** No messaging-platform integration is required. The earlier Gateway warning `No messaging platforms enabled` is therefore expected and is not a deployment defect or outstanding acceptance criterion. The objective is the Hermes CLI/Gateway runtime using Grok, not a Telegram/Discord bot.
+
+### 10.1 Primary provider and model configuration
+
+The owner ran the existing CLI (no reinstall and no reauthorization):
+
+```bash
+"$HOME/.local/bin/hermes" model
+```
+
+Owner-supplied output:
+
+```text
+Current model:    grok-4.6
+Active provider:  xAI Grok OAuth (SuperGrok / Premium+)
+
+xAI Grok OAuth (SuperGrok / Premium+) credentials: ✓
+
+Default model set to: grok-4.6 (via xAI Grok OAuth — SuperGrok / Premium+)
+
+Reasoning effort set to: max
+```
+
+**Finding:** the primary xAI Grok OAuth configuration is present according to the CLI. This supersedes any interpretation that the earlier auxiliary-client warning proves the primary Grok credential is absent. The previous Gateway journal warning was emitted by the auxiliary xAI client resolver; it is not proof that the primary model/provider configuration is unauthenticated. No token values, auth-file contents, or credential identifiers were inspected or published.
+
+### 10.2 Gateway restart
+
+The owner restarted the already-installed user service:
+
+```bash
+systemctl --user restart hermes-gateway.service
+systemctl --user is-active hermes-gateway.service
+```
+
+Observed output:
+
+```text
+active
+```
+
+The service was already configured as enabled, with `Restart=always`, `RestartSec=5`, and user lingering enabled (`Linger=yes`). The earlier controlled SIGKILL test separately demonstrated process restart (PID 2969 -> 3132; `NRestarts=1`). **Neither test is a host/VM reboot test.**
+
+### 10.3 Live Grok request: blocked before provider discovery
+
+The owner then ran:
+
+```bash
+"$HOME/.local/bin/hermes" chat --oneshot -q \
+'Ответь строго одной строкой: GROK_OAUTH_CONNECTION_OK'
+```
+
+Observed output:
+
+```text
+Query: Ответь строго одной строкой: GROK_OAUTH_CONNECTION_OK
+xAI OIDC discovery failed: [Errno -3] Temporary failure in name resolution
+
+Goodbye! ☤
+```
+
+**Result: FAIL — live request did not reach a model response.** The failure is at DNS/OIDC discovery, not an OAuth rejection, invalid token, or model response. The CLI reports that the primary OAuth credentials exist, but the client cannot resolve the xAI OIDC discovery endpoint from this guest.
+
+This is consistent with the earlier owner-supplied network evidence in sections 2–3:
+- guest interface `enp6s0` has `172.30.240.12/24`;
+- the guest routing table contains only the connected `172.30.240.0/24` route and **no default route**;
+- `systemd-resolved` is active but the guest link has no DNS scope/upstream resolver;
+- the host libvirt network `claryel-cloud-admin` / `virbr240` has no forwarding element;
+- the observed Guard `guest_forward` chain drops traffic entering or leaving `virbr240`;
+- Squid at `172.30.250.1:3128` is on a different bridge and its observed allow rule is for `172.30.250.10`, not this guest.
+
+No route, DNS, NAT, forwarding, Squid ACL, bridge attachment, or Guard/firewall rule was changed in this latest step. Do not describe the failed request as a bad OAuth token: DNS prevented OIDC discovery from completing.
+
+### 10.4 Corrected operational status
+
+| Component | Latest evidence | Status |
+| --- | --- | --- |
+| Existing Hermes installation | v0.23.0, existing CLI path | PRESERVED; no reinstall |
+| Primary model/provider | `grok-4.6`, xAI Grok OAuth; credentials check ✓ | CONFIGURATION PRESENT |
+| Live Grok one-shot request | OIDC discovery DNS error | BLOCKED BY GUEST DNS/ROUTE |
+| Hermes Gateway user service | Enabled and active; restart command returned `active` | PASS — CURRENT PROCESS |
+| Gateway process recovery | SIGKILL restart, PID 2969 -> 3132, `NRestarts=1` | PASS — PROCESS RESTART ONLY |
+| Messaging platforms | Owner explicitly says none are needed | INTENTIONALLY NOT CONFIGURED |
+| Auxiliary Nous Portal | Earlier journal says unavailable | NOT REQUIRED BY CURRENT OWNER DIRECTION |
+| Guest internet/DNS | No default route/upstream DNS; Guard drops guest forwarding | UNAVAILABLE AS DESIGNED/OBSERVED |
+| Host libvirt network autostart | Enabled in prior owner-supplied output | CONFIGURED; REBOOT NOT TESTED |
+| VM autostart | Enabled in prior owner-supplied output | CONFIGURED; REBOOT NOT TESTED |
+| Guest Gateway boot persistence | User service enabled; `Linger=yes` | CONFIGURED; REBOOT NOT TESTED |
+
+### 10.5 Causal clarification: why Hermes appeared not to start
+
+The CLI installation and OAuth configuration existed before this repair, but the earlier read-only guest checks found:
+- no Hermes/Nous-named system service;
+- no Hermes/Nous-named user service;
+- no matching running Hermes process;
+- `Linger=no`.
+
+A prior `hermes gateway status` also reported the last unmanaged Gateway shutdown reason as `auto-started gateway idle for 600s` (`gateway.unmanaged_idle_exit_seconds`). This is the CLI's recorded idle-exit reason, not evidence of a crash or a human killing the process.
+
+The missing piece was a persistent startup manager: an installed CLI and a successful one-shot request do not by themselves create a boot-enabled daemon. The user Gateway service was subsequently installed and enabled, and linger was enabled. The controlled SIGKILL test proves the service manager restarts the process after that specific failure. Actual guest/host reboot persistence remains untested.
+
+### 10.6 Assistant troubleshooting errors to retain in the audit trail
+
+During the package-repair diagnosis, the assistant recommended `UV_NO_INDEX=1` as though it were a supported uv environment switch that disabled registry access. That recommendation was incorrect: uv continued contacting PyPI and the attempt failed on DNS. The assistant also initially suggested relying on `UV_OFFLINE=1` through the Hermes PM wrapper; source inspection later established that this wrapper does not forward that variable to its uv child process. These incorrect recommendations caused additional unsuccessful repair attempts and increased the recorded `.repair-incomplete` attempt count to 5. They did not establish corruption of the Hermes application binary.
+
+The successful recovery used a local PEP 503 index and the supported forwarded variables `UV_DEFAULT_INDEX` and `UV_FIND_LINKS`, with original artifacts verified against the guest lockfile. The successful `hermes pm repair` output and subsequent PM doctor result are recorded in section 4.4.
+
+### 10.7 Next state boundary
+
+No further network or firewall changes are authorized or performed by this record. The next networking design review is separate from the already-completed offline PM repair and Gateway service installation. The immediate unresolved functional test is a real Grok request; it is currently blocked by the guest's lack of DNS/default route. The owner explicitly does not want messaging-platform setup.
+
+Evidence source: owner-supplied terminal transcripts in the current conversation; repository source/history review for prior service and autostart state. This writer did not execute commands on P2002 or inside the VM.
