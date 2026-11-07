@@ -571,3 +571,85 @@ Do not add a default route, assign public DNS, enable libvirt forwarding, relax 
 - Published-by: GitHub connector via shared ViktorIXAI account
 - Attribution-confidence: DECLARED_UNVERIFIED
 - Related-checkpoint: CLARYEL-P2002-20261107-GUEST-NETWORK-NO-DEFAULT-ROUTE-001
+
+## Owner-supplied P2002 host network and proxy inspection — isolated Cloud Hermes segment
+
+- **Checkpoint ID:** CLARYEL-P2002-20261107-HOST-NETWORK-PROXY-TOPOLOGY-001
+- **Target-machine-ID:** P2002
+- **Deployment-alias:** P2002-LAB
+- **Event time:** UNKNOWN (no timestamp in the supplied host transcript)
+- **Operation:** READ_ONLY_HOST_NETWORK_AND_PROXY_DIAGNOSTICS
+- **Evidence source:** OWNER_SUPPLIED_TERMINAL_TRANSCRIPT
+- **Executed-by:** Owner on P2002 host; ChatGPT did not access or execute commands on the host.
+- **Prepared-by:** ChatGPT GPT-6 (declared)
+- **Writer-instance:** CHATGPT-INSTALL-01 (declared; unauthenticated)
+- **Writer-role:** INSTALLATION_COORDINATOR
+- **Reviewed-by:** SELF_REVIEW_ONLY
+- **Approved-by:** OWNER_REQUEST_2026-11-07 (read-only host diagnostics)
+- **Published-by:** GitHub connector via shared ViktorIXAI account
+- **Attribution-confidence:** DECLARED_UNVERIFIED
+- **Related-issue:** #10
+- **Related-checkpoint:** CLARYEL-P2002-20261107-GUEST-NETWORK-NO-DEFAULT-ROUTE-001; CLARYEL-P2002-20261107-HOST-BOOT-SNAPSHOT-001
+
+### Owner-supplied libvirt network evidence
+
+The owner ran `virsh net-dumpxml claryel-cloud-admin`. The returned network definition contains:
+- Network name: `claryel-cloud-admin`.
+- Bridge: `virbr240`.
+- Host bridge address: `172.30.240.1/24`.
+- DHCP range: `172.30.240.10`–`172.30.240.20`.
+- No `<forward ...>` element is present in the XML. This is consistent with a libvirt isolated network, not a routed/NAT network.
+
+Host bridge state:
+- `virbr240` is UP with `172.30.240.1/24`.
+- Guest interface `vnet0` is attached and forwarding at layer 2.
+- The host route table contains the connected route `172.30.240.0/24 dev virbr240`.
+- Host route lookup for `172.30.240.12` resolves directly via `virbr240`.
+
+Host default route is via `192.168.1.1` on `enp128s31f6`. This is a host route; it does not create a default route inside the isolated guest.
+
+### Owner-supplied Guard and proxy evidence
+
+- `claryel-guard.service`: active, exited, enabled.
+- `claryel-proxy-firewall.service`: active, exited, enabled.
+- `inet claryel_guard` table is present.
+- In `guest_input`, traffic arriving on `virbr240` is accepted only for established/related connections and DHCP replies (UDP source 68 to destination 67), then dropped. The displayed rules do not allow a new connection from the Cloud Hermes guest to the host proxy.
+- In `guest_forward`, traffic entering or leaving `virbr240` is dropped.
+- A Squid process is listening on `172.30.250.1:3128`.
+- The displayed `guest_input` rule allows a new/established TCP connection to `172.30.250.1:3128` only when it arrives on `br-strata-eg` from source `172.30.250.10`.
+- The `virbr240` guest is on `172.30.240.0/24`, while the Squid listener and permitted source are on `172.30.250.0/24`.
+
+### Assessment
+
+- **CONFIRMED:** The Cloud Hermes libvirt network definition has no forwarding element and is therefore configured as an isolated network.
+- **CONFIRMED:** The guest has no default route (from the prior guest snapshot).
+- **CONFIRMED:** The host Guard rules drop forwarding to/from `virbr240`.
+- **CONFIRMED:** A Squid listener exists on `172.30.250.1:3128`.
+- **CONFIRMED:** The displayed Guard allowance for that proxy is narrowly scoped to source `172.30.250.10` arriving on `br-strata-eg`; it does not include the Cloud Hermes guest or `virbr240`.
+- **LIKELY:** The immediate PyPI failure is consistent with the intended isolated-network posture and the absence of an approved Cloud Hermes egress path, rather than a resolver daemon failure.
+- **NOT_YET_DETERMINED:** Whether Squid is the intended Security Gateway for Cloud Hermes, whether a separate broker/connector exists, the Squid ACL/upstream policy, and the precise approved route from the Cloud Hermes zone to the independent gateway.
+- **NO_CHANGES:** No libvirt network, bridge, route, nftables rule, proxy configuration, service, guest setting, or credential was changed.
+
+### Next action
+
+Continue with read-only host inspection of the proxy/firewall implementation:
+1. Inspect the exact systemd unit and script for `claryel-proxy-firewall.service` and identify the rules it installs.
+2. Inspect Squid ACL/listener/upstream policy without printing credentials or secret-bearing directives.
+3. Identify the container/interface at `172.30.250.10` and the network it belongs to.
+4. Check whether the existing policy/architecture documentation already defines a separate Security Gateway path for Cloud Hermes.
+
+Do not attach `virbr240` to the Strata egress bridge, add NAT/default routing, permit the guest to Squid, enable generic internet forwarding, or weaken Guard until the intended broker design and policy are verified and the owner approves a specific change.
+
+### Contribution provenance
+
+- Writer-instance: CHATGPT-INSTALL-01 (declared; unauthenticated)
+- Writer-role: INSTALLATION_COORDINATOR
+- Deployment-alias: P2002-LAB
+- Prepared-by: ChatGPT GPT-6 (declared)
+- Executed-by: Owner on P2002 host
+- Evidence-source: OWNER_SUPPLIED_TERMINAL_TRANSCRIPT
+- Reviewed-by: SELF_REVIEW_ONLY
+- Approved-by: OWNER_REQUEST_2026-11-07 (read-only host diagnostics)
+- Published-by: GitHub connector via shared ViktorIXAI account
+- Attribution-confidence: DECLARED_UNVERIFIED
+- Related-checkpoint: CLARYEL-P2002-20261107-HOST-NETWORK-PROXY-TOPOLOGY-001
