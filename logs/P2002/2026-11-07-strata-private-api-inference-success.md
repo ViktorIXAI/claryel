@@ -306,3 +306,108 @@ The next read-only check must:
 4. Compare the effective rules with the documented Guard policy and explicitly identify whether the new inference bridge is covered.
 
 No firewall changes are authorized by this finding.
+
+
+## 9. Direct host reachability and effective firewall/Guard inspection — 2026-11-07
+
+The owner supplied a read-only P2002 terminal transcript. The exact command execution time was not present in the pasted output; no timestamp has been inferred. No secret values were printed.
+
+### Strata profile status
+
+The owner used Strata's bundled interpreter inside `claryel-inference` to inspect only metadata and boolean presence:
+
+- Profile: `/data/state/strata/launch/iq3_s-128k.json`
+- File exists: `true`
+- Mode: `0600`
+- Owner/group: `0:0` (`root:root`)
+- `api_key` field: absent
+- `api_key` enabled: `false`
+- `allowed_hosts` field: absent
+
+The credential value was never printed because no key field exists. This confirms the mounted profile is currently unauthenticated; it does not expose any secret.
+
+### Direct host-to-container access — PASS (reachability confirmed)
+
+The owner ran a direct, proxy-bypassed host request:
+
+```bash
+curl --noproxy '*' --connect-timeout 3 --max-time 5 \
+  -sS -o /dev/null -w 'HTTP status: %{http_code}\\n' \
+  http://172.31.250.2:8080/health
+```
+
+Observed result: `HTTP status: 200`.
+
+The owner also supplied the bridge and route output:
+
+- Docker bridge: `br-ffbceca294f9`
+- Bridge address: `172.31.250.1/24`
+- Container address: `172.31.250.2`
+- Host route: `172.31.250.2 dev br-ffbceca294f9 src 172.31.250.1`
+
+**Conclusion:** direct host-to-container API reachability is confirmed. The host is on the bridge's connected network and has a route to the container. This does not establish that another LAN host or the public WAN can reach the container.
+
+### IPv4 iptables policy supplied by the owner
+
+Observed chain policies:
+
+- `INPUT`: `DROP`
+- `OUTPUT`: `ACCEPT`
+- `FORWARD`: `DROP`
+
+Relevant observations:
+
+- `DOCKER-USER` exists and is empty.
+- `DOCKER-FORWARD` contains `-i br-ffbceca294f9 -o br-ffbceca294f9 -j ACCEPT`.
+- The existing Strata proxy rules refer to `br-strata-eg` and `172.30.250.0/24`, not the inference bridge.
+- The host's `OUTPUT ACCEPT` policy is consistent with the observed host-originated connection to the container. The host-to-container packet is not an inbound connection to a host-local listener, so `INPUT DROP` alone does not block it.
+- The same-bridge Docker forwarding rule permits traffic between peers on that bridge; it is not a host egress restriction.
+
+### Full Guard table excerpt supplied by the owner
+
+The owner supplied the complete `inet claryel_guard` table:
+
+- `guest_input` is an input hook at priority `filter - 10`, with policy `accept`.
+- Its explicit interface/address rules cover `virbr240`, `br-strata-eg`, and `172.30.250.0/24`.
+- `guest_forward` explicitly drops traffic entering/leaving `virbr240` and `br-strata-eg`, and source/destination traffic for `172.30.250.0/24`.
+- Neither chain contains an explicit rule for `br-ffbceca294f9`, `172.31.250.0/24`, or `172.31.250.2`.
+
+The owner also listed nftables tables: `ip filter`, `inet claryel_guard`, `ip6 filter`, `ip nat`, `ip6 nat`, and `ip raw`.
+
+**Assessment:** the supplied effective Guard table does not show a rule covering the new inference bridge/subnet. Guard enforcement for `claryel-private-ai` is therefore **NOT VERIFIED / NOT PRESENT IN THE SUPPLIED GUARD TABLE**. This is a precise statement about the displayed table, not a claim that no other firewall mechanism exists.
+
+### Updated security interpretation
+
+1. Docker reports `claryel-private-ai` as `Internal=true` with IPv6 disabled, and previous owner-supplied tests blocked direct container egress to tested public IPv4 endpoints. Those are bounded container-egress observations, not proof of all-protocol isolation.
+2. No host port binding for TCP 8080 and no host listener on TCP 8080 were observed in the earlier Docker inspection. The newly confirmed direct host-to-container request is compatible with those facts; Docker bridge routing does not require a published host port.
+3. Host-to-container reachability is confirmed (HTTP 200). The host is therefore inside the effective administrative trust boundary unless a separate host OUTPUT/bridge policy is added.
+4. The current profile has no API key. Any peer able to reach the API can currently use it; Host/DNS-rebinding validation is not authentication.
+5. The current evidence does **not** prove public-WAN or other-LAN reachability. No external-source test was supplied.
+6. The supplied Guard table does not explicitly cover the inference bridge. Do not report the new inference subnet as Guard-protected.
+7. No firewall, Docker, network, profile, credential, service or host changes were performed.
+
+### Next actions — proposed, not executed
+
+- Preserve the working inference container and its current model/data volumes.
+- Prefer Strata's native API-key support over a custom engine patch. Previous owner-supplied source inspection identified Bearer and `x-api-key` enforcement for `/v1/*` when a key is configured.
+- Do not place a key in GitHub, an image layer, a command-line argument, shell history, public manifest or ordinary Docker `Config.Env`.
+- Prepare a root-owned host secret file with restrictive permissions, mount it read-only into the inference container, and use a minimal protected startup wrapper to read it at runtime and export `STRATA_API_KEY` before executing the existing `strata serve --profile ... --offline` command. This is a proposed pattern only; verify the exact image entrypoint, runtime user, secret-file permissions and Strata 0.2.11 environment precedence before use. The secret file itself must never be printed or committed.
+- Before replacing the running container, create and verify a rollback plan that retains the current image, container configuration, model volume, data volume and known-good launch command. Do not delete the current container or volumes until authenticated acceptance passes.
+- Test missing key and wrong key rejection, valid Bearer and `x-api-key` success, direct-IP and DNS-name access, and route-by-route behavior. The known source evidence covers `/v1/*`; separately test `/`, `/health`, `/status`, `/metrics`, `/props`, model listing and management routes for information disclosure.
+- Re-test host-to-container reachability and confirm the intended trust boundary. If host access is to be blocked, design a narrowly scoped host OUTPUT/bridge policy with a recovery path; do not improvise a live firewall rule.
+- Test LAN/WAN reachability from a genuinely external source before making any claim about those zones.
+
+**Change status:** documentation/read-only assessment only. Production API-key enablement and any firewall changes remain unexecuted pending an explicit change window and final preflight.
+
+## Provenance
+
+- Writer-instance: CHATGPT-REVIEW-01
+- Writer-role: REPOSITORY_AUDITOR
+- Deployment-alias: P2002-LAB
+- Prepared-by: ChatGPT GPT-6 (declared)
+- Executed-by: owner (read-only terminal commands and outputs supplied in conversation); GitHub author did not access P2002
+- Evidence-source: OWNER_SUPPLIED_TERMINAL_OUTPUT
+- Reviewed-by: SELF_REVIEW_ONLY
+- Approved-by: owner direction to continue documenting the P2002 public security architecture
+- Published-by: GitHub connector via shared ViktorIXAI account
+- Attribution-confidence: DECLARED_OWNER_SUPPLIED
