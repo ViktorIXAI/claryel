@@ -1070,3 +1070,68 @@ It documents `UV_OFFLINE` as the environment equivalent of `--offline`, and `UV_
 - Published-by: GitHub connector via shared ViktorIXAI account
 - Attribution-confidence: DECLARED_UNVERIFIED
 - Related-checkpoint: CLARYEL-P2002-20261107-PM-WHEELHOUSE-CONTROL-FLOW-REVIEW-001
+
+## Local wheel archives created; first verification halted on nested RECORD entry
+
+- **Checkpoint ID:** CLARYEL-P2002-20261107-PM-WHEELHOUSE-CREATED-VERIFY-INCONCLUSIVE-001
+- **Target-machine-ID:** P2002-CLOUD-GUEST
+- **Deployment-alias:** P2002-LAB
+- **Event time:** UNKNOWN (no timestamp included in owner transcript)
+- **Operation:** CREATE_TEMPORARY_LOCAL_WHEELS_AND_RUN_ARCHIVE_VALIDATOR
+- **Evidence-source:** OWNER_SUPPLIED_TERMINAL_TRANSCRIPT
+- **Executed-by:** Owner inside the Cloud Hermes guest; ChatGPT did not execute commands on the guest.
+- **Prepared-by:** ChatGPT GPT-6 (declared)
+- **Writer-instance:** CHATGPT-INSTALL-01 (declared; unauthenticated)
+- **Writer-role:** INSTALLATION_COORDINATOR
+- **Reviewed-by:** SELF_REVIEW_ONLY
+- **Approved-by:** OWNER_REQUEST_2026-11-07 (bounded local wheelhouse creation and verification)
+- **Published-by:** GitHub connector via shared ViktorIXAI account
+- **Attribution-confidence:** DECLARED_UNVERIFIED
+- **Related-issue:** #10
+- **Related-checkpoint:** CLARYEL-P2002-20261107-PM-CACHED-WHEEL-PACKER-AVAILABLE-001
+
+### Owner-supplied execution result
+
+The owner ran the proposed command in the guest:
+- Cached wheel packer successfully created:
+  - `/home/claryelvm/.cache/claryel-wheelhouse.uzfQLK/setuptools-84.1.0-py3-none-any.whl`
+  - `/home/claryelvm/.cache/claryel-wheelhouse.uzfQLK/wheel-0.48.0-py3-none-any.whl`
+- The archive-validation script then stopped with:
+  - `MISSING: zipp-3.23.0.dist-info/INSTALLER`
+- The SSH session closed and the shell returned to host prompt `claryel@p2002:~$`.
+- No PM repair or installation command was run.
+- No wheelhouse cleanup, UV cache modification, retained environment modification, lockfile/source edit, or network-policy change is evidenced.
+
+### Verification interpretation — INCONCLUSIVE
+
+The first validator used:
+`next(n for n in names if n.endswith(".dist-info/RECORD"))`
+
+That selects the first RECORD in ZIP member order, which may be a nested vendored distribution's RECORD rather than the outer wheel's own top-level RECORD. Setuptools bundles vendored package metadata (including zipp). Therefore the reported missing nested `INSTALLER` is not sufficient evidence that the outer setuptools wheel is invalid.
+
+The archive validation is **INCONCLUSIVE**, not PASS and not FAIL. Preserve both generated wheel archives and do not modify them until a corrected validator explicitly identifies the outer distribution's top-level `{distribution}-{version}.dist-info/RECORD` and separately reports nested RECORD discrepancies.
+
+### Next controlled action — read-only archive inspection
+
+After reconnecting to the guest, inspect the two existing archives at the path above. For each archive:
+1. Print its ZIP member names for every `*.dist-info/RECORD`.
+2. Identify exactly one top-level RECORD matching the wheel's own `setuptools-84.1.0.dist-info/RECORD` or `wheel-0.48.0.dist-info/RECORD`.
+3. Validate only that outer RECORD against archive members and hashes.
+4. Report nested RECORD discrepancies separately as vendor metadata; do not rewrite or fabricate `INSTALLER`.
+5. Confirm the archives' ZIP integrity, outer METADATA Name/Version, WHEEL tags and SHA-256.
+
+No PM operation is authorized by this checkpoint. Only after outer wheel validation succeeds should the next step be designed. Do not rerun `pm repair`, delete archives, alter the cache, or change guest network policy.
+
+### Contribution provenance
+
+- Writer-instance: CHATGPT-INSTALL-01 (declared; unauthenticated)
+- Writer-role: INSTALLATION_COORDINATOR
+- Deployment-alias: P2002-LAB
+- Prepared-by: ChatGPT GPT-6 (declared)
+- Executed-by: Owner for wheel creation/validation; ChatGPT for interpretation and audit logging
+- Evidence-source: OWNER_SUPPLIED_TERMINAL_TRANSCRIPT
+- Reviewed-by: SELF_REVIEW_ONLY
+- Approved-by: OWNER_REQUEST_2026-11-07 (bounded wheelhouse creation; further PM operations remain separately controlled)
+- Published-by: GitHub connector via shared ViktorIXAI account
+- Attribution-confidence: DECLARED_UNVERIFIED
+- Related-checkpoint: CLARYEL-P2002-20261107-PM-WHEELHOUSE-CREATED-VERIFY-INCONCLUSIVE-001
