@@ -66,3 +66,12 @@ Evidence classification is **OWNER_REPORTED**: the public repository snapshot re
 The host-side libvirt network and VM autostart flags have now been enabled and recorded in [the autostart checkpoint](../logs/P2002/2026-11-07-cloud-hermes-autostart.md). This is separate from guest Hermes service autostart, which remains to be inspected.
 
 **Next operational step:** inspect the already-installed guest Hermes service and enable its existing boot-start mechanism if needed; then proceed to connect this existing agent to the already-working local inference API. Do not perform a reinstall. Preserve the current Guard/firewall and network boundaries.
+
+
+## Cloud Hermes guest runtime discovery — owner-supplied output 2026-11-07
+
+The owner successfully SSH-connected through the existing ASUS jump host to guest `claryelvm@172.30.240.12` (hostname `claryel-cloud-vm`, Ubuntu 24.04.5, kernel 6.8.0-147-generic). DHCP lease identifies MAC `52:54:00:40:bd:81` and the same guest IP. QEMU Guest Agent is not connected, but SSH access works.
+
+The owner reports that Hermes is already installed, connected/authorized with Grok, and has passed response tests. Do not reinstall it or repeat authorization. However, the current guest diagnostics returned no Hermes/Nous-matching system or user service units and no matching process; `loginctl show-user claryelvm -p Linger` returned `Linger=no`. These filtered checks do not prove the software is absent: its executable may be installed but stopped, use another name, or be managed by a container, supervisor, cron, tmux or custom launcher. No changes were made.
+
+The new read-only checkpoint is [Cloud Hermes guest runtime discovery](../logs/P2002/2026-11-07-cloud-hermes-guest-runtime-discovery.md). **Next:** one grouped inventory of existing guest installation footprints and runtime managers, with secret values excluded. Then enable the actual existing startup mechanism if needed and continue local-inference integration.
