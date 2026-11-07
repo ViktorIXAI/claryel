@@ -47,3 +47,33 @@ Proceed with the Cloud Hermes guest installation using the previously establishe
 ## Publication safety
 
 This checkpoint contains no credentials, private keys, tokens, or guest authorized-key material.
+
+## Owner correction — existing guest Hermes installation (2026-11-07)
+
+**This addendum supersedes the preceding section's proposed next step to install Hermes. Do not reinstall or replace the existing guest agent.**
+
+The owner explicitly corrected the assistant's assumption and reports that:
+- Hermes is already installed inside the existing `claryel-cloud-hermes` VM.
+- The guest Hermes instance is connected to Grok and provider authorization has already been completed.
+- The existing agent has already passed response tests.
+
+**Evidence classification: OWNER_REPORTED.** The public repository snapshot reviewed for this correction did not contain the original installation commands, Hermes version, guest service/unit name, Grok authorization method, or raw response-test transcript. No credential, token, private key, or account detail is requested or published. These owner-reported accomplishments must not be presented as independently verified until the corresponding sanitized evidence is recovered.
+
+### Correct next operational objective
+
+1. Preserve the existing guest, Hermes installation, Grok authorization and agent state.
+2. Inspect the guest's existing Hermes process/service and its autostart enablement; do not reinstall.
+3. If autostart is not enabled, enable the existing unit using its actual discovered name; do not guess a unit name.
+4. Confirm Hermes starts and remains available after VM startup.
+5. Continue with the planned Hermes-to-local-inference integration using the already working private Strata API, with synthetic data and the existing network/Guard boundaries.
+
+No guest command or service change was performed by this documentation correction.
+
+- **Prepared-by:** ChatGPT GPT-6 (declared)
+- **Writer-instance:** CHATGPT-REVIEW-01
+- **Writer-role:** REPOSITORY_AUDITOR
+- **Executed-by:** NOT_APPLICABLE (documentation only; owner supplied the correction)
+- **Evidence-source:** OWNER_REPORTED + TOOL_OBSERVED repository review
+- **Reviewed-by:** SELF_REVIEW_ONLY
+- **Published-by:** GitHub connector via shared ViktorIXAI account
+- **Attribution-confidence:** DECLARED_UNVERIFIED
