@@ -1,6 +1,6 @@
 # CLARYEL implementation evidence status
 
-**As of 2026-11-07 (GitHub repository snapshot; latest commit observed 2026-11-06T21:34:22Z).** This is a source-index and gap assessment, not live host telemetry or an independent security certification. It must be refreshed from evidence; do not infer execution state from Git commit titles alone.
+**As of 2026-11-07 (refreshed after the owner-supplied Strata/Qwen inference checkpoint and standing public-architecture direction).** This is a source-index and gap assessment, not live host telemetry or an independent security certification. Do not infer execution state from Git commit titles alone.
 
 ## Current scope
 
