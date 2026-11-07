@@ -948,3 +948,60 @@ If an already-installed wheel packer is available, evaluate reconstructing verif
 - Published-by: GitHub connector via shared ViktorIXAI account
 - Attribution-confidence: DECLARED_UNVERIFIED
 - Related-checkpoint: CLARYEL-P2002-20261107-PM-CACHE-ARCHIVE-AND-INDEX-INSPECTED-001
+
+## Cached wheel packer discovered; retained PM environment remains unchanged
+
+- **Checkpoint ID:** CLARYEL-P2002-20261107-PM-CACHED-WHEEL-PACKER-AVAILABLE-001
+- **Target-machine-ID:** P2002-CLOUD-GUEST
+- **Deployment-alias:** P2002-LAB
+- **Event time:** UNKNOWN (no timestamp supplied in the terminal transcript)
+- **Operation:** READ_ONLY_RETAINED_ENVIRONMENT_AND_CACHED_WHEEL_TOOL_DISCOVERY
+- **Evidence-source:** OWNER_REPORTED_TERMINAL_TRANSCRIPT
+- **Executed-by:** Owner in the already-open guest shell; ChatGPT did not execute commands on the guest.
+- **Prepared-by:** ChatGPT GPT-6 (declared)
+- **Writer-instance:** CHATGPT-INSTALL-01 (declared; unauthenticated)
+- **Writer-role:** INSTALLATION_COORDINATOR
+- **Reviewed-by:** SELF_REVIEW_ONLY
+- **Approved-by:** OWNER_REQUEST_2026-11-07 (continue controlled installation diagnosis; no PM repair or environment mutation authorized by this inspection)
+- **Published-by:** GitHub connector via shared ViktorIXAI account
+- **Attribution-confidence:** DECLARED_UNVERIFIED
+- **Related-issue:** #10
+- **Related-checkpoint:** CLARYEL-P2002-20261107-PM-CACHE-ARCHIVE-AND-INDEX-INSPECTED-001
+
+### Owner-supplied observations
+
+- Retained PM generation: `fcc6015261fa40b4891cdeb11eb08cfe`.
+- Its Python interpreter runs Python 3.14.9.
+- `wheel` and `setuptools` are not installed in that retained virtual environment.
+- `packaging` is installed in that environment; the reported module path is under that generation's `venv/lib/python3.14/site-packages`.
+- The cached unpacked wheel distribution can be invoked via `PYTHONPATH` and `python3 -m wheel`.
+- `wheel pack --help` succeeds and displays the supported `pack <directory> [--dest-dir]` interface. The attempted `wheel --version` syntax is unsupported by this CLI and returned usage; this is not evidence of a broken wheel package.
+- The Hermes-managed uv executable is present at `$HOME/.hermes/tools/uv-0.13.5-linux-x64/uv`; bare `uv` is not on the interactive shell's PATH.
+- No wheel archive was created by this inspection. No cache, retained environment, lockfile, network policy, or Hermes configuration was changed.
+
+### Assessment
+
+- **CONFIRMED:** A wheel packer is available from the cached unpacked `wheel 0.48.0` package and exposes a pack command.
+- **CONFIRMED:** The retained PM environment does not itself contain `wheel` or `setuptools`; it does contain `packaging`.
+- **CONFIRMED:** The PM-managed uv binary exists at the path above, but is not exposed as bare `uv` in this shell.
+- **NOT_YET_CONFIRMED:** Whether the unpacked setuptools and wheel cache roots can both be packed into valid wheel archives.
+- **NOT_YET_CONFIRMED:** Whether the resulting local wheelhouse can be consumed by the exact Hermes PM worker environment without any upstream source/lockfile modification.
+- **NO_CHANGES:** This was read-only discovery only.
+
+### Next bounded action — separate temporary wheelhouse only
+
+If approved by the owner, use the cached wheel packer with the retained environment's Python (so its already-installed `packaging` dependency is available) to create two wheel archives in a new, private-permission temporary directory outside the UV cache and outside the PM environment. Verify each archive's filename, METADATA, WHEEL tags, RECORD, and ZIP integrity before considering any Hermes PM operation. Do not overwrite existing files, alter the UV cache, modify the retained generation, change the lockfile, run `pm repair`, or change guest network policy.
+
+### Contribution provenance
+
+- Writer-instance: CHATGPT-INSTALL-01 (declared; unauthenticated)
+- Writer-role: INSTALLATION_COORDINATOR
+- Deployment-alias: P2002-LAB
+- Prepared-by: ChatGPT GPT-6 (declared)
+- Executed-by: Owner for terminal inspection; ChatGPT for interpretation and documentation
+- Evidence-source: OWNER_REPORTED_TERMINAL_TRANSCRIPT
+- Reviewed-by: SELF_REVIEW_ONLY
+- Approved-by: OWNER_REQUEST_2026-11-07 (continue controlled installation; next write remains a separately proposed bounded operation)
+- Published-by: GitHub connector via shared ViktorIXAI account
+- Attribution-confidence: DECLARED_UNVERIFIED
+- Related-checkpoint: CLARYEL-P2002-20261107-PM-CACHED-WHEEL-PACKER-AVAILABLE-001
