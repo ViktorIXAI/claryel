@@ -38,7 +38,7 @@ The current logs root contains only one machine directory: logs/P2002/. It conta
 - Bounded post-reboot restricted proxy positive/negative tests.
 - Strata 0.2.11 / engine build 0.1.57 identification.
 - First Strata launch failed before model download; corrected retry passed /dev/kfd and /dev/dri into container and observed device nodes there.
-- Subsequent owner-supplied output shows Strata ready, the Qwen3.8-Flash-Next IQ3_S model loaded, health/model endpoints returning HTTP 200, and a disposable private-network client receiving the exact expected answer at 48.6 generated tokens/second (prompt processing 151.3 tokens/second). See log 11. This is functional inference evidence, not a security acceptance.
+- Subsequent owner-supplied output shows Strata ready, the Qwen3.8-Flash-Next IQ3_S model loaded, health/model endpoints returning HTTP 200, and a disposable private-network client receiving the exact expected answer at 48.6 generated tokens/second (prompt processing 151.3 tokens/second). Later read-only inspection found the profile has no API key, host-to-container HTTP 200 via the inference bridge, and no explicit inference-bridge rule in the displayed Guard table. See log 11. This is functional inference evidence plus bounded exposure findings, not a security acceptance.
 
 ### Not evidenced in this repository snapshot
 - Complete firmware package correction and final RX 9070 amdgpu binding chronology.
