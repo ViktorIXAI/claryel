@@ -723,3 +723,76 @@ If the required artifacts are already cached, evaluate a bounded offline repair.
 - Published-by: GitHub connector via shared ViktorIXAI account
 - Attribution-confidence: DECLARED_UNVERIFIED
 - Related-checkpoint: CLARYEL-P2002-20261107-EGRESS-POLICY-CROSSCHECK-001
+
+## Owner-supplied Hermes cache inspection — required build packages are present
+
+- **Checkpoint ID:** CLARYEL-P2002-20261107-PM-CACHE-SETUPTOOLS-WHEEL-PRESENT-001
+- **Target-machine-ID:** P2002-CLOUD-GUEST
+- **Deployment-alias:** P2002-LAB
+- **Event time:** UNKNOWN (no timestamp in supplied terminal transcript)
+- **Operation:** READ_ONLY_PM_CACHE_AND_RECOVERY_STATE_INSPECTION
+- **Evidence source:** OWNER_SUPPLIED_TERMINAL_TRANSCRIPT
+- **Executed-by:** Owner, as the existing non-root guest user in the already-open VM shell; ChatGPT did not execute on the guest.
+- **Prepared-by:** ChatGPT GPT-6 (declared)
+- **Writer-instance:** CHATGPT-INSTALL-01 (declared; unauthenticated)
+- **Writer-role:** INSTALLATION_COORDINATOR
+- **Reviewed-by:** SELF_REVIEW_ONLY
+- **Approved-by:** OWNER_REQUEST_2026-11-07 (read-only cache inspection)
+- **Published-by:** GitHub connector via shared ViktorIXAI account
+- **Attribution-confidence:** DECLARED_UNVERIFIED
+- **Related-issue:** #10
+- **Related-checkpoints:** CLARYEL-P2002-20261107-PM-REPAIR-DNS-FAILURE-001; CLARYEL-P2002-20261107-GUEST-NETWORK-NO-DEFAULT-ROUTE-001
+
+### Owner-supplied observations
+
+- Hermes-managed UV cache at `/home/claryelvm/.hermes/cache/uv`: **309 MB**.
+- Cached unpacked package metadata directories:
+  - `setuptools-84.1.0.dist-info`
+  - `wheel-0.48.0.dist-info`
+  - `wheel-0.46.3.dist-info`
+- Hermes cache seed marker exists and contains digest `5057a8a3cbc6d2b1f2059d66e27ffa43f447021f89779599dca416056574c064`.
+- Repair marker at `~/.hermes/installs/ab16f6e41f23151a/.repair-incomplete` contains `{"attempts": 1}`.
+- Two existing PM runtime generations are present:
+  - `518cf5d398374517a65e662881e8eeae`
+  - `21a9bd4435d448a19d8ddc553e3a9c14`
+
+### Exact-version source review (Hermes v0.23.0, commit 2bd378ed1b8d6bf2192cb26e0a55ff3091e6bd19)
+
+- `pm.packages.uv_cache_path()` resolves the Hermes-managed cache to `<HERMES_HOME>/cache/uv`; the earlier `~/.cache/uv` check was not the PM cache.
+- `pm.environment.PythonEnvironment._run()` explicitly sets `UV_CACHE_DIR` to the PM cache and `UV_PYTHON_DOWNLOADS=never`.
+- `pm.environment._base_environment()` strips ambient UV settings except those allowed by `pm.index_config.is_forwarded()`.
+- `pm.index_config.FORWARDED_UV_SETTINGS` includes `UV_NO_INDEX`, but does **not** include `UV_OFFLINE`. Therefore setting `UV_OFFLINE=1` in the shell would not be a reliable way to force Hermes PM's child uv process offline.
+- `pm.cli.cmd_repair()` has no offline command-line option; it restores the recorded graph via `recover_if_needed(..., explicit=True)`.
+- The PM repair path invokes `sync_venv(repair=True)`, which builds a fresh dependency generation and retains the recorded dependency graph.
+
+### Assessment
+
+- **CONFIRMED:** The correct Hermes-managed cache is populated (309 MB), unlike the unrelated default `~/.cache/uv` directory (32 KB).
+- **CONFIRMED:** Cache metadata for the exact setuptools pin from the failed repair (`84.1.0`) and for wheel distributions is present.
+- **NOT_YET_CONFIRMED:** The cache contains every required wheel/archive and build dependency in a form sufficient for the complete locked repair. Presence of `.dist-info` metadata alone does not prove all artifacts are reusable.
+- **CONFIRMED:** The incomplete repair marker records one failed attempt.
+- **CONFIRMED:** Existing runtime generations remain present; no evidence in this transcript indicates they were deleted.
+- **NO_CHANGES:** This cache inspection was read-only.
+
+### Next controlled action
+
+Attempt the recorded PM repair while explicitly disabling package-index lookup using `UV_NO_INDEX=1`:
+`UV_NO_INDEX=1 "$HOME/.local/bin/hermes" pm repair`
+
+Exact-version source confirms `UV_NO_INDEX` is forwarded into the child uv environment, unlike `UV_OFFLINE`. The guest also has no default route and host Guard currently blocks forwarding for `virbr240`, so no ordinary network route to PyPI is available. This attempt must be treated as a bounded cache-only test: if any required artifacts are absent, expect a clear failure and stop; do not add a package index, route, DNS server, or proxy exception. Do not retry repeatedly.
+
+On success, verify PM doctor and the repair marker before proceeding to Hermes update or Gateway installation. Do not run those later steps until the repaired generation is confirmed.
+
+### Contribution provenance
+
+- Writer-instance: CHATGPT-INSTALL-01 (declared; unauthenticated)
+- Writer-role: INSTALLATION_COORDINATOR
+- Deployment-alias: P2002-LAB
+- Prepared-by: ChatGPT GPT-6 (declared)
+- Executed-by: Owner in the existing guest shell for terminal evidence; ChatGPT for exact-version source review
+- Evidence-source: OWNER_SUPPLIED_TERMINAL_TRANSCRIPT + TOOL_OBSERVED_HERMES_SOURCE
+- Reviewed-by: SELF_REVIEW_ONLY
+- Approved-by: OWNER_REQUEST_2026-11-07 (read-only cache inspection; next state change requires owner to run the displayed command)
+- Published-by: GitHub connector via shared ViktorIXAI account
+- Attribution-confidence: DECLARED_UNVERIFIED
+- Related-checkpoint: CLARYEL-P2002-20261107-PM-CACHE-SETUPTOOLS-WHEEL-PRESENT-001
