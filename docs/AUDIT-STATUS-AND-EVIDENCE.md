@@ -48,3 +48,10 @@ For future events use [the checkpoint template](../templates/AUDIT-CHECKPOINT.md
 - [#16 — authenticate Strata API and verify inference-network exposure](https://github.com/ViktorIXAI/claryel/issues/16)
 - [P2002 Strata API authentication change and rollback plan](P2002-STRATA-API-AUTH-CHANGE-PLAN.md) — proposed only; no live change authorized/performed
 - [#17 — generate unique deployment identity and network namespace for every client Box](https://github.com/ViktorIXAI/claryel/issues/17)
+
+
+## Current execution priority — owner direction 2026-11-07
+
+The owner has reaffirmed that the immediate objective is to finish installing and starting the complete working P2002 stack. The successful owner-supplied Strata/Qwen inference is the first-inference milestone; the next operational priority is to resume Cloud Hermes startup, install/start Hermes, connect it to the existing local Strata endpoint over the current private lab network using synthetic data, and demonstrate one end-to-end request/reply.
+
+Do not block this integration sprint on deep API-auth research, wrapper development, exhaustive route audits, standalone GPU evidence recovery, broad benchmarking or non-blocking security test suites. These remain open follow-up work, especially issues #9 and #16. Preserve the current Guard/firewall, private network and no-published-port configuration; do not expose the inference endpoint outside the lab or use real private/customer data before the authentication/Security Gateway boundary is completed. Record each actual installation/change step and its evidence. This is a priority change, not a security approval or authorization to weaken existing controls.
