@@ -87,3 +87,29 @@ Run one grouped read-only inventory inside the guest to discover existing agent 
 
 Do not print environment variable values, tokens, API keys, provider credential files, browser profiles, or secret-bearing config contents. Only filenames, package names, unit names, process metadata and credential-presence booleans may be reported. Once the actual installation and launch mechanism are identified, inspect/enable that existing mechanism for boot; do not guess a unit name.
 
+
+
+## Recovered prior installation record — Hermes v0.23.0 and Grok (2026-11-06)
+
+A targeted retrieval of the prior conversation recovered the following historical setup facts. This is classified as **PRIOR_CONVERSATION_RECOVERED**, not a fresh guest-side command transcript:
+
+- Hermes version previously reported: `0.23.0`.
+- Installation directory: `/home/claryelvm/.hermes/hermes-agent`.
+- CLI path: `/home/claryelvm/.local/bin/hermes`.
+- Existing configuration paths: `/home/claryelvm/.hermes/config.yaml` and `/home/claryelvm/.hermes/.env`. File contents and credential values are intentionally not published.
+- xAI OAuth was previously configured successfully; selected model was `grok-4.6`.
+- Configured API base URL: `https://api.x.ai/v1`.
+- Historical test command `hermes chat --oneshot` completed successfully using `grok-4.6`.
+
+The recovered prior work explicitly did **not** document a persistent service, container, or boot-autostart mechanism. This explains why the current guest diagnostic can show no running Hermes process and no Hermes-named systemd unit even though the CLI and configuration were previously installed. The owner-supplied filtered checks are consistent with a previously tested one-shot CLI rather than a persistent agent service.
+
+### Updated conclusion
+
+- Existing Hermes installation and Grok authorization: **PRIOR-CONVERSATION_RECOVERED**.
+- Previous Grok one-shot response test: **PRIOR-CONVERSATION_RECOVERED / reported successful**.
+- Current Hermes process: **NOT_RUNNING in the owner-supplied snapshot**.
+- Existing persistent service/autostart: **NOT_DOCUMENTED / not found by the filtered unit query**.
+- Reinstall or reauthorize: **NOT REQUIRED**.
+- Next step: inspect the existing CLI's supported persistent/gateway mode and create the correct boot-start unit for the existing installation, preserving its home directory and credential files. First inspect CLI help and existing files/permissions; do not print or copy secret values.
+
+The credential object identifier and all OAuth token material are intentionally excluded from this public log.
