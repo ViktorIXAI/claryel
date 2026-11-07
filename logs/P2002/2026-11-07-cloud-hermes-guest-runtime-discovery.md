@@ -653,3 +653,73 @@ Do not attach `virbr240` to the Strata egress bridge, add NAT/default routing, p
 - Published-by: GitHub connector via shared ViktorIXAI account
 - Attribution-confidence: DECLARED_UNVERIFIED
 - Related-checkpoint: CLARYEL-P2002-20261107-HOST-NETWORK-PROXY-TOPOLOGY-001
+
+## Architecture and accepted Squid policy cross-check — PyPI is not an approved Strata proxy destination
+
+- **Checkpoint ID:** CLARYEL-P2002-20261107-EGRESS-POLICY-CROSSCHECK-001
+- **Target-machine-ID:** P2002
+- **Deployment-alias:** P2002-LAB
+- **Event time:** 2026-11-07 (repository review; exact time not material)
+- **Operation:** READ_ONLY_REPOSITORY_POLICY_REVIEW
+- **Evidence sources:** TOOL_OBSERVED_REPOSITORY_FILES + OWNER_SUPPLIED_TERMINAL_TRANSCRIPT
+- **Executed-by:** ChatGPT reviewed repository documents; owner supplied host and guest terminal evidence. ChatGPT did not execute on P2002.
+- **Prepared-by:** ChatGPT GPT-6 (declared)
+- **Writer-instance:** CHATGPT-INSTALL-01 (declared; unauthenticated)
+- **Writer-role:** INSTALLATION_COORDINATOR
+- **Reviewed-by:** SELF_REVIEW_ONLY
+- **Approved-by:** OWNER_REQUEST_2026-11-07 (continue installation diagnosis and repository review)
+- **Published-by:** GitHub connector via shared ViktorIXAI account
+- **Attribution-confidence:** DECLARED_UNVERIFIED
+- **Related-issue:** #10
+- **Related-checkpoints:** CLARYEL-P2002-20261107-HOST-NETWORK-PROXY-TOPOLOGY-001; CLARYEL-P2002-20261107-PM-REPAIR-DNS-FAILURE-001
+
+### Existing architecture statements
+
+Repository `docs/ARCHITECTURE.md` describes the public Hermes VM as having restricted external access and identifies an independently secured Security GTW as the sole typed cross-zone gateway. It explicitly says this architecture document is an original proposal and that the newer v0.2 document supersedes it.
+
+Repository `docs/ARCHITECTURE-V0.2-REPLACEABLE-PLATFORM.md` describes a target architecture and explicitly states it is a proposal, not deployed capability or permission to change the live P2002 installation. It requires default-deny network enforcement and an independent Security Gateway for approved cross-zone requests.
+
+### Existing Squid acceptance policy
+
+Repository `logs/P2002/2026-11-06-strata-network-isolation-acceptance.md` records the already-tested Strata egress design:
+- Docker network: `claryel-strata-egress`, subnet `172.30.250.0/24`.
+- Squid endpoint: `172.30.250.1:3128`.
+- Only authorized client: `172.30.250.10`.
+- Squid permits HTTPS CONNECT only to `huggingface.co` and `us.aws.cdn.hf.co` for that client.
+- Other requests are denied; GitHub was explicitly tested and denied.
+- Direct container egress is denied.
+- The tests were performed for the Strata egress client and did not validate Cloud Hermes guest access.
+
+The current owner-supplied host snapshot matches that policy: the proxy listener is on `172.30.250.1:3128`, and Guard permits it only from `172.30.250.10` on `br-strata-eg`. The Cloud Hermes guest at `172.30.240.12` is not an authorized client.
+
+### Assessment and decision
+
+- **CONFIRMED:** The existing Squid service is a narrowly scoped Strata/Hugging Face egress proxy, not a general-purpose internet proxy.
+- **CONFIRMED:** PyPI is not in the documented Squid allowlist; GitHub was explicitly denied.
+- **CONFIRMED:** The Cloud Hermes guest is not included in the existing Squid proxy exception.
+- **NOT_ESTABLISHED:** A deployed independent Security GTW or a policy-approved Cloud Hermes egress path. The architecture docs define the target role, but they do not prove it is implemented on P2002.
+- **DECISION:** Do not add PyPI, Grok API, or general domains to the Strata Squid allowlist; do not attach Cloud Hermes to the Strata egress bridge; do not add NAT/default internet routing to `virbr240`. Those changes would weaken or repurpose a tested boundary without an approved Security GTW design.
+- **INSTALLATION CONSEQUENCE:** Dependency repair remains blocked until a policy-approved package-intake path or a verified offline dependency cache is available. Hermes update and Gateway service installation remain blocked.
+
+### Next action
+
+Return to the existing guest and inspect the local PM dependency/cache state without network access:
+1. Run the read-only `hermes pm doctor` (without `--repair`).
+2. Inspect the uv cache directory size and whether cached artifacts for `setuptools==84.1.0` and `wheel` are available.
+3. Inspect the existing PM install/environment state without reading credential files or printing environment variables.
+
+If the required artifacts are already cached, evaluate a bounded offline repair. If not, record the missing artifacts as a package-intake task and design a narrow, verified quarantine transfer; do not open general egress.
+
+### Contribution provenance
+
+- Writer-instance: CHATGPT-INSTALL-01 (declared; unauthenticated)
+- Writer-role: INSTALLATION_COORDINATOR
+- Deployment-alias: P2002-LAB
+- Prepared-by: ChatGPT GPT-6 (declared)
+- Executed-by: ChatGPT for repository review; owner for P2002 host/guest terminal evidence
+- Evidence-source: TOOL_OBSERVED_REPOSITORY_FILES + OWNER_SUPPLIED_TERMINAL_TRANSCRIPT
+- Reviewed-by: SELF_REVIEW_ONLY
+- Approved-by: OWNER_REQUEST_2026-11-07 (continue installation diagnosis and repository review)
+- Published-by: GitHub connector via shared ViktorIXAI account
+- Attribution-confidence: DECLARED_UNVERIFIED
+- Related-checkpoint: CLARYEL-P2002-20261107-EGRESS-POLICY-CROSSCHECK-001
