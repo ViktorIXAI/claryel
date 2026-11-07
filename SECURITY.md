@@ -1,6 +1,6 @@
 # Security and Responsible Disclosure
 
-This repository is public. All contributions, including direct GitHub API writes by AI assistants, must comply with [the publication security policy](policies/PUBLICATION-SECURITY.md). An approved human controls disclosure.
+This repository is public. All contributions, including direct GitHub API writes by AI assistants, must comply with [the publication security policy](policies/PUBLICATION-SECURITY.md). The owner has issued a standing authorization for prompt publication of routine non-secret CLARYEL engineering logs and project-owned lab operational/network details; no automated publisher-readiness hold applies. Credentials, private keys, customer/third-party confidential information and unrelated personal data remain prohibited.
 
 This policy draws on the existing security practice in the adjacent [claryel-autonomous](https://github.com/ViktorIXAI/claryel-autonomous/blob/main/SECURITY.md) project: Gitleaks, infrastructure-pattern checks, local-only configuration, scanning publication artifacts, protected history and credential-incident procedures. It strengthens that practice with a **separate full-fidelity private recovery ledger**, deterministic sanitized public reproduction steps, and an explicit mandatory **pre-publication** gate for API-based authors.
 
