@@ -123,3 +123,62 @@ No configuration changes, container restarts, firewall changes or host reboots a
 - Approved-by: owner direction to publish P2002 architecture and non-secret operational details
 - Published-by: GitHub connector via shared ViktorIXAI account
 - Attribution-confidence: DECLARED_OWNER_SUPPLIED
+
+
+## 6. Follow-up read-only Strata authentication/source inspection — 2026-11-07
+
+The owner supplied a second terminal transcript. Environment variable values were redacted before sharing; no API key or secret value was published.
+
+### Effective server launch command observed
+
+```text
+Path=bash
+Args=["-lc","exec strata serve \\
+    --profile /data/state/strata/launch/iq3_s-128k.json \\
+    --host 0.0.0.0 \\
+    --port 8080 \\
+    --offline"]
+```
+
+This confirms that Strata listens on all interfaces **inside its container**. It does not by itself establish host/WAN reachability; Docker port bindings and host firewall/listener state were not included in this transcript.
+
+### Environment inspection
+
+The owner listed environment variable names while replacing every value with `<redacted>`. The visible list did not include `STRATA_API_KEY` or `STRATA_ALLOWED_HOSTS`. This is consistent with the earlier health result `api_key=false`; no credential value was disclosed.
+
+### Source-code findings from the installed Strata tree
+
+The owner ran a read-only grep of `/opt/strata/terminal`. The output identifies these implementation paths:
+
+- `strata_cli/cli.py`: reads `STRATA_API_KEY` or the configured `api_key` value.
+- `strata_cli/launch/settings.py`: documents `api_key` as private preset state, not shown in full.
+- `strata_cli/launch/runner.py`: writes the configured key into the server config when present; explicitly writes `api_key = "none"` for the intentional no-key mode.
+- `strata_cli/launch/cmd.py`: supports `--api-key-env` and rejects an unset/empty named environment variable.
+- `serve/server.py`: documents that when a key is set, `/v1/*` requires Bearer or `x-api-key`; the request handler checks the supplied key with `key_matches`.
+- `serve/server.py`: DNS-rebinding/Host validation also supports configured allowed hosts and the `STRATA_ALLOWED_HOSTS` environment variable.
+
+**Assessment:** Strata has a native API-key mechanism; a custom patch to Strata is not the first choice. The currently running service has no effective API key, as independently indicated by its health output. The inspected environment listing contains no `STRATA_API_KEY`. The profile JSON itself was not printed or inspected in this transcript, so its exact stored value is not asserted.
+
+A supported configuration path appears to exist through `STRATA_API_KEY` or the profile's `api_key` setting. Before choosing one, inspect the exact Strata 0.2.11 launch/config lifecycle and the container's mounts so that a key is not placed in a Docker image layer, command line, shell history, public manifest or logs. Prefer a protected secret file or secret injection supported by the actual runtime, with least-privilege read access and a documented rotation procedure. Do not assume Docker environment variables are secret storage.
+
+### What remains unknown
+
+This transcript did **not** include:
+- `docker inspect` port bindings / `docker port` output;
+- host `ss -ltnp` output;
+- `docker network inspect claryel-private-ai` peer inventory;
+- effective nftables/Guard rules for port 8080;
+- profile JSON's redacted `api_key` status or mount source;
+- negative tests for missing/wrong key and positive test with a protected valid key.
+
+Therefore host/WAN exposure and the full reachable-peer set remain UNKNOWN. No configuration, container, firewall, network or host changes were performed.
+
+### Updated next steps
+
+1. Finish read-only Docker port-binding, network-peer, host-listener and Guard/nftables inspection.
+2. Inspect the profile's API-key **presence/status only**, without printing its value, and inspect the profile mount source/permissions.
+3. Confirm the supported Strata 0.2.11 key injection path and whether container recreation preserves it.
+4. Present a concrete implementation and rollback plan before changing the running service.
+5. After owner approval, test: no key -> 401/403; wrong key -> 401/403; correct key -> successful completion; both direct-IP and hostname paths remain authenticated.
+6. Recheck that no unintended host/WAN port is exposed and that existing Cloud Hermes/Guard paths remain unchanged.
+
