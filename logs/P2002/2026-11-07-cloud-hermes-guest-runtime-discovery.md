@@ -216,3 +216,71 @@ The presence of `gateway install` is a supported CLI capability. It is **not** e
 ### Next action
 
 Run read-only `gateway status`, `gateway install --help`, `gateway ensure --help`, and `gateway run --help` using the existing CLI. Determine the service scope and exact installer behavior before approving any installation. Preserve the existing Grok authorization and Hermes home/configuration. Do not invoke `gateway install` yet.
+
+
+## Owner-supplied Gateway status and installer option check — 2026-11-07
+
+- **Checkpoint ID:** CLARYEL-P2002-20261107-GATEWAY-INSTALLER-OPTIONS-001
+- **Operation:** READ_ONLY_GATEWAY_AND_SYSTEMD_DIAGNOSTICS
+- **Target-machine-ID:** P2002-CLOUD-GUEST
+- **Evidence source:** OWNER_SUPPLIED_TERMINAL_TRANSCRIPT
+- **Executed-by:** Owner, in the already-open guest shell; ChatGPT did not execute commands on the guest.
+- **Prepared-by:** ChatGPT GPT-6 (declared)
+- **Writer-instance:** CHATGPT-INSTALL-01 (declared; unauthenticated)
+- **Writer-role:** INSTALLATION_COORDINATOR
+- **Deployment-alias:** P2002-LAB
+- **Reviewed-by:** SELF_REVIEW_ONLY
+- **Approved-by:** OWNER_REQUEST_2026-11-07 (read-only service diagnostics)
+- **Published-by:** GitHub connector via shared ViktorIXAI account
+- **Attribution-confidence:** DECLARED_UNVERIFIED
+- **Related-issue:** #10
+- **Related-checkpoint:** CLARYEL-P2002-20261107-HERMES-GATEWAY-CLI-001
+
+### Observed Gateway status
+
+The existing Hermes CLI returned:
+
+```text
+✗ Gateway is not running
+
+Recent gateway health:
+  ⚠ Last shutdown reason: auto-started gateway idle for 600s (gateway.unmanaged_idle_exit_seconds)
+
+To start:
+  hermes gateway run
+  hermes gateway install
+  sudo hermes gateway install --system
+```
+
+Interpretation: the Gateway was not running at the time of this check. Its recorded recent shutdown reason is the configured 600-second unmanaged-idle exit. This is not, by itself, evidence of a crash or failed installation. It does confirm there is currently no running Gateway process according to the CLI status command.
+
+### Installer options observed
+
+`hermes gateway install --help` lists:
+- `--system`: install as a Linux system-level service (help text says starts at boot).
+- `--run-as-user RUN_AS_USER`: select the account used by the Linux system service.
+- `--start-now` / `--no-start-now`.
+- `--start-on-login` / `--no-start-on-login`.
+- `--if-missing`, `--force`, and `--force-unit-path`.
+
+The Gateway `ensure` command is documented as ensuring a local runtime without installing or replacing a service. The CLI reports readiness-related exit codes 0–7.
+
+The Gateway `run` help documents foreground operation, including `--replace`, `--external-supervisor`, and options that apply to Docker/s6. No Gateway command was executed; only help and status were read.
+
+### systemd observation
+
+`systemctl --user is-system-running` returned `running`. The user service-unit filter returned no Hermes unit. Earlier owner-supplied diagnostics reported `Linger=no`. A user systemd manager being currently active does not prove that user services will start at boot without a login; with lingering disabled, that boot behavior must not be assumed.
+
+### Result
+
+- **PASS:** Hermes CLI reports Gateway not running at check time.
+- **OBSERVED:** recent Gateway shutdown reason was the configured unmanaged idle exit after 600 seconds.
+- **PASS:** CLI supports installing a Linux system-level boot service and selecting its run-as account.
+- **PASS:** user systemd manager is running in the current session.
+- **NOT_FOUND_BY_FILTER:** no Hermes user unit was listed.
+- **NOT_TESTED:** system-level service inventory, exact generated unit contents, installer privilege requirements, runtime environment, restart policy, and actual boot behavior.
+- **NO_CHANGES:** no service was installed, enabled, started, stopped, or modified.
+
+### Next action
+
+Before invoking the installer, inspect the local v0.23.0 Gateway installer implementation and exact systemd unit-generation behavior (including service identity, HOME/HERMES_HOME, working directory, environment handling, restart policy, and whether `--system` requires root). Also check for pre-existing Hermes system-level units. Then use the supported system-level installer for account `claryelvm` only if the implementation preserves the existing Hermes home and credential access. Do not use `--force` or `--force-unit-path` unless a verified conflict requires it. No provider reauthorization or reinstall is permitted.
