@@ -182,3 +182,106 @@ Therefore host/WAN exposure and the full reachable-peer set remain UNKNOWN. No c
 5. After owner approval, test: no key -> 401/403; wrong key -> 401/403; correct key -> successful completion; both direct-IP and hostname paths remain authenticated.
 6. Recheck that no unintended host/WAN port is exposed and that existing Cloud Hermes/Guard paths remain unchanged.
 
+
+
+## 7. Docker publication, host listener and network-peer inspection — 2026-11-07
+
+The owner supplied a further read-only terminal transcript.
+
+### Observed Docker configuration
+
+- Container: `claryel-inference`
+- Image: `claryel/strata:0.2.11-rocm-gfx120x`
+- Exposed container port: `8080/tcp`
+- Docker host port bindings: empty (`{}`)
+- Docker network publication mapping: `8080/tcp: null`
+- `docker port claryel-inference`: no mapping reported.
+- Mount `/models`: read-only.
+- Mount `/data`: read-write.
+
+The port being declared as exposed in image/container metadata is **not** the same as publishing it on the host. The supplied inspect output shows no host port binding.
+
+### Host listener check
+
+The owner ran:
+
+```bash
+ss -ltnp | grep ':8080' || echo "No host listener found on 8080"
+```
+
+Observed: `No host listener found on 8080`.
+
+This is evidence that no TCP listener matching port 8080 was visible in that host command output at the time of inspection. It does not rule out direct host-to-container bridge access, other ports, alternate protocols, or a listener that appears under a different namespace/address.
+
+### Private network inspection
+
+Observed:
+- Network: `claryel-private-ai`
+- Driver: `bridge`
+- `Internal=true`
+- `IPv6=false`
+- Subnet: `172.31.250.0/24`
+- Gateway: `172.31.250.1`
+- Only listed attached container at inspection time: `claryel-inference`, `172.31.250.2/24`.
+
+The earlier real-inference client was disposable (`docker run --rm`) and had exited before this inventory. Thus the current persistent network inventory contains only the inference container, according to the supplied output.
+
+### Environment variable names
+
+A host-side `docker inspect` listing of environment variable **names only** did not include `STRATA_API_KEY` or `STRATA_ALLOWED_HOSTS`. Values were not printed. This supports the conclusion that the key is not injected through the container environment, but it does not determine whether the mounted profile contains an `api_key` field.
+
+### Incomplete profile inspection
+
+The owner attempted:
+
+```bash
+docker exec claryel-inference python3 ...
+```
+
+It failed because the image does not provide `python3` on `PATH`. This is a tooling/path issue, not evidence that the profile is absent or unreadable. The previously observed interpreter path is `/opt/strata/terminal/python/bin/python3`; use that exact path for the next read-only profile-status check. Never print the key value.
+
+### Firewall / Guard limitation
+
+The supplied filtered `nft list ruleset` output contained only iptables-nft ownership warnings and no matching lines for the queried port/IP strings. This grep result is **not** a complete firewall-policy review. Generic chain rules, interface-based policy, conntrack rules and Guard behavior were not established. Effective Guard/nftables enforcement remains UNKNOWN.
+
+### Security interpretation
+
+The current evidence establishes:
+1. No Docker host-port publication for container TCP 8080 in the inspected configuration.
+2. No host TCP listener matching 8080 in the supplied `ss` output.
+3. The inference container is attached to an IPv4-only Docker bridge marked `Internal=true`.
+4. No other persistent peer was listed on that network at the time of inspection.
+5. The container's model mount is read-only; its state/config mount is read-write.
+
+It does **not** establish:
+- that the host cannot directly connect to `172.31.250.2:8080`;
+- that no other host/WAN route or protocol can reach the container;
+- the complete effective firewall/Guard policy;
+- whether the mounted Strata profile contains an API key;
+- whether every Strata route is authenticated.
+
+No configuration, container, network, firewall, Guard or host changes were performed.
+
+### Next read-only check
+
+Run the profile-status script with the interpreter path already present in the container:
+
+```bash
+sudo docker exec claryel-inference /opt/strata/terminal/python/bin/python3 -c '
+import json, os, stat
+from pathlib import Path
+p=Path("/data/state/strata/launch/iq3_s-128k.json")
+print("exists:", p.is_file())
+if p.is_file():
+    s=p.stat()
+    print("mode:", oct(stat.S_IMODE(s.st_mode)))
+    print("owner_uid:", s.st_uid, "group_gid:", s.st_gid)
+    d=json.loads(p.read_text())
+    v=d.get("api_key")
+    print("api_key_field:", "api_key" in d)
+    print("api_key_enabled:", bool(v) and str(v).strip().lower() not in ("none",""))
+    print("allowed_hosts_field:", "allowed_hosts" in d)
+'
+```
+
+This prints only presence/status and file metadata, never the credential. Then inspect the actual Strata route/authentication coverage and prepare a change/rollback proposal. No write action is authorized by this evidence checkpoint.
