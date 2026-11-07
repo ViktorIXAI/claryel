@@ -318,3 +318,111 @@ No item above has been implemented. No firewall, Squid, Docker, Gateway, guest, 
 - Confirm the exact Hermes HTTP transport/proxy behavior from the installed pinned source or a safe isolated test.
 
 After this capture, prepare a reviewable patch and rollback sequence. Do not apply it until the owner explicitly approves the mutation and service-reload window.
+
+
+---
+
+## 10. Follow-up: canonical Guard, full Squid config and live VM block metadata
+
+- **Event time:** UNKNOWN. Squid parser output carries timestamp 2026-11-07 10:31:34; this is the parser's log timestamp, not a separately captured shell start/end time.
+- **Evidence source:** OWNER_SUPPLIED_TERMINAL_TRANSCRIPT.
+- **Operation:** READ_ONLY_DIAGNOSTICS.
+- **Executed-by:** Owner/operator at P2002; identity not independently authenticated.
+- **Prepared-by:** ChatGPT GPT-6 (declared).
+- **Writer-instance:** CHATGPT-6-TRIAGE-01.
+- **Writer-role:** INSTALLATION_TRIAGE_AND_REPOSITORY_MAINTENANCE.
+- **Reviewed-by:** SELF_REVIEW_ONLY.
+- **Host/guest changes in this checkpoint:** None reported or performed by ChatGPT.
+
+### 10.1 Canonical Guard rules file — captured
+
+The owner displayed the complete current `/etc/claryel/firewall.nft`. Its policy contains:
+
+- `guest_input`, hook INPUT, priority -10, policy ACCEPT:
+  1. `virbr240` established/related ACCEPT;
+  2. `virbr240` DHCP UDP source 68 / destination 67 ACCEPT;
+  3. all remaining `virbr240` input DROP;
+  4. exact Strata proxy exception: `br-strata-eg`, source `172.30.250.10/32`, destination `172.30.250.1/32`, TCP/3128, new/established ACCEPT;
+  5. remaining `br-strata-eg` input DROP;
+  6. source `172.30.250.0/24` DROP.
+- `guest_forward`, hook FORWARD, priority -10, policy ACCEPT:
+  1. input interface `virbr240` DROP;
+  2. output interface `virbr240` DROP;
+  3. input interface `br-strata-eg` DROP;
+  4. output interface `br-strata-eg` DROP;
+  5. source `172.30.250.0/24` DROP;
+  6. destination `172.30.250.0/24` DROP.
+
+This is 12 explicit rules across the two chains. The Cloud Hermes input DROP is currently before any exception for a new guest-to-host TCP/3129 connection. The displayed canonical file contains no such exception. The Strata proxy exception remains narrowly scoped.
+
+### 10.2 Guard deployment manifest — hash mismatch requires reconciliation
+
+Owner-supplied live `sha256sum` output:
+
+| Artifact | Live SHA-256 | Deployment manifest SHA-256 | Result |
+|---|---|---|---|
+| `/etc/claryel/firewall.nft` | `1c1e053348e12cc020fec4626b4663b87cab8ffbddf4f28067a6caa7572c35c2` | `b2549a3861587019c9a8a4d28734ff9dc232f1dc438331831e60f0fd66593d71` | MISMATCH |
+| `claryel-guard-verify` | `03426487ac333e29a67f930d165d27a89a5413e0a6f06089fe979d057a3c46df` | `90c9be3cbfd4128cf07fc1f3590517f5a402f4829a8912e0b3426dea5b807bbe` | MISMATCH |
+| `claryel-guard-load` | `de002acc3d58ad5637c08a4de2595eab60f77f985391d091b5ad9d88fd0094de` | `de002acc3d58ad5637c08a4de2595eab60f77f985391d091b5ad9d88fd0094de` | MATCH |
+
+The manifest was read from the dated deployment backup directory `guard-deploy-20261106T204013Z`. The loader matches that manifest, while the canonical rules file and verifier do not.
+
+**Interpretation:** this is an unresolved baseline/hash discrepancy. It may reflect a later intentional update, an outdated deployment manifest, or unreviewed file drift. The hashes alone do not establish malicious modification, runtime policy failure, or whether the live verifier's expected rule set matches the canonical file. Do not overwrite or "restore" either file from the old manifest, and do not edit the verifier yet.
+
+**Required reconciliation:** capture the full live verifier and loader source; rerun the verifier; capture `nft list table inet claryel_guard`; compare the live table, canonical file and verifier's exact expected rules; inspect the dated deployment backup contents and timestamps. Only then establish a new reviewed baseline and update its manifest as part of an explicitly approved change.
+
+### 10.3 Full Squid configuration — captured
+
+The complete displayed `/etc/squid/squid.conf` contains:
+
+- One listener: `172.30.250.1:3128`.
+- One source ACL: `strata_client = 172.30.250.10/32`.
+- HTTPS-only `Safe_ports` and `SSL_ports` (port 443); CONNECT method ACL.
+- Allowed domain ACL: `huggingface.co`, `us.aws.cdn.hf.co`, `github.com`, `codeload.github.com`.
+- `blocked_dst` ACL covers the displayed IPv4 and IPv6 private, loopback, link-local, carrier-grade NAT, documentation, multicast and reserved ranges.
+- Access order: deny unsafe ports; deny CONNECT outside SSL ports; deny blocked destinations; allow only the Strata source + approved domains + CONNECT; deny all.
+- No `include` directives were printed by the supplied grep.
+- `squid -k parse` printed the configuration processing sequence and no parse error in the supplied output. The shell did not capture its exit code, so this is recorded as **NO_PARSE_ERROR_SHOWN**, not a fully evidenced exit-code PASS.
+- `ss` showed a listener on `172.30.250.1:3128`; no listener on 3129 was shown.
+
+**Architecture decision:** issue #19 explicitly requires the existing Strata/Hugging Face proxy ACL and listener to remain unchanged. Therefore the preferred design is a **separate Squid instance with its own configuration, listener, service identity/state paths and logs**, rather than adding a second listener to the existing Squid instance and changing its global ACL evaluation. A separate instance must be validated for non-overlapping PID/cache/log paths and must not share mutable cache/state with the Strata instance. This is a design preference, not an implemented or fully tested configuration.
+
+### 10.4 Active Cloud Hermes VM disk metadata — captured safely
+
+Owner-supplied `virsh domblklist --details` identified the VM's disk target as `vda` and the attached seed medium as `sda`. `virsh domblkinfo` for `vda` returned:
+
+- Capacity: 40.000 GiB.
+- Allocation: 5.300 GiB.
+- Physical: 5.300 GiB.
+
+This is live block-device metadata only. It is not a backup, checksum, qcow2 consistency check or restore test. No `qemu-img` operation was performed in this checkpoint.
+
+### 10.5 Gateway/proxy inspection — inconclusive because commands ran on the host
+
+The shell prompt identifies the command environment as host `claryel@p2002`. The command `systemctl --user show hermes-gateway.service` returned empty `FragmentPath` and `DropInPaths`; the search path `/home/claryel/.hermes/hermes-agent` did not exist.
+
+These results describe the host user's session/path, not the Cloud Hermes guest's user service. They do **not** establish that the guest Gateway unit is missing or that Hermes lacks proxy support. Guest-side service metadata, proxy environment and installed source remain NOT_CAPTURED.
+
+Next capture must be executed **inside the Cloud Hermes guest**, without printing environment values, OAuth tokens or credentials. Record only proxy variable names as SET/UNSET.
+
+### 10.6 Revised change strategy — proposal only
+
+To honor issue #19's explicit non-goal of changing the existing Strata proxy path:
+
+1. Leave the existing `/etc/squid/squid.conf`, its `172.30.250.1:3128` listener, Strata ACL and service untouched.
+2. Evaluate a second independent Squid instance bound only to `172.30.240.1:3129`, with source fixed to `172.30.240.12/32`, CONNECT/443 only, exact domains `auth.x.ai` and `api.x.ai`, private/reserved destination denial, and default deny. Give it separate config, PID, logs and runtime/cache state.
+3. After Guard baseline reconciliation, add one exact Guard INPUT exception for source `172.30.240.12`, destination `172.30.240.1`, interface `virbr240`, TCP/3129, before the broad `virbr240` DROP. Update canonical rules and exact verifier together.
+4. Add one exact UFW INPUT allow for the same source, destination, ingress interface and TCP port. No FORWARD rule, NAT, default route, broad libvirt allowance or guest DNS.
+5. Verify the guest's actual HTTP client/OIDC transport honors the proxy before changing its Gateway service.
+6. Test the second proxy in isolation: allowed xAI CONNECT succeeds; another public hostname, private/LAN destinations, wrong source and non-CONNECT methods are denied. Then test OIDC discovery and one authenticated Grok request.
+7. Preserve a config rollback copy and owner-approved change window. A current guest disk recovery point is required before any reboot; the dated 2026-11-06 image backup predates the 2026-11-07 Hermes PM/Gateway repair.
+
+### 10.7 Outstanding read-only evidence
+
+- Full current `claryel-guard-verify` and `claryel-guard-load` source.
+- Current `claryel-guard-verify` execution result and live `nft list table inet claryel_guard`.
+- Contents/metadata of the dated Guard deployment backup and its manifest, to determine why two live hashes differ.
+- Guest-side Gateway unit fragment/drop-ins, proxy variable names (not values), Hermes installation path and proxy support in the exact installed version.
+- Feasibility details for a second Squid instance: package binary path/version, runtime user, service model, and non-overlapping PID/log/cache directories.
+
+No host or guest configuration was changed. No service was reloaded/restarted, no firewall was mutated, no VM was stopped, and no backup or reboot was performed.
