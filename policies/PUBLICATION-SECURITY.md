@@ -2,7 +2,7 @@
 
 **Status: mandatory publication policy, effective 2026-11-06. Implementation and CI enforcement require separate testing and owner approval.**
 
-> **Temporary owner authorization:** From 2026-11-06T17:09:44+01:00 through 2026-11-07T17:09:44+01:00, the owner authorizes comprehensive P2002/CLARYEL technical-log publication, including non-secret operational identifiers, actual network details and firewall/access configuration. Passwords and secret authentication material remain strictly excluded. See [the time-limited owner authorization](TEMPORARY-FAST-LOG-WINDOW-2026-11-06.md). This does not prove technical gate enforcement, deploy the private evidence ledger, or change the future acceptance criteria for issues #1, #2 and #4.
+> **Standing owner direction — 2026-11-07:** The owner directs public disclosure of the P2002 laboratory architecture for independent security review, including its actual non-secret internal IP addresses, host/container/VM/service names, Docker network names, ports, routes, firewall/access configuration, versions, commands, outputs, failures and test results. This standing direction supersedes the expired 24-hour exception for the P2002 lab's non-secret architecture and operational identifiers. It does not authorize credentials, private keys, customer data or unrelated personal/network identifiers. See [the public architecture and client identity standard](PUBLIC-ARCHITECTURE-AND-CLIENT-IDENTITY.md). This does not prove technical gate enforcement or deploy the private evidence ledger.
 
 ## Scope and origin
 
@@ -21,7 +21,7 @@ Adapted from the adjacent claryel-autonomous repository's SECURITY.md, .gitleaks
 
 **PUBLIC REPRODUCIBILITY LEDGER (this repository):**
 - Publish hardware *classes*, operating-system/application versions, non-identifying architecture, exact deterministic commands with variables, synthetic fixtures, package pin/digest references, tests, expected results, sanitized results, failures, reasoning and timestamps.
-- Replace environment-specific values with descriptive placeholders (e.g., `ADMIN_CLIENT_IPV4`, `BOX_LAN_IPV4`, `LAN_IFACE`, `RECOVERY_DEVICE_BY_ID`, `SSH_USER`, `SECRET_REF`). Do not publish observed addresses or confidential host naming.
+- For the P2002 reference lab, publish the actual non-secret lab identifiers and network values covered by the owner's standing direction. For every client/third-party deployment, replace environment-specific values with descriptive placeholders (e.g., `ADMIN_CLIENT_IPV4`, `BOX_LAN_IPV4`, `LAN_IFACE`, `SSH_USER`, `SECRET_REF`) and do not publish that customer's live addresses, hostnames or deployment manifest. See [the per-client identity standard](PUBLIC-ARCHITECTURE-AND-CLIENT-IDENTITY.md).
 - Show *how to discover* and *validate* each local parameter without publishing its value. Distinguish owner-observed, agent-proposed, independently tested and not tested. Public runbooks must be implementable on different hardware and networks.
 - Publish linkable public checkpoint IDs and non-reversible **sanitized artifact** hashes only. Do not hash low-entropy secrets and publish their hashes; use salted keyed attestations or private references as needed.
 - Do not silently paraphrase an exact local procedure when differences affect recovery. Record a private-to-public mapping of substitutions and verified command equivalence in the private ledger.
@@ -30,11 +30,11 @@ Adapted from the adjacent claryel-autonomous repository's SECURITY.md, .gitleaks
 
 Secrets: API tokens, passwords, authentication cookies, SSH private keys, LUKS recovery material, credential-containing URLs, .env values, vault dumps, encryption passphrases, TOTP seeds, cert private keys, service account JSON, cloud session/browser profiles.
 
-Infrastructure: **all actual private IPs (RFC1918), IPv4 link-local, loopback if used in real logs, global/ULA/link-local IPv6 host addresses, MACs, real SSH destinations/port mappings, real interface-to-host mappings, DNS hostnames/domains identifying the owner's network, router configuration details, VPN/Tailscale/mesh addresses, serial numbers, storage UUIDs, machine-id/boot-id and unique device IDs.** Reserved documentation ranges and synthetic values are allowed only when explicitly identified as examples.
+Infrastructure: Customer, third-party and unrelated production infrastructure identifiers remain forbidden by default, including their actual private/public IPs, IPv6 addresses, MACs, SSH destinations, interface-to-host mappings, DNS names, router/VPN/mesh addresses, serial numbers, storage UUIDs, machine IDs and unique device IDs. **Exception:** actual non-secret P2002 laboratory IP addresses, container/VM/service names, Docker network names, ports, routes and firewall/access topology are explicitly authorized for public disclosure by the owner under [the P2002 public architecture policy](PUBLIC-ARCHITECTURE-AND-CLIENT-IDENTITY.md). Do not extend that exception to customer installations or other networks without a separate owner decision. Public-WAN addresses and personal/customer location identifiers are not included in this exception.
 
 Personal/customer data: names/usernames, paths embedding local accounts, real home directories, invoices, personal communications, health records, user content, unredacted telemetry or screenshots containing identifying data. Avoid publishing account-specific or customer-specific hashes, filenames, and exact timestamps when linkable to identities.
 
-Untrusted/raw materials: core dumps, crash traces, database backups, container/VM exports, shell history, tool transcripts, provider responses, logs and artifacts **must be treated as private by default**. Their filenames or exclusion rules do not constitute authorization to publish them.
+Untrusted/raw materials: core dumps, crash traces, database backups, container/VM exports, shell history, provider responses, and unreviewed logs/artifacts remain private by default. P2002 command transcripts and diagnostic excerpts may be published only after review for excluded secrets, personal/customer data and unrelated identifiers under the owner's standing lab-disclosure direction. Filenames or exclusion rules do not constitute authorization.
 
 ## Mandatory publication gate
 
@@ -51,7 +51,7 @@ Untrusted/raw materials: core dumps, crash traces, database backups, container/V
 
 ## High-value safety checks
 
-- Flag RFC1918 IPv4, IPv4 link-local, non-example IPs in terminal dumps, IPv6 addresses other than standard documentation prefixes when they appear to reveal host/network information, MAC/EUI-64 patterns, SSH targets, absolute per-user paths, machine-id/UUIDs, hostname and URL identities, credentials and service tokens.
+- Continue to flag RFC1918 IPv4, IPv4 link-local, non-example IPs in terminal dumps, IPv6 addresses other than standard documentation prefixes, MAC/EUI-64 patterns, SSH targets, absolute per-user paths, machine-id/UUIDs, hostname and URL identities, credentials and service tokens. A finding in a P2002 lab artifact requires explicit scope review against the owner authorization; do not create a blanket scanner bypass or suppress secret/PII findings.
 - Flag base64, JWT, private key blocks, high-entropy strings and secrets in binary metadata/EXIF; review false positives carefully without leaking captured value into scanner logs.
 - Disallow direct public publication of Linux `ip addr`, `ip route`, `hostnamectl`, `ssh -v`, `journalctl`, `virsh dumpxml`, Docker inspect, Kubernetes YAML, env dumps, `lsblk -f`, `cryptsetup luksDump` and analogous output unless rendered as reviewed sanitized summaries.
 - No default exceptions for synthetic data containing plausible live credentials or IPs that could be mistaken for real values. Use documentation-only IP blocks (IPv4 192.0.2.0/24, 198.51.100.0/24, 203.0.113.0/24, IPv6 2001:db8::/32) when worked examples require numeric addresses, and label them synthetic.
@@ -69,7 +69,7 @@ Untrusted/raw materials: core dumps, crash traces, database backups, container/V
 
 - Insert synthetic canary tokens, RFC1918 IP, IPv6 ULA, MAC, user home paths, session cookie, SSH private key marker and credentials into staged test fixtures; verify the gate blocks them **before** upload.
 - Confirm the public counterpart remains sufficient to reproduce firewall, KVM, Docker, recovery USB and LUKS operations using substituted test values.
-- Confirm private records can rebuild exact P2002 procedure offline, while public artifacts reveal no real infrastructure facts.
+- Confirm public P2002 artifacts intentionally expose the actual non-secret lab architecture and identifiers needed for independent review, while customer deployments use generated unique identities and do not disclose their live infrastructure values.
 - Exercise direct GitHub API paths, issue comments, releases and binary files; prove bypasses fail closed. Repeat after pipeline changes.
 
 **Limitations:** Gitleaks plus regexes can miss unknown secret formats and semantic/contextual disclosures. Human review and independent checks remain required; secrecy is not proven merely because scanners pass.
