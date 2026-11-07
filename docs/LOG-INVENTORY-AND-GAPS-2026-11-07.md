@@ -1,6 +1,6 @@
 # CLARYEL log inventory and evidence gaps — 2026-11-07
 
-**Scope:** public GitHub repository ViktorIXAI/claryel, default branch main, plus visible issue #9 comments and recent commit history. **As-of repository snapshot:** latest commit observed was 7513979be541a49443ae947b0a0ddc4197f3492d at 2026-11-06T21:34:22Z. This is a repository snapshot, not live P2002 telemetry.
+**Scope:** public GitHub repository ViktorIXAI/claryel, default branch main, plus visible issue #9 comments and recent commit history. **As-of repository snapshot:** refreshed 2026-11-07 after publication of the Strata inference checkpoint and the standing public-architecture disclosure direction. This is a repository snapshot, not live P2002 telemetry.
 
 ## 1. Repository log inventory
 
@@ -24,7 +24,7 @@ The current logs root contains only one machine directory: logs/P2002/. It conta
 
 - docs/AUDIT-STATUS-AND-EVIDENCE.md: status summary, but its GPU/Strata status mirrors the last partial bring-up checkpoint and is stale if later successful tests occurred outside this public repository snapshot.
 - docs/EVIDENCE-INDEX-UPDATE-2026-11-06-02.md: links the backup and IQ3_S bring-up events; its last status is IN PROGRESS / NOT VERIFIED.
-- Issue #9 has four visible comments. The latest comment repeats the partial retry status and says no ROCm smoke test, model download, model load or inference was yet confirmed.
+- Issue #9 has five visible comments after the 2026-11-07 inference update. The latest comment repeats the partial retry status and says no ROCm smoke test, model download, model load or inference was yet confirmed.
 - Commit history contains numerous checkpoint commits, but a commit is not a substitute for the corresponding execution log.
 - Current logs root contains only P2002. No P1005 log directory was found.
 - The adjacent claryel-autonomous repository is a separate AI-agent benchmark/research project; do not treat its extensive experiment logs as P2002 installation logs.
