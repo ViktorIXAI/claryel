@@ -4,7 +4,7 @@
 
 ## 1. Repository log inventory
 
-The current logs root contains only one machine directory: logs/P2002/. It contains **10 standalone Markdown records**, not 11. The 50 KB initial-install.md is the long chronological narrative; the other nine files are focused checkpoints.
+The current logs root contains only one machine directory: logs/P2002/. It contains **11 standalone Markdown records**, not 11. The 50 KB initial-install.md is the long chronological narrative; the other nine files are focused checkpoints.
 
 | # | File | Main scope | Evidence limitation / gap |
 | --- | --- | --- | --- |
@@ -17,7 +17,8 @@ The current logs root contains only one machine directory: logs/P2002/. It conta
 | 7 | logs/P2002/2026-11-06-pre-reboot-backup-preflight-aborted.md | Safe refusal to overwrite existing backup | Correctly records ABORTED; not a backup-success checkpoint |
 | 8 | logs/P2002/2026-11-06-pre-reboot-backup-inventory.md | XML, archive, qcow2 and Guard inventory | pre-reboot-state.txt missing; restore remains NOT_TESTED |
 | 9 | logs/P2002/2026-11-06-strata-network-isolation-acceptance.md | Restricted egress, Squid, positive/negative TCP/HTTPS tests, one reboot | Bounded tests only; IPv6, DNS/UDP/QUIC, L2, Guard-loss and second reboot NOT_TESTED |
-| 10 | logs/P2002/2026-11-06-strata-iq3s-download-bringup.md | Strata 0.2.11/build 0.1.57, failed first launch, corrected Docker device passthrough retry | Last recorded state is GPU device nodes visible and Strata checking the engine; no final ROCm compute/model/inference result |
+| 10 | logs/P2002/2026-11-06-strata-iq3s-download-bringup.md | Strata 0.2.11/build 0.1.57, failed first launch, corrected Docker device passthrough retry | Historical checkpoint ends at GPU device nodes and engine check; superseded by later owner-supplied inference evidence in row 11, but not by a complete ROCm smoke-test transcript |
+| 11 | logs/P2002/2026-11-07-strata-private-api-inference-success.md | Loaded Qwen3.8-Flash-Next IQ3_S, Strata API health/model readiness, DNS-rebinding Host rejection, direct-IP private client request, successful exact-answer inference and measured throughput | Owner-supplied transcript; API key absent, host/WAN exposure unknown, reasoning_content behavior and full network isolation still require review |
 
 ## 2. Other evidence surfaces
 
@@ -37,6 +38,7 @@ The current logs root contains only one machine directory: logs/P2002/. It conta
 - Bounded post-reboot restricted proxy positive/negative tests.
 - Strata 0.2.11 / engine build 0.1.57 identification.
 - First Strata launch failed before model download; corrected retry passed /dev/kfd and /dev/dri into container and observed device nodes there.
+- Subsequent owner-supplied output shows Strata ready, the Qwen3.8-Flash-Next IQ3_S model loaded, health/model endpoints returning HTTP 200, and a disposable private-network client receiving the exact expected answer at 48.6 generated tokens/second (prompt processing 151.3 tokens/second). See log 11. This is functional inference evidence, not a security acceptance.
 
 ### Not evidenced in this repository snapshot
 - Complete firmware package correction and final RX 9070 amdgpu binding chronology.
@@ -44,8 +46,7 @@ The current logs root contains only one machine directory: logs/P2002/. It conta
 - rocminfo/amd-smi output identifying gfx1201 after the final fix.
 - Actual HIP compute smoke-test command, exit code and output.
 - Model shard/projector/drafter download completion, exact hashes and format validation.
-- Strata successful model preparation, API readiness, model load and verified inference response.
-- Subsequent GPU/container tests reportedly performed by the owner but not represented in the current public log or issue #9 comments.
+- Full post-fix ROCm/HIP device-identification and standalone GPU smoke-test transcript (separate from the successful model inference evidence) is still not present in the public log snapshot.
 - Post-reboot Cloud Hermes VM state, DHCP lease, SSH and autostart acceptance.
 - A verified restore-from-backup boot.
 - Machine-readable cross-file event inventory, global chronological checkpoint index, and reconciliation of every commit with a log checkpoint.
@@ -58,14 +59,15 @@ The current logs root contains only one machine directory: logs/P2002/. It conta
 2. The network acceptance file contains a proposed download command explicitly marked NOT EXECUTED, followed by a later separate actual bring-up log. The index must preserve this distinction.
 3. The initial issue #9 comments describe firmware investigation and later corrected container device passthrough, but not final successful GPU compute/inference acceptance.
 4. The current audit-status page is a snapshot and must carry a last-evidence timestamp; it should not be treated as live status.
-5. The 24-hour fast-log publication exception has an absolute expiry; all agents must check the current effective policy before publication. The exception does not waive secret, private-data or material infrastructure-exposure controls.
+5. The 2026-11-06 temporary publication window is historical and expired. The owner issued a standing 2026-11-07 direction permitting public disclosure of P2002 non-secret architecture and lab identifiers; credentials, customer data and unrelated personal/network identifiers remain excluded. Per-client deployments must use generated unique identities and must not reuse P2002 runtime values.
 
 ## 5. Required next audit steps
 
 - Recover latest GPU/Strata logs from P2002 host log directory, agent source logs, other branches and any owner-controlled local Git mirror.
 - Create one event ID per material operation and map it to commit, file, issue/comment and machine identity.
 - Add a machine-readable index (JSON/YAML) and a human-readable timeline; validate no orphan event or unsupported PASS.
-- Add missing checkpoints for GPU/ROCm, model download/integrity, model preparation/inference, Cloud Hermes post-reboot state, and backup restore when evidence becomes available.
+- Add the successful inference checkpoint (now published), recover the separate GPU/ROCm smoke-test transcript and model artifact hashes, and add missing checkpoints for Cloud Hermes post-reboot state and backup restore when evidence becomes available.
+- Verify Strata API authentication, host-port exposure, all peers on claryel-private-ai, direct-IP versus Host-header behavior, and reasoning_content response handling before expanding the set of agent clients.
 - Preserve old records; append corrections rather than rewriting history.
 
 ## 6. Related tasks
