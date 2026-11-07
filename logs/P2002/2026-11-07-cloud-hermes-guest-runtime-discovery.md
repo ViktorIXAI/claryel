@@ -501,3 +501,73 @@ Do not change DNS servers, edit resolver files, open egress, disable Guard, alte
 - Published-by: GitHub connector via shared ViktorIXAI account
 - Attribution-confidence: DECLARED_UNVERIFIED
 - Related-checkpoint: CLARYEL-P2002-20261107-PM-REPAIR-DNS-FAILURE-001
+
+## Owner-supplied guest network diagnosis — no default route or DNS uplink
+
+- **Checkpoint ID:** CLARYEL-P2002-20261107-GUEST-NETWORK-NO-DEFAULT-ROUTE-001
+- **Target-machine-ID:** P2002-CLOUD-GUEST
+- **Deployment-alias:** P2002-LAB
+- **Event time:** UNKNOWN (no timestamp in the supplied guest transcript)
+- **Operation:** READ_ONLY_NETWORK_DIAGNOSTICS
+- **Evidence source:** OWNER_SUPPLIED_TERMINAL_TRANSCRIPT
+- **Executed-by:** Owner, in the already-open guest shell; ChatGPT did not execute commands on the guest.
+- **Prepared-by:** ChatGPT GPT-6 (declared)
+- **Writer-instance:** CHATGPT-INSTALL-01 (declared; unauthenticated)
+- **Writer-role:** INSTALLATION_COORDINATOR
+- **Reviewed-by:** SELF_REVIEW_ONLY
+- **Approved-by:** OWNER_REQUEST_2026-11-07 (read-only network diagnosis)
+- **Published-by:** GitHub connector via shared ViktorIXAI account
+- **Attribution-confidence:** DECLARED_UNVERIFIED
+- **Related-issue:** #10
+- **Related-checkpoint:** CLARYEL-P2002-20261107-PM-REPAIR-DNS-FAILURE-001; CLARYEL-P2002-20261107-HOST-BOOT-SNAPSHOT-001
+
+### Owner-supplied observations
+
+- Interface `enp6s0` is UP with address `172.30.240.12/24`.
+- The only route shown is the connected subnet route `172.30.240.0/24 dev enp6s0`; there is **no default route**.
+- `/etc/resolv.conf` is a symlink to the systemd-resolved stub file and lists only `127.0.0.53`.
+- `systemd-resolved` is active, but `resolvectl status` reports no DNS scopes on `enp6s0` and no configured uplink DNS server.
+- `getent ahostsv4 pypi.org` produced no address.
+- `resolvectl query pypi.org` failed with "No appropriate name servers or networks for name found".
+- The HTTPS request to the PyPI package index failed with curl error 6, "Could not resolve host".
+- The supplied transcript contains an output splice/truncation after the "DEFAULT GATEWAY TEST" heading; no successful gateway ping result is present. The route table independently establishes that no default gateway route is configured.
+
+### Correlation with earlier host evidence
+
+The earlier owner-supplied P2002 host snapshot identified libvirt network `claryel-cloud-admin`, bridge `virbr240`, and the Guard nftables table `inet claryel_guard`. Its displayed `guest_forward` chain explicitly drops traffic entering or leaving `virbr240`; its `guest_input` chain allows established/related traffic and DHCP before dropping other traffic arriving on that bridge.
+
+These host rules are evidence of an intentional isolation boundary. They do not, by themselves, identify the intended approved egress path for this guest or prove whether a separate proxy path is available. The guest's missing default route and DNS uplink are independently observed.
+
+### Assessment
+
+- **CONFIRMED:** The guest currently has no default route.
+- **CONFIRMED:** The guest has no DNS uplink/scope configured on `enp6s0`.
+- **CONFIRMED:** PyPI hostname resolution and HTTPS access fail from the guest.
+- **LIKELY:** The immediate failure is due to the guest's isolated network configuration and/or intentionally restricted egress, not a Hermes-specific issue.
+- **NOT_YET_DETERMINED:** The intended route for this guest (direct routing, restricted proxy, Security Gateway relay, or another approved path), the libvirt network's exact DHCP/router configuration, and the host-side proxy policy.
+- **NO_CHANGES:** No DNS settings, routes, Guard rules, libvirt network settings, or guest configuration were changed.
+
+### Next action
+
+On the P2002 host (not inside the guest), perform read-only inspection of:
+1. `virsh net-dumpxml claryel-cloud-admin`;
+2. bridge address and link state for `virbr240`;
+3. host routes relevant to `172.30.240.0/24`;
+4. the relevant Guard/proxy service status and narrowly scoped rules/counters;
+5. any already-defined approved Security Gateway or proxy path for this guest.
+
+Do not add a default route, assign public DNS, enable libvirt forwarding, relax nftables, or disable Guard until the intended security architecture path is identified and explicitly approved by the owner.
+
+### Contribution provenance
+
+- Writer-instance: CHATGPT-INSTALL-01 (declared; unauthenticated)
+- Writer-role: INSTALLATION_COORDINATOR
+- Deployment-alias: P2002-LAB
+- Prepared-by: ChatGPT GPT-6 (declared)
+- Executed-by: Owner in the existing guest shell
+- Evidence-source: OWNER_SUPPLIED_TERMINAL_TRANSCRIPT
+- Reviewed-by: SELF_REVIEW_ONLY
+- Approved-by: OWNER_REQUEST_2026-11-07 (read-only network diagnosis)
+- Published-by: GitHub connector via shared ViktorIXAI account
+- Attribution-confidence: DECLARED_UNVERIFIED
+- Related-checkpoint: CLARYEL-P2002-20261107-GUEST-NETWORK-NO-DEFAULT-ROUTE-001
