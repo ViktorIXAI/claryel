@@ -440,3 +440,25 @@ The public Hermes source at the issue's referenced commit `2bd378ed1b8d6bf2192cb
 Reference: [pinned Hermes xAI OAuth source](https://github.com/NousResearch/hermes-agent/blob/2bd378ed1b8d6bf2192cb26e0a55ff3091e6bd19/hermes_cli/auth_xai.py).
 
 Do not configure the Gateway until guest-side unit metadata, actual installed source/version and runtime proxy environment are captured.
+
+
+### 10.9 Owner-supplied guest process environment and source-search follow-up
+
+The owner supplied the following read-only output from `claryel-cloud-vm`:
+
+- `systemctl --user show-environment` contained no variables named `HTTP_PROXY`, `HTTPS_PROXY`, `ALL_PROXY` or `NO_PROXY`.
+- Gateway unit: `LoadState=loaded`, `ActiveState=active`, fragment `/home/claryelvm/.config/systemd/user/hermes-gateway.service`, no drop-ins reported.
+- Main Gateway PID: `3380`; `/proc/3380/exe` resolves to `/home/claryelvm/.hermes/tools/python-3.14.9+20261021-linux-x64/bin/python3.14`.
+- The Gateway process environment contained no proxy-variable names among the four checked above.
+- Process was reported as `hermes`, parent PID 993.
+- An attempted `importlib.util.find_spec("hermes_cli.auth_xai")` using the bare Python executable failed with `ModuleNotFoundError: No module named 'hermes_cli'`.
+- A filesystem search was run only under `~/.local`, `~/.cache/uv` and `~/.local/pipx`; it returned `SOURCE=NOT_FOUND`.
+
+Interpretation and limitations:
+
+1. There is currently no evidence that the running Gateway receives an HTTP(S) proxy through either the user systemd manager environment or its own process environment. This is a concrete configuration gap for the intended environment-variable-based proxy plan, not yet proof that it is the only reason Grok failed.
+2. The Python executable path alone does not identify the installed Hermes module path. Running that interpreter with `-c` also does not reproduce the entry-point script's `sys.path` context. Therefore the `ModuleNotFoundError` is not proof that Hermes is absent or broken.
+3. The source search omitted the known Git installation directory `/home/claryelvm/.hermes/hermes-agent` (reported by `hermes --version`) and the service entry point `/home/claryelvm/.hermes/hermes-agent/.hermes/bin/hermes`. The installed source search is incomplete.
+4. No Gateway, network, firewall, Squid, VM or boot configuration was changed as part of this diagnostic.
+
+Next read-only checks: search the known Git installation tree and its `.hermes` environment for `hermes_cli/auth_xai.py`; inspect the install commit and entry-point wrapper; inspect the exact unit file while printing only environment variable names (never values); then inspect the installed HTTPX version and OAuth plus inference transport code. Do not mutate the service until those facts are established.
