@@ -693,3 +693,52 @@ This is consistent with a file-reading wrapper exporting STRATA_API_KEY and then
 - Approved-by: owner direction to continue the P2002 security review
 - Published-by: GitHub connector via shared ViktorIXAI account
 - Attribution-confidence: DECLARED_OWNER_SUPPLIED
+
+
+## 14. Read-only persistence and file-permission follow-up — 2026-11-07
+
+The owner supplied the output of a second read-only inspection command. No secret values were printed.
+
+### Entrypoint state paths
+
+- entrypoint.sh lines 31–34 set STATE_DIR to XDG_STATE_HOME or /data/state/strata, KEY_FILE to STRATA_KEY_FILE or /data/state/api-key, PRESET to docker by default, and PORT to 8080 by default.
+- The native entrypoint's KEY_FILE default is therefore /data/state/api-key. The current live container overrides the image entrypoint and directly starts strata serve, so the native entrypoint's post-launch key-file write is not part of the current process path. The diagnostic did not inspect whether STRATA_KEY_FILE is configured in the container environment.
+
+### Private run-config writer
+
+The owner-supplied runner.py excerpt (lines 589–615) establishes:
+- write_private() creates the parent directory if necessary.
+- It writes through a temporary file in the destination directory.
+- It applies chmod 0600 to the temporary file (best effort), then atomically replaces the destination.
+- launch_dir() resolves to paths.state_base() / "launch" and creates that directory.
+
+This confirms the intended private-file write mechanism for callers of write_private(). It does not, by itself, prove which exact files are written through that helper; the supplied grep did not search for write_private() call sites. The previously recorded live profile path is /data/state/strata/launch/iq3_s-128k.json and its earlier owner-supplied metadata was 0600 root:root. The new find command did NOT re-check that profile: its -name predicates matched basenames containing "preset" or "launch", or exactly "api-key", whereas the profile basename is iq3_s-128k.json. Do not treat that find output as a recursive permission audit.
+
+### Preset persistence remains only partly resolved
+
+The grep found preset-related call sites in launch/cmd.py around lines 307, 984, 989 and 999, and LaunchSettings documents api_key as stored only in the private preset file. However, the supplied output did not show the preset serializer, exact preset path, its file mode, or the call chain that persists the key. These remain open. The grep pattern also omitted write_private(), so it did not identify all private config writer call sites.
+
+### Live server credential handling
+
+- server.py lines 9919–9924 show --api-key defaults to STRATA_API_KEY.
+- Lines 10035–10045 select the effective raw key from the CLI/environment value or, if absent, the profile api_key.
+- Lines 7754–7762 show the _authorized() helper: with no configured key it permits the request; with a configured key it accepts Bearer or x-api-key and returns HTTP 401 for missing/wrong credentials.
+- Lines 7764–7770 show a separate telemetry authorization helper.
+- Lines 8079–8084 show /health returns a boolean api_key status, not the key value.
+- The targeted grep did not show a direct write of the server API key in the matched server.py lines. This is not proof that no helper, other module, diagnostic, crash path or process inspection can expose it.
+- The excerpt did not show where _authorized() is invoked across route handlers. Consequently it does not prove every /v1 route or non-/v1 management route is protected. Route-by-route enforcement remains an acceptance requirement.
+
+### Interpretation and remaining evidence gaps
+
+1. The private run-config writer's 0600/atomic-replace behavior is a positive control, and the previously inspected active profile metadata is 0600 root:root. Root in the container can still read these files.
+2. Do not generalize that mode to the separate preset file until its actual write path and resulting file metadata are inspected.
+3. The metadata-only find result listed two runtime log files, both 0600 root:root. Because the filename predicate was selective, it is not a complete inventory of /data/state and did not inspect the active profile basename.
+4. The direct-serve wrapper remains the preferred candidate, not an accepted change. Next inspect write_private() call sites and preset save implementation; stat the exact active profile and relevant directories; inspect whether /data is included in backups; search direct-serve code and helper modules for secret persistence; and map all route-level authorization checks.
+5. No production secret was generated, copied, mounted or configured. No live container, profile, volume, network, firewall or host setting was changed.
+
+## Additional provenance
+
+- Evidence-source: OWNER_SUPPLIED_TERMINAL_OUTPUT (second read-only source/metadata inspection)
+- Executed-by: owner (read-only commands and output supplied in conversation); GitHub author did not access P2002
+- Reviewed-by: SELF_REVIEW_ONLY
+- Attribution-confidence: DECLARED_OWNER_SUPPLIED
