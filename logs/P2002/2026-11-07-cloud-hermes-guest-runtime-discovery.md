@@ -113,3 +113,48 @@ The recovered prior work explicitly did **not** document a persistent service, c
 - Next step: inspect the existing CLI's supported persistent/gateway mode and create the correct boot-start unit for the existing installation, preserving its home directory and credential files. First inspect CLI help and existing files/permissions; do not print or copy secret values.
 
 The credential object identifier and all OAuth token material are intentionally excluded from this public log.
+
+
+## Owner-supplied follow-up guest check — 2026-11-07 03:29 UTC
+
+- **Checkpoint ID:** CLARYEL-P2002-20261107-GUEST-PATH-CHECK-001
+- **Operation:** READ_ONLY_DIAGNOSTICS
+- **Evidence source:** OWNER_SUPPLIED_TERMINAL_TRANSCRIPT
+- **Executed-by:** Owner, through SSH from P2002 into the existing guest; ChatGPT did not execute commands on either machine.
+- **Prepared-by:** ChatGPT GPT-6 (declared)
+- **Writer-instance:** CHATGPT-INSTALL-01 (declared; unauthenticated)
+- **Writer-role:** INSTALLATION_COORDINATOR
+- **Deployment-alias:** P2002-LAB
+- **Reviewed-by:** SELF_REVIEW_ONLY
+- **Approved-by:** OWNER_REQUEST_2026-11-07 (read-only diagnostics)
+- **Published-by:** GitHub connector via shared ViktorIXAI account
+- **Attribution-confidence:** DECLARED_UNVERIFIED
+- **Related-checkpoint:** CLARYEL-P2002-20261107-GUEST-RUNTIME-DISCOVERY-001
+
+The owner successfully SSH-connected from P2002 to the existing guest. The guest reported hostname `claryel-cloud-vm` and kernel `6.8.0-147-generic`.
+
+The command used `command -v hermes`, which reported `Hermes CLI not found in PATH`. This is **not evidence that Hermes is absent**: the previously recovered installation record identifies the executable at the absolute path `/home/claryelvm/.local/bin/hermes`, which may not be included in the non-interactive SSH command's PATH.
+
+The following results were visible:
+- No matching system service unit found by the Hermes/Nous/Gateway name filter.
+- No matching user service unit found by the same filter.
+- No running Docker or Podman containers were listed.
+- No matching Hermes/Nous/Gateway process was listed.
+- `loginctl show-user "$USER" -p Linger` returned `Linger=no`.
+- No matching cron entry was found.
+- Permission-only check confirmed `~/.hermes` is mode `700`, and `config.yaml` and `.env` are mode `600`. No file contents or credential values were displayed.
+
+### Result
+
+- **PASS:** SSH access to the existing guest.
+- **OBSERVED:** Hermes is not found by the default PATH lookup in this non-interactive SSH session.
+- **NOT_TESTED:** the known absolute CLI path, actual Hermes version from the guest, and supported Gateway command options.
+- **NOT_FOUND_BY_FILTER:** Hermes-named system/user units and running process.
+- **NOT_FOUND:** matching guest containers and cron entry in the displayed checks.
+- **OBSERVED:** user lingering is disabled.
+- **PASS (permissions only):** expected restrictive permissions on the existing Hermes config directory and files.
+- **NO_CHANGES:** no package, service, credential, configuration, VM, or network changes were made.
+
+### Next action
+
+Use the known absolute executable path `/home/claryelvm/.local/bin/hermes` for read-only `--version`, top-level `--help`, and `gateway --help` inspection. Do not reinstall, reauthorize, print secret-bearing configuration, or create a service until the actual supported persistent Gateway invocation is confirmed.
