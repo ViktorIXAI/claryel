@@ -324,3 +324,111 @@ One source comment was visible in the search output at `agent/agent_init_memory_
 ### Next action
 
 Perform a targeted read-only source search for the exact Gateway installer implementation and unit writer (terms such as `gateway install`, `run_as_user`, `start_on_login`, `EnvironmentFile`, `HERMES_HOME`, and the generated `hermes-gateway` unit). Read only the relevant source sections and any directly called unit-generation helper. Establish the exact environment/credential behavior before invoking the installer. Do not print `.env` contents, config values, tokens, or secrets. Do not use force/repoint flags, reinstall Hermes, or reauthorize Grok.
+
+
+## Owner-supplied installed-source search and exact-version upstream review — 2026-11-07
+
+- **Checkpoint ID:** CLARYEL-P2002-20261107-GATEWAY-SYSTEMD-SOURCE-REVIEW-001
+- **Operation:** READ_ONLY_SOURCE_REVIEW_AND_INSTALL_PLAN
+- **Target-machine-ID:** P2002-CLOUD-GUEST
+- **Deployment-alias:** P2002-LAB
+- **Event time:** UNKNOWN (the supplied terminal output contains no execution timestamp)
+- **Evidence source:** OWNER_SUPPLIED_TERMINAL_TRANSCRIPT + TOOL_OBSERVED_UPSTREAM_SOURCE_AT_EXACT_COMMIT
+- **Executed-by:** Owner ran the local source-version/search commands in the existing guest shell. ChatGPT did not execute commands on the guest.
+- **Prepared-by:** ChatGPT GPT-6 (declared)
+- **Writer-instance:** CHATGPT-INSTALL-01 (declared; unauthenticated)
+- **Writer-role:** INSTALLATION_COORDINATOR
+- **Reviewed-by:** SELF_REVIEW_ONLY
+- **Approved-by:** OWNER_REQUEST_2026-11-07 (read-only inspection and continuation of installation planning)
+- **Published-by:** GitHub connector via shared ViktorIXAI account
+- **Attribution-confidence:** DECLARED_UNVERIFIED
+- **Related-issue:** #10
+- **Related-checkpoint:** CLARYEL-P2002-20261107-GATEWAY-INSTALLER-SOURCE-SEARCH-001
+
+### Owner-supplied local source identity
+
+The owner supplied this read-only output from the existing Hermes checkout:
+
+```text
+git rev-parse --short HEAD
+2bd378ed1b
+
+git describe --tags --always
+v0.23.0
+```
+
+The broad grep searched Python source files (excluding tests and the virtual environment) for Gateway installation, systemd, environment, and service-unit terms. Its first 200 matches did not expose the installer implementation. It did reveal relevant source locations, including `hermes_cli/gateway_service_owner.py`, `hermes_cli/gateway.py`, `hermes_cli/subcommands/gateway.py`, and a scheduler note concerning the user systemd manager. The output was truncated by `head -200`; it must not be treated as a complete source audit.
+
+The reported short commit was then resolved through the upstream NousResearch/hermes-agent GitHub repository to the full commit `2bd378ed1b8d6bf2192cb26e0a55ff3091e6bd19`. The source review below is pinned to that exact commit, not current upstream main.
+
+### Exact v0.23.0 source findings
+
+1. **System service identity and home**
+   - `gateway.py::generate_systemd_unit(system=True, run_as_user=...)` resolves the selected account and its primary group.
+   - The generated unit sets `User=` and `Group=`, plus `HOME=`, `USER=`, and `LOGNAME=` for that account.
+   - It explicitly pins `HERMES_HOME=` to that account's existing Hermes home and uses the corresponding Python executable, working directory and PATH.
+   - The service command is the installed Hermes runtime's `gateway run`, not an unmanaged foreground command started from an interactive shell.
+   - The generated system unit orders itself after and wants `network-online.target` and `user@<uid>.service`; it is wanted by `multi-user.target`.
+
+2. **Restart and logging behavior**
+   - The generated unit sets `Restart=always` and `RestartSec=5`.
+   - It defines special exit handling for Hermes' planned restart and fatal configuration exit codes; therefore the policy is not simply an unconditional retry for every configuration failure.
+   - It uses `KillMode=mixed`, `KillSignal=SIGTERM`, a SIGUSR1 reload/drain action, explicit stop/cleanup helpers, and sends standard output/error to the system journal.
+   - These are source-defined unit properties; they have not yet been observed in a generated unit on the guest.
+
+3. **Existing .env and provider authentication**
+   - The generated systemd unit does not add an `EnvironmentFile=` directive for the Hermes home `.env`.
+   - However, the exact-version CLI entry point `hermes_cli/main.py` calls `load_hermes_dotenv()` during startup. The exact-version `env_loader.py` loads the process Hermes home's `.env` and related configured secret sources.
+   - The same CLI code checks provider login state in `HERMES_HOME/auth.json`. The service unit explicitly sets `HOME` and `HERMES_HOME` for the selected existing account.
+   - Therefore the earlier source comment in `agent/agent_init_memory_provider.py` must be read narrowly: it warns that a systemd service does not inherit the home `.env` as its process environment for the external memory-provider availability check. It is **not evidence that Grok OAuth will be lost**. The CLI startup path itself loads the Hermes home dotenv, and the provider auth store is resolved under that same Hermes home.
+   - No `.env`, `auth.json`, OAuth token, API key, or credential value was read or published. Preservation of the existing Grok login remains to be confirmed by a post-start status/response test.
+
+4. **Root requirement and lingering side effect**
+   - `systemd_install(system=True, ...)` explicitly requires root.
+   - After creating/enabling the system unit, the installer calls `_ensure_system_service_linger()` for the configured service account. If linger is not already enabled, the installer attempts `loginctl enable-linger` and waits for the target user's D-Bus socket.
+   - The source explains that this is needed for Gateway cron/Kanban workers that use `systemd-run --user`; it is not merely a workaround for boot-start.
+   - Thus the previously observed `Linger=no` is not a blocker, but it is expected to change to enabled if this installer step succeeds. This side effect must be visible to the owner before execution.
+
+5. **Install/start switches**
+   - `--system` selects a system-level boot service.
+   - `--run-as-user "$USER"` explicitly selects the currently logged-in guest account as the service identity; the CLI's source remaps the default Hermes home to that account.
+   - `--start-on-login` enables the unit at boot (`multi-user.target`).
+   - `--start-now` starts the newly installed service immediately after installation.
+   - The source path contains ownership checks for an existing service definition. The prior guest inventory found no Hermes/Nous system service or matching unit file, so there is no observed reason to use `--force` or `--force-unit-path`.
+
+### Result
+
+- **PASS:** Owner-supplied local checkout reports v0.23.0 and short commit `2bd378ed1b`.
+- **PASS:** Upstream source at the exact full commit was fetched and inspected.
+- **CONFIRMED IN SOURCE:** service account, HOME/HERMES_HOME, systemd dependencies, restart policy, journal logging, root requirement, start/enable behavior, and installer-managed linger behavior described above.
+- **CORRECTION:** the memory-provider warning does not establish loss of Grok OAuth; the CLI entry point loads its Hermes home dotenv and checks the provider auth store under HERMES_HOME.
+- **NOT_TESTED:** actual generated unit, actual service start, Grok authentication from the Gateway process, restart after process failure, and boot after guest/host power cycle.
+- **NO_CHANGES:** no service was installed, enabled, started, stopped, or modified; no credentials were read or changed.
+
+### Proposed next owner operation — not yet executed
+
+After reviewing the documented side effect that the installer may enable systemd linger for the service account, the owner can run this single command from the already-open guest shell:
+
+```bash
+sudo "$HOME/.local/bin/hermes" gateway install --system --run-as-user "$USER" --start-now --start-on-login
+```
+
+This is a proposed state-changing command, not evidence of execution or approval already exercised. It should create a boot-enabled system service running as the current non-root guest account, preserve the existing Hermes home and credential files, and start the Gateway now. Do not add `--force` or `--force-unit-path`. Capture the complete installer output. If the installer reports an error or a linger warning, stop and report it rather than improvising.
+
+### Publication review note
+
+The outgoing summary was manually reviewed against the active owner-authorized P2002 lab disclosure scope. It contains no credential values, private keys, customer data, or guest account/home-directory paths. A Gitleaks executable was not available to this connector writer, so no Gitleaks scan is claimed; the repository's future automated fail-closed publication gate remains unimplemented/unverified.
+
+### Contribution provenance
+
+- Writer-instance: CHATGPT-INSTALL-01 (declared; unauthenticated)
+- Writer-role: INSTALLATION_COORDINATOR
+- Deployment-alias: P2002-LAB
+- Prepared-by: ChatGPT GPT-6 (declared)
+- Executed-by: Owner for the local read-only commands; ChatGPT did not execute on P2002
+- Evidence-source: OWNER_SUPPLIED_TERMINAL_TRANSCRIPT + TOOL_OBSERVED_UPSTREAM_SOURCE_AT_EXACT_COMMIT
+- Reviewed-by: SELF_REVIEW_ONLY
+- Approved-by: OWNER_REQUEST_2026-11-07 (read-only source inspection and installation planning)
+- Published-by: GitHub connector via shared ViktorIXAI account
+- Attribution-confidence: DECLARED_UNVERIFIED
+- Related-checkpoint: CLARYEL-P2002-20261107-GATEWAY-SYSTEMD-SOURCE-REVIEW-001
