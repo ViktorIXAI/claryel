@@ -192,3 +192,129 @@ Only after those outputs are reviewed should a minimal proxy/Guard/UFW change an
 ## 8. Provenance and scope
 
 This checkpoint records only the owner-supplied read-only outputs and repository review. ChatGPT did not execute commands on P2002 or inside the guest. No live configuration, firewall, DNS, routing, Squid, Docker, VM, disk or service state was changed. The owner authorized publication of non-secret P2002 lab topology and operational details; no credential material is included.
+
+
+---
+
+## 9. Follow-up read-only host preflight — owner-supplied terminal transcript
+
+- **Event time:** UNKNOWN — this terminal block did not emit `date -Is`; upload timestamp is not treated as execution time.
+- **Evidence source:** OWNER_SUPPLIED_TERMINAL_TRANSCRIPT.
+- **Operation:** READ_ONLY_DIAGNOSTICS.
+- **Executed-by:** Owner/operator at P2002; identity not independently authenticated.
+- **Prepared-by:** ChatGPT GPT-6 (declared).
+- **Writer-instance:** CHATGPT-6-TRIAGE-01.
+- **Writer-role:** INSTALLATION_TRIAGE_AND_REPOSITORY_MAINTENANCE.
+- **Reviewed-by:** SELF_REVIEW_ONLY.
+- **Approved-by:** Owner supplied the requested read-only output; no mutation/restart/reboot approval implied.
+- **Host or guest changes performed by this checkpoint:** None by ChatGPT; no mutation command was requested or executed.
+
+### 9.1 UFW and iptables packet path
+
+Owner-supplied output shows:
+
+- IPv4 `INPUT` policy is `DROP`.
+- The INPUT chain order is:
+  1. `LIBVIRT_INP`;
+  2. existing explicit Strata proxy exception (`br-strata-eg`, source `172.30.250.10/32`, destination `172.30.250.1/32`, TCP/3128);
+  3. UFW before-input and remaining UFW chains.
+- `LIBVIRT_INP` currently accepts traffic arriving from `virbr240` only for UDP/TCP port 53 and UDP/TCP port 67. It contains no TCP/3129 exception.
+- `ufw-before-input` accepts loopback, established/related, selected ICMP and DHCP replies, then calls `ufw-user-input`.
+- `ufw-user-input` contains only the existing SSH rule from `192.168.1.118/32` on `enp128s31f6`, TCP/22.
+- UFW status is active; its user-facing rule list likewise shows only that SSH rule.
+- IPv4 INPUT policy is DROP. IPv6 INPUT policy is also DROP; no IPv6 proxy listener is proposed.
+
+**Conclusion:** after a precisely scoped Guard accept, a new Cloud Hermes connection to a host-local proxy port would still reach UFW and be dropped unless UFW receives a matching exact allow. The existing libvirt INPUT chain does not itself drop unmatched packets; it simply has no matching TCP/3129 allow, after which the packet continues to UFW. There is no reason in this evidence to modify the libvirt DNS/DHCP rules.
+
+### 9.2 Guard loader and verifier
+
+The current loader at `/usr/local/sbin/claryel-guard-load`:
+
+- checks that `/etc/claryel/firewall.nft` and the verifier exist;
+- runs `nft --check --file` against the canonical rules file;
+- if the Guard table already exists, verifies the live table but does not replace a present incorrect table;
+- if the table is absent, loads the rules file and then verifies.
+
+The verifier is an exact-policy test. It currently expects exactly two chains and 12 ordered rules. Its expected `guest_input` rules include the established/related exception, DHCP exception, then the broad `virbr240` drop. Its source and exact expected rule array were printed in the transcript.
+
+**Important evidence gap:** the transcript displayed the loader and verifier source, but did not display the canonical live `/etc/claryel/firewall.nft` file itself or its current SHA-256. Do not edit the verifier alone or live nftables state alone. The canonical file and verifier must be changed together, with the new exact rule inserted before the `virbr240` drop, and the verifier's exact expected rule count/order updated accordingly.
+
+### 9.3 Squid ACL and listener
+
+The current config excerpt confirms:
+
+- listener: `172.30.250.1:3128`;
+- existing source ACL: `172.30.250.10/32`;
+- existing allowed domains: `huggingface.co`, `us.aws.cdn.hf.co`, `github.com`, `codeload.github.com`;
+- `Safe_ports` and `SSL_ports` are port 443;
+- CONNECT is explicitly identified;
+- `blocked_dst` is denied before the existing Strata allow;
+- all remaining access is denied.
+
+The grep output showed that `blocked_dst` is a multi-line ACL beginning at line 18, but did not capture all its continuation lines. The full file and included configuration order therefore remain to be captured before preparing a final Squid diff.
+
+**Design implication:** Squid `http_access` ACLs are evaluated globally for listeners unless listener/port scope is explicitly applied. A second listener must not accidentally let the existing Strata source/domain rule apply to the new listener, or vice versa. The change plan must scope both listener policies (for example, using a verified `localport` ACL or named-port ACL) and preserve the existing Strata source/domain restrictions. A dedicated second Squid instance is an alternative if a clean single-instance ACL separation cannot be demonstrated.
+
+### 9.4 Docker / Strata state
+
+With `sudo docker`, the owner confirmed:
+
+- `claryel-inference`: running, healthy;
+- image: `claryel/strata:0.2.11-rocm-gfx120x`;
+- restart policy: `unless-stopped`;
+- container address: `172.31.250.2/24`;
+- only the internal Docker network `claryel-private-ai` is attached;
+- Docker network reports `internal=true`;
+- port 8080 is not published to the host.
+
+This closes the earlier Docker permission evidence gap for the fields shown. It does not constitute a full Strata functional/security test; a separate successful inference checkpoint is recorded elsewhere in the repository.
+
+### 9.5 Live VM disk and backup state
+
+- `stat` reported the active Cloud Hermes qcow2 at 5,690,753,024 bytes, with modification time 2026-11-07 10:16:20.059257686 UTC.
+- `qemu-img info` refused to open it because it could not obtain the shared write lock while the VM was running.
+- This is an expected active-image locking condition, **not evidence that the qcow2 is corrupt**. Do not bypass the lock with an unsafe shared-read option.
+- The filesystem containing both the backup and libvirt image paths reports 393 GB total, 151 GB used and 223 GB available (41% used).
+- Existing SHA256SUMS manifests cover Guard, Squid/proxy and related configuration artifacts. They do not establish a checksum for a current post-repair Cloud Hermes VM backup.
+- The repository's prior 2026-11-06 backup verification is valid only for the then-existing image/checkpoint. Those backups predate the 2026-11-07 Hermes package-manager repair and Gateway setup, so they are not a current recovery point for today's guest state.
+
+**Conclusion:** capacity is sufficient for a current offline copy based on the observed free space, but the live image has not yet been structurally checked in its current state. Use `virsh domblklist` / `virsh domblkinfo` for read-only live metadata. For a byte-consistent offline backup and `qemu-img check`, arrange an owner-approved guest shutdown, then copy and verify the image. Do not stop the VM or create/copy a backup without explicit approval and a defined service window.
+
+### 9.6 Host xAI HTTPS checks
+
+Owner-supplied `curl` results:
+
+- `https://auth.x.ai/.well-known/openid-configuration`: HTTP 200, TLS verification result 0.
+- `https://api.x.ai/v1/models`: HTTP 401, TLS verification result 0.
+- Both connected successfully to the reported IPv6 address `2606:4700::6812:1250`.
+
+Interpretation:
+- The host has working DNS/TLS/network reachability to the xAI OIDC discovery endpoint.
+- The API endpoint is also reachable over TLS; HTTP 401 is expected for an unauthenticated request to a protected API endpoint and is not a transport failure.
+- This does not yet prove authenticated Grok inference or the guest's ability to use OAuth through a proxy.
+
+### 9.7 Updated minimal design — proposal only
+
+Subject to capturing the complete canonical files and reviewing an exact diff:
+
+1. Add a dedicated Squid listener bound only to host bridge address `172.30.240.1:3129`.
+2. Permit only source `172.30.240.12/32`, HTTP CONNECT, destination TCP/443 and exact xAI hostnames `auth.x.ai` and `api.x.ai`; retain the private/reserved destination deny ACL.
+3. Explicitly scope the new and existing Squid ACLs to their respective listener ports so the existing Strata/Hugging Face path remains unchanged in effective access.
+4. Add one exact Guard input exception for `iifname virbr240`, source `172.30.240.12`, destination `172.30.240.1`, TCP/3129, before the existing `virbr240` drop. Update `/etc/claryel/firewall.nft` and the exact verifier together.
+5. Add one exact UFW INPUT allow for source `172.30.240.12`, ingress interface `virbr240`, destination `172.30.240.1`, TCP/3129. No broad libvirt INPUT, FORWARD, NAT or routed allowance is indicated.
+6. Keep the guest without a default route and without DNS. The host-side proxy resolves xAI names.
+7. Configure only the Hermes Gateway service environment to use the proxy, after confirming the installed HTTP client honors proxy environment variables. Keep credentials out of the service drop-in and logs.
+8. Test positive access to the two exact xAI endpoints and negative access to a non-allowlisted public host and private/LAN destinations. Then test OIDC discovery and one real authenticated Grok request.
+
+No item above has been implemented. No firewall, Squid, Docker, Gateway, guest, VM disk, route, DNS or systemd state was changed in this checkpoint.
+
+### 9.8 Remaining read-only capture before final diff
+
+- Print the full canonical `/etc/claryel/firewall.nft`, its `sha256sum`, and compare with the appropriate Guard deployment manifest.
+- Print the full Squid config including every continuation line and all `include` directives; capture `squid -k parse` and the listener state.
+- Capture UFW configuration flags relevant to IPv6 and user-rule persistence, plus timestamped UFW/Guard unit ordering if needed; do not restart either firewall.
+- Capture `virsh domblklist claryel-cloud-hermes --details` and `virsh domblkinfo` for the active disk target (read-only).
+- Capture only the Gateway service fragment/drop-in paths and whether proxy environment variables are already configured; never dump OAuth tokens or environment values.
+- Confirm the exact Hermes HTTP transport/proxy behavior from the installed pinned source or a safe isolated test.
+
+After this capture, prepare a reviewable patch and rollback sequence. Do not apply it until the owner explicitly approves the mutation and service-reload window.
