@@ -869,3 +869,82 @@ If wheel archives are missing, plan a narrow package-intake transfer with verifi
 - Published-by: GitHub connector via shared ViktorIXAI account
 - Attribution-confidence: DECLARED_UNVERIFIED
 - Related-checkpoint: CLARYEL-P2002-20261107-PM-UV-NO-INDEX-REPAIR-FAILED-001
+
+## Owner-supplied UV cache inspection — cached package trees and index metadata verified
+
+- **Checkpoint ID:** CLARYEL-P2002-20261107-PM-CACHE-ARCHIVE-AND-INDEX-INSPECTED-001
+- **Target-machine-ID:** P2002-CLOUD-GUEST
+- **Deployment-alias:** P2002-LAB
+- **Event time:** UNKNOWN (the owner supplied no timestamp with this transcript)
+- **Operation:** READ_ONLY_UV_CACHE_STRUCTURE_AND_DISTRIBUTION_INTEGRITY_CHECK
+- **Evidence source:** OWNER_REPORTED terminal transcript; scope is the existing Cloud Hermes guest only.
+- **Executed-by:** Owner in the already-open guest shell. ChatGPT did not execute commands on the guest.
+- **Prepared-by:** ChatGPT GPT-6 (declared)
+- **Writer-instance:** CHATGPT-INSTALL-01 (declared; unauthenticated)
+- **Writer-role:** INSTALLATION_COORDINATOR
+- **Hermes-runtime-machine-ID:** NOT_APPLICABLE (the writer is ChatGPT, not a Hermes instance)
+- **Deployment-alias:** P2002-LAB
+- **Reviewed-by:** SELF_REVIEW_ONLY
+- **Approved-by:** OWNER_REQUEST_2026-11-07 (continue the owner-controlled installation workflow and publish its audit evidence)
+- **Published-by:** GitHub connector via shared ViktorIXAI account
+- **Attribution-confidence:** DECLARED_UNVERIFIED
+- **Related-issue:** #10
+- **Related-checkpoint:** CLARYEL-P2002-20261107-PM-CACHE-SETUPTOOLS-WHEEL-PRESENT-001
+
+### Observed cache structure
+
+The owner inspected the Hermes-managed UV cache. Results:
+- `simple-v27` contains:
+  - `pypi/setuptools.rkyv` (400,100 bytes)
+  - `pypi/packaging.rkyv` (31,092 bytes)
+  - `pypi/wheel.rkyv` (44,686 bytes)
+- The wheel cache listing contains a setuptools entry:
+  - `pypi/setuptools/84.1.0-py3-none-any.msgpack` (2,668 bytes)
+  - corresponding `.http` metadata (548 bytes) and `.lock`.
+- The cache contains many other package HTTP metadata entries and lock files.
+- The only `.whl` archive returned by the owner's bounded search was the editable Hermes project wheel. No setuptools or wheel distribution wheel archive was found by that search.
+- The source-distribution cache listing contains editable-project metadata and the editable Hermes project wheel; it did not show a setuptools or wheel sdist archive.
+- The attempted `rg` command was unavailable in that interactive shell, despite the earlier PM doctor reporting ripgrep as present. This discrepancy is not yet explained and is not currently on the critical installation path.
+
+### Distribution tree integrity verification
+
+The owner ran a Python read-only verifier against the unpacked UV cache entries:
+- `setuptools 84.1.0`: 343 files checked against its `RECORD`; no missing files and no hash mismatches.
+- `wheel 0.48.0`: 20 files checked against its `RECORD`; no missing files and no hash mismatches.
+- Both contain `WHEEL` metadata identifying pure-Python `py3-none-any` distributions.
+- The earlier failed candidate generation from the prior repair attempt was absent.
+- One existing PM environment generation remained in the inspected directory.
+- The repair marker still records two attempts.
+
+### Assessment
+
+- **CONFIRMED:** The UV simple-index cache has metadata entries for setuptools and wheel.
+- **CONFIRMED:** The unpacked cached distribution trees for setuptools 84.1.0 and wheel 0.48.0 pass their own RECORD file/hash verification.
+- **CONFIRMED:** The bounded `.whl` search did not find distributable wheel archives for those two packages.
+- **NOT_YET_CONFIRMED:** Whether the cached index records and HTTP metadata are fresh/complete enough for uv to resolve without contacting the index.
+- **NOT_YET_CONFIRMED:** Whether a standards-compliant wheel can be safely reconstructed from the unpacked cached trees using an already-installed wheel utility, without modifying the active PM environment.
+- **NOT_YET_CONFIRMED:** Whether the remaining PM generation is healthy and contains a usable wheel-packing utility.
+- **NO_CHANGES:** This inspection was read-only. No cache, PM environment, lockfile, network policy, service, or Hermes configuration was changed.
+
+### Next controlled action — read-only capability check
+
+Inspect the existing retained PM environment only:
+1. Identify the interpreter in the retained generation's `venv` and check whether the `wheel` package/module and `wheel pack` command are already installed.
+2. Check the same for the PM-managed uv executable/version and its supported local-source options.
+3. Inspect only package names/versions and executable paths; do not dump environment variables, credentials, user configuration, or secret-bearing files.
+
+If an already-installed wheel packer is available, evaluate reconstructing verified local wheel artifacts from the intact extracted distribution trees into a separate temporary wheelhouse, without changing the retained generation. Before any such write, present the exact proposed command and output path for owner approval. Do not run another PM repair, modify the lockfile, change Hermes source, or open guest egress.
+
+### Contribution provenance
+
+- Writer-instance: CHATGPT-INSTALL-01 (declared; unauthenticated)
+- Writer-role: INSTALLATION_COORDINATOR
+- Deployment-alias: P2002-LAB
+- Prepared-by: ChatGPT GPT-6 (declared)
+- Executed-by: Owner for guest terminal inspection; ChatGPT for interpretation and documentation
+- Evidence-source: OWNER_REPORTED_TERMINAL_TRANSCRIPT
+- Reviewed-by: SELF_REVIEW_ONLY
+- Approved-by: OWNER_REQUEST_2026-11-07 (continue installation workflow; next state-changing command remains owner-approved separately)
+- Published-by: GitHub connector via shared ViktorIXAI account
+- Attribution-confidence: DECLARED_UNVERIFIED
+- Related-checkpoint: CLARYEL-P2002-20261107-PM-CACHE-ARCHIVE-AND-INDEX-INSPECTED-001
