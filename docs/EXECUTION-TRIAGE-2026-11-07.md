@@ -151,3 +151,12 @@ No host or guest mutation, firewall/Squid reload, Docker restart, Gateway restar
 - Executed-by: repository review and documentation only; no P2002 host command executed.
 - Approved-by: owner's request to continue triage; no host/network mutation or reboot approval implied.
 - Secrets: no credentials, token values, private keys or customer data included.
+
+
+## 2026-11-07 guest follow-up — Gateway proxy environment
+
+Owner-supplied guest output confirms the Gateway is active (PID 3380) and runs under the Hermes-managed Python 3.14.9 executable. Neither the user systemd manager environment nor the Gateway process environment contains `HTTP_PROXY`, `HTTPS_PROXY`, `ALL_PROXY` or `NO_PROXY`. The unit is loaded, has no reported drop-ins, and its fragment is `~/.config/systemd/user/hermes-gateway.service`.
+
+The first source search was incomplete: it searched `~/.local`, `~/.cache/uv` and `~/.local/pipx`, but omitted the known Git install root `~/.hermes/hermes-agent` and service entry point `~/.hermes/hermes-agent/.hermes/bin/hermes`. The `ModuleNotFoundError` from invoking the bare process interpreter with `-c` is not evidence of a broken install because that invocation does not reproduce the installed entry-point import path.
+
+Next: read-only inspection of the Git install root, exact service entry point, unit environment variable names (values must remain redacted), installed HTTPX version, and OAuth/inference transport implementations. No service or network configuration change is authorized by this evidence.
