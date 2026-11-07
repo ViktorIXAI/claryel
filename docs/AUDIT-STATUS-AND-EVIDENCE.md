@@ -102,3 +102,16 @@ See [the complete append-only technical checkpoint](../logs/P2002/2026-11-07-clo
 
 **Next:** inspect the installed CLI's supported Gateway/messaging setup, identify the intended messaging platform, configure it without exposing credentials, then run a controlled inbound/outbound test. Keep the guest's current network isolation; do not add NAT/default routing merely to clear the PyPI DNS failure.
 
+
+
+## Execution triage — 2026-11-07
+
+The next installation milestone is a working Cloud Hermes Gateway request to its already-configured Grok provider through a narrowly controlled egress path. The current DNS failure is not evidence of missing OAuth credentials. Do not add a guest default route, NAT, broad forwarding or general Internet access.
+
+A separate proposed xAI proxy path is tracked in [issue #19](https://github.com/ViktorIXAI/claryel/issues/19); the prioritized operator sequence and deferral list are in [Execution triage](EXECUTION-TRIAGE-2026-11-07.md). No host/network mutation has been made by this triage.
+
+**Recovery gate:** the previously verified qcow2 backup predates the later Hermes PM/Gateway changes. Its earlier byte-integrity result must not be represented as a current restore point for the guest. Confirm current backup metadata and recovery scope before any host reboot.
+
+**Architecture gate:** issue #8's older direct Hermes-to-Strata instruction conflicts with Architecture v0.1/v0.2, which requires cross-zone exchanges through an independent Security Gateway. Strata currently reports `api_key=false`. Keep the immediate Cloud Hermes demo Grok-only; do not attach Cloud Hermes directly to Strata or introduce private data until the architecture conflict is resolved and the Security Gateway/API boundary is implemented and reviewed.
+
+This triage is based on repository evidence and owner-supplied terminal transcripts, not live host telemetry. No reboot, firewall, Guard, routing, DNS, Docker, VM, disk or service changes were performed.
