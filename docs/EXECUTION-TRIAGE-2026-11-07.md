@@ -106,37 +106,38 @@ These items remain open; deferral is not closure or a security pass. No customer
 
 ## Latest read-only preflight — host/guest snapshots completed 2026-11-07
 
-Owner supplied the P2002 host snapshot at 10:03:40 UTC and Cloud Hermes guest snapshot at 10:05:06 UTC, followed by a second read-only host transcript (the latter did not emit its own execution timestamp). Full sanitized operational record: [xAI egress preflight log](../logs/P2002/2026-11-07-xai-egress-preflight.md).
+Owner supplied the P2002 host snapshot at 10:03:40 UTC and Cloud Hermes guest snapshot at 10:05:06 UTC, followed by additional host-side read-only transcripts. Full sanitized record: [xAI egress preflight log](../logs/P2002/2026-11-07-xai-egress-preflight.md).
 
 Confirmed:
-- Guest Hermes v0.23.0 is up to date, `grok-4.6` selected, primary xAI OAuth credentials present, Gateway enabled/active, Linger=yes, and guest has no default route or DNS scope.
-- Host xAI HTTPS is working: OIDC discovery on `auth.x.ai` returns HTTP 200 with TLS verification 0; unauthenticated `api.x.ai/v1/models` returns HTTP 401 with TLS verification 0 (transport works; authenticated inference remains untested).
-- Guard verifier passes exact two-chain / 12-rule invariant. Its `guest_input` chain drops new traffic from `virbr240` after established/related and DHCP exceptions.
-- UFW/iptables confirms IPv4 INPUT policy DROP. The UFW user-input chain currently has only the SSH rule; the libvirt INPUT chain has DNS/DHCP exceptions but no TCP/3129 exception. Therefore a Guard exception alone would still be blocked by UFW.
-- Existing Squid listens on `172.30.250.1:3128` and is restricted to `172.30.250.10/32` and the existing Hugging Face/GitHub domains. Preserve its effective policy; if adding a second listener to the same Squid instance, explicitly scope both listener ACLs so they cannot cross-apply.
-- Docker state is now confirmed using `sudo docker`: `claryel-inference` is running/healthy on image `claryel/strata:0.2.11-rocm-gfx120x`, attached only to `claryel-private-ai` (`internal=true`), address `172.31.250.2`, with no published host port.
-- VM and libvirt network autostart flags are enabled, but a controlled reboot remains NOT_TESTED.
-- Live VM qcow2 is 5,690,753,024 bytes. `qemu-img info` could not obtain the shared write lock because the VM is active; this is not evidence of corruption. Do not bypass the lock. Backup filesystem has 223 GB free.
-- Existing 2026-11-06 backup artifacts predate the 2026-11-07 Hermes PM/Gateway repair and are not a current recovery point. Existing SHA256SUMS shown cover Guard/proxy config, not a current VM image.
+- Guest Hermes v0.23.0 is up to date, `grok-4.6` selected, primary xAI OAuth credentials present, Gateway enabled/active, Linger=yes, and guest has no default route or DNS scope (from the earlier guest-side snapshot).
+- Host xAI HTTPS works: OIDC discovery on `auth.x.ai` returns HTTP 200 with TLS verification 0; unauthenticated `api.x.ai/v1/models` returns HTTP 401 with TLS verification 0. This confirms transport/TLS only, not authenticated inference.
+- The complete canonical `/etc/claryel/firewall.nft` is now captured. It contains exactly 12 explicit rules across the two Guard chains. Its current `guest_input` chain drops all new `virbr240` input after established/related and DHCP exceptions; no Cloud Hermes TCP/3129 exception exists.
+- **Guard baseline discrepancy:** live SHA-256 for `firewall.nft` and `claryel-guard-verify` do not match the dated deployment manifest; `claryel-guard-load` does match. This is unresolved baseline drift, not proof of malicious change or runtime failure. A prior 10:05 snapshot reported verifier PASS, but the latest transcript did not rerun it. Capture the full current verifier, rerun it, compare the live nft table to the canonical file, and reconcile the dated backup before modifying either Guard artifact.
+- UFW/iptables earlier showed IPv4 INPUT policy DROP and no current TCP/3129 allow. A matching exact UFW INPUT rule will be needed alongside the Guard exception; no broad libvirt rule, FORWARD rule, NAT or guest default route is indicated.
+- Full existing Squid config is now captured. It has one listener `172.30.250.1:3128`, Strata source `172.30.250.10/32`, exact Hugging Face/GitHub domains, HTTPS CONNECT/443 restrictions, private/reserved destination denial and default deny. Parser output showed no parse error, but its exit code was not captured. The listener listing showed only 3128.
+- Issue #19 explicitly says to keep the existing Strata/Hugging Face proxy ACL and listener unchanged. Therefore prefer a **separate Squid instance** for Cloud Hermes, with independent config, PID, logs and runtime/cache paths, rather than modifying the existing Squid configuration or adding a second listener to it.
+- Docker state is confirmed: `claryel-inference` is running/healthy on `claryel/strata:0.2.11-rocm-gfx120x`, attached only to internal network `claryel-private-ai` (`internal=true`), address `172.31.250.2`, with no published host port.
+- Live VM block metadata: disk target `vda`, capacity 40.000 GiB, allocation/physical 5.300 GiB. This is not a backup or image consistency check. The active-image lock warning remains expected; do not bypass it.
+- Existing 2026-11-06 backup artifacts predate the 2026-11-07 Hermes PM/Gateway repair and are not a current recovery point. Backup filesystem had 223 GB free in the earlier host snapshot.
+- The latest Gateway unit and Hermes source commands were run on host `p2002`, not inside the guest. Empty host user-unit paths and a missing host-side source directory do not establish guest Gateway state or proxy support. Guest-side metadata remains NOT_CAPTURED.
 
-### Next operator action — final read-only configuration capture
+### Next operator action — final read-only reconciliation
 
-1. Print the canonical `/etc/claryel/firewall.nft` and its SHA-256; compare with the installed backup manifest. The latest transcript showed the loader and verifier but not this canonical rules file.
-2. Print the full Squid config (including multi-line `blocked_dst` continuation and any includes), listener state and parse result. The grep excerpt did not show the full ACL.
-3. Capture the active VM disk target with `virsh domblklist` and live metadata with `virsh domblkinfo`; do not run `qemu-img info` against the active disk.
-4. Capture Gateway service fragment/drop-in paths and confirm proxy-environment handling without printing environment values or OAuth secrets.
-5. Verify Hermes' pinned HTTP transport honors proxy environment variables before preparing the service override.
+1. Capture the full current `/usr/local/sbin/claryel-guard-verify` and `claryel-guard-load`, rerun the verifier, and capture `nft list table inet claryel_guard`. Compare the live ruleset, canonical file and verifier's exact rule array.
+2. Inspect the dated Guard deployment backup directory and manifest to identify whether the two differing hashes reflect an intentional later revision or unreviewed drift. Do not restore from the old manifest or overwrite either live file.
+3. Run Gateway unit/source inspection **inside the Cloud Hermes guest**. Capture unit fragment/drop-in paths and only proxy variable names as SET/UNSET; never print environment values, OAuth tokens or credentials. Confirm the exact installed HTTP/OIDC transport honors proxy settings.
+4. Inspect Squid package/service capabilities for a second independent instance and its non-overlapping PID, log, runtime and cache paths. Keep the current Strata config/listener unchanged.
+5. After the exact patch and rollback are reviewed, obtain explicit owner approval before any host/guest mutation or service reload. A current consistent guest backup and approved window remain required before reboot.
 
-### Proposed change after review — NOT IMPLEMENTED
+### Proposed change after reconciliation — NOT IMPLEMENTED
 
-- Dedicated Squid listener on host address `172.30.240.1:3129`, exact source `172.30.240.12/32`, CONNECT/443 only, destination allowlist `auth.x.ai` and `api.x.ai`, with private/reserved destination denial retained.
-- Scope both Strata and Cloud Hermes Squid ACLs to their respective listener ports, preserving the existing Strata/Hugging Face access policy.
-- Add one exact Guard INPUT rule for `virbr240`, source `172.30.240.12`, destination `172.30.240.1`, TCP/3129, before the existing `virbr240` drop; update canonical nft file and exact verifier together.
-- Add one exact UFW INPUT allow for the same source/interface/destination/port. No broad libvirt rule, FORWARD rule, NAT or guest default route.
-- Configure only the Hermes Gateway service to use the proxy after confirming client support; do not put credentials in the override.
-- Test allowed xAI endpoints, denied external and private/LAN destinations, OIDC discovery, then one authenticated Grok request.
+- Independent Squid instance bound only to `172.30.240.1:3129`; source fixed to `172.30.240.12/32`; CONNECT TCP/443 only; exact destinations `auth.x.ai` and `api.x.ai`; private/reserved destination denial and default deny. Its config, PID, logs and runtime/cache state must not overlap with the Strata Squid instance.
+- One exact Guard INPUT exception for `virbr240`, source `172.30.240.12`, destination `172.30.240.1`, TCP/3129, before the broad guest input DROP; update canonical rules and verifier together only after baseline reconciliation.
+- One exact UFW INPUT allow for the same source/interface/destination/port.
+- Configure only the guest Hermes Gateway service to use the proxy after verifying the installed client/OIDC code honors it; no credentials in the service override.
+- Test positive access to both xAI hosts and negative access to other public hosts and private/LAN destinations, then OIDC discovery and one authenticated Grok request.
 
-No host or guest mutation, firewall/Squid reload, Docker restart, Gateway restart, disk copy/snapshot or reboot has been performed or authorized. A current consistent backup and owner-approved service window are required before any reboot. Keep the guest without a default route and preserve the Strata private network.
+No host or guest mutation, firewall/Squid reload, Docker restart, Gateway restart, disk copy/snapshot or reboot has been performed or authorized. Preserve the guest's lack of default route and the existing Strata private network.
 
 ## Evidence and provenance
 
