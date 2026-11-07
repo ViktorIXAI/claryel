@@ -1,4 +1,6 @@
-# Architecture v0.1 — proposal, not deployment authorization
+# Architecture v0.1 — original proposal, not deployment authorization
+
+> **Superseding design direction:** See [Architecture v0.2 — replaceable platform](ARCHITECTURE-V0.2-REPLACEABLE-PLATFORM.md). Version 0.1 records the original Hermes/Strata-oriented isolation concept; v0.2 generalizes the design around vendor-neutral service roles, replaceable runtimes, artifact admission, fail-closed lifecycle and portable agent state. v0.2 is also a proposal, not deployed capability.
 
 ## Isolation zones
 
