@@ -519,3 +519,43 @@ Read-only output supplied from claryel-cloud-vm (uploaded transcript, 2026-11-07
 - Continue to leave VM routes/DNS, Guard, UFW, Squid, systemd and Strata untouched until the exact proposed patch and negative/positive tests are reviewed.
 
 No configuration, service, firewall, Squid, VM or boot state was changed.
+
+
+### 10.12 Owner-supplied launcher, lazy HTTPX import and Grok transport search
+
+Read-only guest output supplied by the owner (2026-11-07):
+
+**Launcher behavior**
+- The generated entry point starts the managed Python 3.14.9 interpreter with `-I`, removes `PYTHONHOME` and `PYTHONPATH`, and initially inserts `/home/claryelvm/.hermes/hermes-agent` into `sys.path`.
+- `_hermes_closure_repair()` is a function defined in the launcher. Its `sys.path` replacement to a recovery closure occurs only when that recovery function is called; the visible normal path first attempts `import hermes_bootstrap`. The recovery function is called in the exception path if importing `hermes_bootstrap` fails, and in a special runtime-command path under its own conditions. Therefore the captured launcher does **not** show that the recovery closure is the normal active import path.
+- The launcher output was captured only through line 125. The remainder of the normal bootstrap/dispatch path was not included.
+
+**HTTPX import behavior**
+- `hermes_cli/auth_constants.py` documents and implements a lazy HTTPX proxy. On first attribute access it calls `importlib.import_module("httpx")` and caches the module.
+- This file does not itself configure a proxy or set `trust_env=False`; it only resolves the HTTPX module. The actual HTTPX version and file imported by the live Gateway are still unconfirmed.
+- The three discovered Python environment trees have Python 3.14.9 `pyvenv.cfg` metadata. That metadata does not identify which environment is selected by the active Gateway.
+
+**Live process evidence**
+- Gateway PID is still 3380; `/proc/3380/exe` resolves to the managed Python 3.14.9 executable; cwd is `/home/claryelvm/.hermes`.
+- The supplied `ps` output truncated the command line, so the complete process argv is not known from this capture.
+- `/proc/3380/environ` contains none of the checked proxy variable names (`HTTP_PROXY`, `HTTPS_PROXY`, `ALL_PROXY`, `NO_PROXY`).
+
+**Grok transport source discovery**
+- The source search located `agent/transports/codex.py`, `agent/transports/chat_completions.py`, `agent/client_lifecycle.py`, `agent/chat_completion_helpers.py`, and `tools/xai_http.py` as relevant code paths.
+- The grep output is symbol/comment discovery, not a complete client-construction trace. It does not yet establish whether Grok inference uses HTTPX directly, the OpenAI SDK's configured HTTP client, another transport, or whether that client honors environment proxies.
+
+**Updated interpretation**
+1. OAuth code's default HTTPX calls plus the lazy import are consistent with HTTPX environment-proxy behavior, but only if the active process loads a compatible HTTPX build and its runtime environment contains `HTTPS_PROXY` when requests are made.
+2. The active Gateway process currently has no proxy variables. This remains a concrete missing condition for the proposed environment-variable proxy plan.
+3. We must not assume OAuth transport and Grok inference transport are identical. The latter still requires tracing from provider selection through client construction to the actual request call.
+4. The previous interpretation that the launcher unconditionally switches to a recovery closure was too broad. The captured code shows this is an exception-recovery path, not the demonstrated normal path.
+
+**Next read-only gate**
+- Capture launcher lines 120–240 and the full, untruncated Gateway argv (`tr '\\0' ' ' </proc/3380/cmdline`; do not expose secrets if any argument contains them).
+- Read `/proc/3380/maps` lines matching `httpx`, `site-packages`, or the active environment path; do not dump the full maps file.
+- From the running process context, determine `httpx.__file__` and `httpx.__version__` only if this can be done without starting a second Gateway or mutating files; otherwise use process maps and launcher/bootstrap source.
+- Inspect `agent/client_lifecycle.py` around its HTTP client creation, `agent/transports/codex.py` around the client request construction (approximately lines 720–850), `agent/transports/chat_completions.py` around its request/client construction, and `tools/xai_http.py` in full relevant sections.
+- Identify whether xAI OAuth refresh and inference share the same HTTP client or use separate clients; identify whether the SDK is configured with `httpx.Client`/`AsyncClient` and its `trust_env` behavior.
+- Keep all host/guest network, firewall, Squid, systemd, VM and Strata state unchanged pending a reviewed exact patch.
+
+No configuration, service, firewall, Squid, VM or boot state was changed.
