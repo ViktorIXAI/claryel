@@ -649,3 +649,47 @@ Then validate a candidate wrapper with a harmless dummy key in a disposable cont
 - Approved-by: owner direction to continue the P2002 security review
 - Published-by: GitHub connector via shared ViktorIXAI account
 - Attribution-confidence: DECLARED_OWNER_SUPPLIED
+
+
+## 13. Complete entrypoint key flow and persistent-secret locations — 2026-11-07
+
+The owner supplied the remaining read-only source excerpt from the installed Strata 0.2.11 image.
+
+### Native entrypoint: exact observed key flow
+
+- Lines 162–167: API_KEY is preferred; if empty and API_KEY_FILE is set, the script checks that the file is readable and reads it into the shell variable key using tr -d CR/LF.
+- Line 226: when key is non-empty, the script adds the argument --api-key-env STRATA_LAUNCH_KEY to the strata launch command. The secret value itself is not included in that command-line argument.
+- Lines 279–282: the child launch process is started with STRATA_LAUNCH_KEY=key in its environment.
+- launch/runner.py, lines 537–550: derive_config() copies the base config, then writes s.api_key into the derived run config's api_key field when present.
+- launch/settings.py, lines 134 and 149–152: LaunchSettings has an api_key field documented as stored only in the private preset file; its redacted serialization replaces the value with "set" when with_key=False. This excerpt does not establish the actual file path or filesystem mode of the preset.
+- Entrypoint lines 294–296: after launch succeeds, the script runs strata launch --show-key --preset PRESET and redirects its output to KEY_FILE under umask 077. The previously supplied entrypoint excerpt defines the default as /data/state/api-key (overridable with STRATA_KEY_FILE). This is an additional persisted key copy in the writable /data volume. The 077 umask requests restrictive permissions for the newly created file; actual resulting ownership/mode should still be checked on disk.
+- Lines 297–299: if no key was supplied, the script warns that Strata generated one and tells the operator how to show it. This is not the case for a supplied API_KEY/API_KEY_FILE value, but the post-launch --show-key file write still occurs.
+
+### Direct strata serve path used by the live container
+
+The server source excerpt shows:
+- --api-key defaults to os.environ.get(STRATA_API_KEY, "") (server.py lines 9919–9924).
+- The effective raw key is selected as a.api_key or cfg.get(api_key, "") (lines 10035–10045).
+- The CLI documentation states Bearer and x-api-key are accepted on /v1/*.
+
+This is consistent with a file-reading wrapper exporting STRATA_API_KEY and then executing the existing direct strata serve --profile command. It avoids invoking the image entrypoint's strata launch workflow and therefore avoids the specific preset/run-config persistence path shown above. The supplied excerpt does not prove that no other server code writes or logs the key; a targeted read-only search of the current serve path and its configuration writes is still required.
+
+### Security interpretation and decision
+
+1. The native API_KEY_FILE input is not a secret-isolation mechanism: the key is read into a shell variable, passed into the launch process environment, saved by launch into a private preset and derived run config, and written to the default /data/state/api-key file after startup.
+2. The native path should not be selected until the preset/run-config file paths, ownership/modes, /data backup coverage, and resulting secret copies are explicitly audited against the deployment's storage policy.
+3. The direct-serve wrapper is currently the less invasive candidate because it preserves the live command/profile and can feed the server's existing STRATA_API_KEY input. It is not yet accepted: inspect whether the serve process or any helper persists/logs the environment key, test with a harmless dummy key in a disposable container, and verify unauthorized requests are rejected.
+4. No production key was generated, copied, mounted or configured. No live container, profile, volume, network, firewall or host setting was changed.
+
+## Provenance
+
+- Writer-instance: CHATGPT-REVIEW-01
+- Writer-role: REPOSITORY_AUDITOR
+- Deployment-alias: P2002-LAB
+- Prepared-by: ChatGPT GPT-6 (declared)
+- Executed-by: owner (read-only commands and output supplied in conversation); GitHub author did not access P2002
+- Evidence-source: OWNER_SUPPLIED_TERMINAL_OUTPUT
+- Reviewed-by: SELF_REVIEW_ONLY
+- Approved-by: owner direction to continue the P2002 security review
+- Published-by: GitHub connector via shared ViktorIXAI account
+- Attribution-confidence: DECLARED_OWNER_SUPPLIED
