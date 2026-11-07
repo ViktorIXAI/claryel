@@ -169,3 +169,25 @@ Reviewed-by: SELF_REVIEW_ONLY
 Approved-by: owner request to record architecture analysis
 Published-by: GitHub connector via shared ViktorIXAI account
 Attribution-confidence: DECLARED_UNVERIFIED
+
+
+## 12. Public P2002 laboratory reference and per-client identifiers
+
+P2002 is the public laboratory reference for this architecture. Under the owner's standing disclosure direction, its actual non-secret implementation identifiers and network details are intentionally published for independent security review. The current Strata inference checkpoint records:
+
+| Item | P2002 lab reference value (2026-11-07 snapshot) |
+| --- | --- |
+| Host alias | `P2002` |
+| Inference container | `claryel-inference` |
+| Docker network | `claryel-private-ai` |
+| Inference container IP | `172.31.250.2` |
+| Disposable inference-test peer IP | `172.31.250.10` |
+| Strata image tag | `claryel/strata:0.2.11-rocm-gfx120x` |
+| Model ID | `qwen3.8-flash-next-iq3_s` |
+| API port/path | `8080`, `/v1/chat/completions` |
+
+These are observed lab snapshot values, not prescribed defaults. The tested client-to-inference request succeeded by direct IP; Strata reported `api_key=false`, so API authentication and host/WAN exposure remain open security work. See [the complete dated inference checkpoint](../logs/P2002/2026-11-07-strata-private-api-inference-success.md) and [issue #16](https://github.com/ViktorIXAI/claryel/issues/16).
+
+For every future customer Box, preserve stable logical service roles but generate a distinct deployment ID, concrete container/runtime names, network name, collision-checked subnet, internal DNS/service names and unique credentials/certificates. Do not copy P2002's values into a customer deployment. See [the public architecture and per-client identity policy](../policies/PUBLIC-ARCHITECTURE-AND-CLIENT-IDENTITY.md) and [issue #17](https://github.com/ViktorIXAI/claryel/issues/17).
+
+**No security by obscurity:** randomized names and addresses support uniqueness and collision avoidance only. Assume an attacker knows this entire document and can discover all names and addresses. Authentication, authorization, default-deny network policy, segmentation and least privilege must remain effective.
