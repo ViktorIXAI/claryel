@@ -104,9 +104,30 @@ This is a safety-preserving interpretation of the current repository documents, 
 
 These items remain open; deferral is not closure or a security pass. No customer data, production deployment or broad external access is authorized by this triage.
 
-## Immediate operator action requested
+## Latest read-only preflight — completed 2026-11-07 10:05 UTC
 
-Run the read-only command bundle supplied in the current conversation and paste its complete output. The next step depends on fresh host/guest state and backup timestamps. No additional host command should be run until those outputs are reviewed.
+Owner supplied the P2002 host snapshot at 10:03:40 UTC and Cloud Hermes guest snapshot at 10:05:06 UTC. Full sanitized operational record: [xAI egress preflight log](../logs/P2002/2026-11-07-xai-egress-preflight.md).
+
+Confirmed:
+- Guard verifier passes its exact two-chain/12-ordered-rule invariant; `virbr240` input is dropped after established/related and DHCP exceptions.
+- UFW is active with default deny incoming, allow outgoing, deny routed. Its complete effective chains have not yet been inspected.
+- Existing Squid listens on `172.30.250.1:3128`; only source `172.30.250.10/32` and the listed Hugging Face/GitHub download domains are allowed. Keep it unchanged.
+- P2002 resolves `auth.x.ai` and `api.x.ai`; the guest resolves neither.
+- Guest has no default route (expected), Gateway is enabled/active, Linger=yes, Hermes v0.23.0 is up to date, `grok-4.6` is selected and primary xAI OAuth credentials are present.
+- VM and libvirt network autostart are enabled, but a controlled reboot has not verified them.
+- Docker CLI inspection was denied because the commands were run without sufficient privileges. Docker daemon service is active; container state/health is not established by this snapshot.
+- Existing qcow2 backups are from 2026-11-06 and predate the 2026-11-07 Hermes PM/Gateway changes. No libvirt snapshot was listed. The live qcow2's current metadata and backup storage capacity have not yet been captured.
+
+### Next operator action — read-only host inspection only
+
+Run the focused command block supplied in the current conversation to capture:
+1. complete UFW/iptables packet path and service unit definitions;
+2. canonical Guard loader/verifier source and exact Squid ACL/include ordering;
+3. Docker container/network state using `sudo docker` without exposing environment values;
+4. live qcow2 metadata, backup storage free space and prior checksum manifests;
+5. host-side HTTPS reachability to the xAI OIDC discovery endpoint.
+
+No host or guest mutation, firewall reload, Squid reload, Docker restart, disk copy/snapshot, service restart or reboot is authorized by this diagnostic request. After reviewing the outputs, prepare an exact Squid + Guard + UFW change and rollback for owner approval. Keep the guest without a default route and keep the existing Strata proxy path unchanged.
 
 ## Evidence and provenance
 
