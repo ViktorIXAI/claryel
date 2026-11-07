@@ -284,3 +284,43 @@ The Gateway `run` help documents foreground operation, including `--replace`, `-
 ### Next action
 
 Before invoking the installer, inspect the local v0.23.0 Gateway installer implementation and exact systemd unit-generation behavior (including service identity, HOME/HERMES_HOME, working directory, environment handling, restart policy, and whether `--system` requires root). Also check for pre-existing Hermes system-level units. Then use the supported system-level installer for account `claryelvm` only if the implementation preserves the existing Hermes home and credential access. Do not use `--force` or `--force-unit-path` unless a verified conflict requires it. No provider reauthorization or reinstall is permitted.
+
+
+## Owner-supplied installer-source and existing-unit inventory — 2026-11-07
+
+- **Checkpoint ID:** CLARYEL-P2002-20261107-GATEWAY-INSTALLER-SOURCE-SEARCH-001
+- **Operation:** READ_ONLY_SOURCE_AND_SYSTEMD_INVENTORY
+- **Target-machine-ID:** P2002-CLOUD-GUEST
+- **Evidence source:** OWNER_SUPPLIED_TERMINAL_TRANSCRIPT
+- **Executed-by:** Owner, in the already-open guest shell; ChatGPT did not execute commands on the guest.
+- **Prepared-by:** ChatGPT GPT-6 (declared)
+- **Writer-instance:** CHATGPT-INSTALL-01 (declared; unauthenticated)
+- **Writer-role:** INSTALLATION_COORDINATOR
+- **Deployment-alias:** P2002-LAB
+- **Reviewed-by:** SELF_REVIEW_ONLY
+- **Approved-by:** OWNER_REQUEST_2026-11-07 (read-only source and unit inspection)
+- **Published-by:** GitHub connector via shared ViktorIXAI account
+- **Attribution-confidence:** DECLARED_UNVERIFIED
+- **Related-issue:** #10
+- **Related-checkpoint:** CLARYEL-P2002-20261107-GATEWAY-INSTALLER-OPTIONS-001
+
+### Commands and observed output
+
+The owner searched Python source files in the existing Hermes Git installation for the Gateway/systemd installer identifiers and related unit-generation terms, then queried installed system service units and searched standard system unit directories for Hermes/Nous unit files. The broad source search was piped through `head -160`; its output was dominated by generic systemd references and did not identify the Gateway install implementation. The expanded per-user source path is intentionally not repeated in this public log.
+
+The system unit inventory produced no matching service-unit entries. The standard system unit-file search produced no matching Hermes/Nous unit files.
+
+One source comment was visible in the search output at `agent/agent_init_memory_provider.py`: it states that systemd Gateway services do not automatically inherit the Hermes home `.env` file and that the relevant environment must be set separately. This is a source-code warning about environment propagation; the truncated search excerpt does not establish the exact installer behavior or which individual credentials/settings are needed by this particular service. It is a reason to inspect the relevant implementation before installation, not proof that Grok authorization will be lost.
+
+### Result
+
+- **PASS:** No existing Hermes/Nous system-level service unit was found by the supplied systemd unit-file query.
+- **PASS:** No Hermes/Nous-named unit file was found by the supplied standard unit-directory search.
+- **OBSERVED:** The broad Python source search did not locate or expose enough of the Gateway installer implementation to establish its generated unit semantics.
+- **IMPORTANT SOURCE WARNING:** A Hermes source comment explicitly warns that systemd Gateway services do not automatically inherit the Hermes home `.env` file.
+- **NOT_TESTED:** Exact Gateway installer source, generated unit content, service environment, credential loading, restart policy, and runtime identity.
+- **NO_CHANGES:** No service, package, configuration, credential, VM, or network changes were made.
+
+### Next action
+
+Perform a targeted read-only source search for the exact Gateway installer implementation and unit writer (terms such as `gateway install`, `run_as_user`, `start_on_login`, `EnvironmentFile`, `HERMES_HOME`, and the generated `hermes-gateway` unit). Read only the relevant source sections and any directly called unit-generation helper. Establish the exact environment/credential behavior before invoking the installer. Do not print `.env` contents, config values, tokens, or secrets. Do not use force/repoint flags, reinstall Hermes, or reauthorize Grok.
