@@ -24,7 +24,7 @@ Read the complete [Public Security Review and Production Security Strategy](docs
 - Home Assistant, identity, backups, updates, telemetry and administration receive separate restricted security boundaries.
 - Every update enters quarantine; require provenance, staged testing, explicit approval, rollout and rollback.
 - **AI-assisted and fallible by design:** ChatGPT, Grok, local Hermes-based AI and potentially other agents may contribute and publish over time. Human contributors and all AI systems can make mistakes; preserve reviewable history and analyze errors in both reproduced and newly designed solutions.
-- Publish only in **English**, with secret/PII/operational-information review before any public commit.
+- Publish routine non-secret CLARYEL engineering logs promptly in **English**, including project-owned lab network and operational details covered by the standing owner authorization. Manually review outgoing content for credentials, customer/third-party confidential information and unrelated personal data. Do not wait for automated publisher or CI readiness; see the [standing publication policy](policies/PUBLICATION-SECURITY.md).
 
 ## Current implementation evidence
 
