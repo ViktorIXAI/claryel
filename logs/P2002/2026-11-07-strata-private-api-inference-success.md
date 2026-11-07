@@ -496,3 +496,88 @@ No container, image, volume, profile, secret, network, firewall or host configur
 - Approved-by: owner direction to continue the P2002 security review
 - Published-by: GitHub connector via shared ViktorIXAI account
 - Attribution-confidence: DECLARED_OWNER_SUPPLIED
+
+
+## 11. Image default user and effective process identity — 2026-11-07
+
+The owner supplied a second read-only diagnostic transcript. It closes the earlier runtime-identity gap.
+
+### Image configuration
+
+```text
+User=""
+Entrypoint=["/usr/bin/tini","--","/opt/strata/entrypoint.sh"]
+Cmd=["run"]
+```
+
+The image does not specify a non-root default user. The current container configuration also has an empty `Config.User`.
+
+### Effective identity inside the running container
+
+```text
+Exec UID: 0
+Exec GID: 0
+Supplementary groups: [0, 44, 993]
+PID 7 python3: Uid 0 0 0 0; Gid 0 0 0 0; Groups 0 44 993
+PID 2395 python3: Uid 0 0 0 0; Gid 0 0 0 0; Groups 0 44 993
+```
+
+The owner also confirmed:
+- Container state: `running`; health: `healthy`.
+- Profile `/data/state/strata/launch/iq3_s-128k.json`: mode `0600`, UID:GID `0:0`.
+- Host-side `/data` volume root: mode `0755`, UID:GID `0:0`.
+- Host-side profile file: mode `0600`, UID:GID `0:0`.
+- Host-side `/models` volume root: mode `0755`, UID:GID `0:0`.
+
+### Docker-configured environment variable names
+
+The owner printed variable names only (values were not displayed). The list was:
+
+```text
+DEBIAN_FRONTEND
+HF_HUB_DISABLE_TELEMETRY
+HF_HUB_OFFLINE
+HOME
+LANG
+NVIDIA_DRIVER_CAPABILITIES
+NVIDIA_VISIBLE_DEVICES
+PATH
+PORT
+PYTHONNOUSERSITE
+PYTHONUNBUFFERED
+STRATA_COMPONENTS_DIR
+STRATA_IN_DOCKER
+STRATA_INSTALL_DIR
+TRANSFORMERS_OFFLINE
+XDG_CONFIG_HOME
+XDG_STATE_HOME
+```
+
+`STRATA_API_KEY` is absent from the Docker-configured environment list. This is consistent with the previous health response reporting `api_key=false`. The list does not prove that no process can set an environment variable after container start; it records only the Docker container configuration inspected.
+
+### Consequence for secret-file feasibility
+
+The current image and process run as UID 0/GID 0. A host-owned root:root secret file with mode `0600`, mounted read-only at a dedicated path, is therefore compatible with the currently observed identity from a basic Unix permission perspective. This closes the prior uncertainty about whether a non-root Strata process could read such a file.
+
+This does **not** yet validate the full secret-injection mechanism. Before implementation, inspect the actual `/opt/strata/entrypoint.sh` and verify:
+- whether it reads or modifies arguments/environment in a way a wrapper must preserve;
+- whether `STRATA_API_KEY` is consumed by the Strata API server in this exact image/version;
+- whether the key or environment is logged, copied into child command lines, exposed by diagnostics, or otherwise disclosed;
+- whether a read-only secret-file mount and a small wrapper can preserve `tini` as PID 1 and the original `entrypoint.sh run` behavior.
+
+The safest next design candidate is a root-owned mode-0600 secret file mounted read-only, with a minimal root-owned read-only wrapper that reads the key without printing it and then execs the original entrypoint under `tini`. This remains a proposal until the entrypoint and exact runtime behavior are inspected. Do not put the key in Docker Config.Env, command arguments, profile backups, logs, shell history or GitHub.
+
+No secret was generated, mounted or configured. No container, profile, volume, network, firewall or host configuration was changed.
+
+## Provenance
+
+- Writer-instance: CHATGPT-REVIEW-01
+- Writer-role: REPOSITORY_AUDITOR
+- Deployment-alias: P2002-LAB
+- Prepared-by: ChatGPT GPT-6 (declared)
+- Executed-by: owner (read-only commands and output supplied in conversation); GitHub author did not access P2002
+- Evidence-source: OWNER_SUPPLIED_TERMINAL_OUTPUT
+- Reviewed-by: SELF_REVIEW_ONLY
+- Approved-by: owner direction to continue the P2002 security review
+- Published-by: GitHub connector via shared ViktorIXAI account
+- Attribution-confidence: DECLARED_OWNER_SUPPLIED
