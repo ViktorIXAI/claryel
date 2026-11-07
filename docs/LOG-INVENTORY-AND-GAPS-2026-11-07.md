@@ -4,7 +4,7 @@
 
 ## 1. Repository log inventory
 
-The current logs root contains only one machine directory: logs/P2002/. It contains **11 standalone Markdown records**. The 50 KB initial-install.md is the long chronological narrative; the other ten files are focused checkpoints.
+The current logs root contains only one machine directory: logs/P2002/. It contains **16 standalone Markdown records**. The 50 KB initial-install.md is the long chronological narrative; the other fifteen files are focused checkpoints.
 
 | # | File | Main scope | Evidence limitation / gap |
 | --- | --- | --- | --- |
@@ -19,6 +19,12 @@ The current logs root contains only one machine directory: logs/P2002/. It conta
 | 9 | logs/P2002/2026-11-06-strata-network-isolation-acceptance.md | Restricted egress, Squid, positive/negative TCP/HTTPS tests, one reboot | Bounded tests only; IPv6, DNS/UDP/QUIC, L2, Guard-loss and second reboot NOT_TESTED |
 | 10 | logs/P2002/2026-11-06-strata-iq3s-download-bringup.md | Strata 0.2.11/build 0.1.57, failed first launch, corrected Docker device passthrough retry | Historical checkpoint ends at GPU device nodes and engine check; superseded by later owner-supplied inference evidence in row 11, but not by a complete ROCm smoke-test transcript |
 | 11 | logs/P2002/2026-11-07-strata-private-api-inference-success.md | Loaded Qwen3.8-Flash-Next IQ3_S and successful inference; exact image/container baseline; confirmed root UID/GID and mounts; full native API_KEY_FILE flow; private run-config writer uses chmod 0600 and atomic replace; server _authorized() helper accepts Bearer/x-api-key | Owner-supplied transcript; preset serializer/path/mode and /data backup scope remain unknown; filtered find did not inspect active profile basename; direct-serve persistence/logging and route call-site coverage unproven; dummy-key test, LAN/WAN reachability, all-route authentication and reasoning_content review remain open |
+
+| 12 | logs/P2002/2026-11-07-cloud-hermes-agent-existing-correction.md | Owner correction that the existing guest Hermes installation and Grok response tests must be preserved; do not reinstall | Owner-reported prior completion; original installation transcript and exact service state were not present at that checkpoint |
+| 13 | logs/P2002/2026-11-07-cloud-hermes-autostart.md | Libvirt network and Cloud Hermes VM autostart enabled; later addendum corrects the proposed reinstall step | No host reboot or guest application readiness test in that checkpoint |
+| 14 | logs/P2002/2026-11-07-cloud-hermes-guest-runtime-discovery.md | Guest SSH, existing Hermes installation context, prior-conversation recovery and read-only runtime discovery | Earlier snapshot found no matching running process/unit and linger disabled; later Gateway installation supersedes that service-state snapshot; reboot persistence remains untested |
+| 15 | logs/P2002/2026-11-07-host-boot-state-snapshot.md | Host boot/service state snapshot | Snapshot only; not a substitute for a later reboot acceptance test |
+| 16 | logs/P2002/2026-11-07-cloud-hermes-network-pm-repair-gateway.md | Guest DNS/default-route diagnosis; Guard/libvirt/proxy separation; offline UV wheelhouse repair using hash-verified original packaging/setuptools; successful Hermes PM repair; Gateway installation, linger and SIGKILL auto-restart test | Guest remains without default route/upstream DNS; no messaging platforms enabled; auxiliary xAI OAuth and Nous credentials unavailable; actual logout/reboot persistence and end-to-end messaging NOT_TESTED |
 
 ## 2. Other evidence surfaces
 
@@ -47,7 +53,7 @@ The current logs root contains only one machine directory: logs/P2002/. It conta
 - Actual HIP compute smoke-test command, exit code and output.
 - Model shard/projector/drafter download completion, exact hashes and format validation.
 - Full post-fix ROCm/HIP device-identification and standalone GPU smoke-test transcript (separate from the successful model inference evidence) is still not present in the public log snapshot.
-- Post-reboot Cloud Hermes VM state, DHCP lease, SSH and autostart acceptance.
+- Post-reboot Cloud Hermes VM state, DHCP lease and Gateway startup acceptance. Guest SSH and the systemd-managed Gateway were observed running before a reboot; post-reboot behavior remains NOT_TESTED.
 - A verified restore-from-backup boot.
 - Machine-readable cross-file event inventory, global chronological checkpoint index, and reconciliation of every commit with a log checkpoint.
 
@@ -59,11 +65,26 @@ The current logs root contains only one machine directory: logs/P2002/. It conta
 2. The network acceptance file contains a proposed download command explicitly marked NOT EXECUTED, followed by a later separate actual bring-up log. The index must preserve this distinction.
 3. The earlier issue #9 comments describe firmware investigation and corrected container device passthrough. The 2026-11-07 comment adds successful Strata/Qwen inference; standalone GPU compute acceptance remains a separate evidence gap.
 4. The current audit-status page is a snapshot and must carry a last-evidence timestamp; it should not be treated as live status.
-5. The 2026-11-06 temporary publication window is historical and expired. The owner issued a standing 2026-11-07 direction permitting public disclosure of P2002 non-secret architecture and lab identifiers; credentials, customer data and unrelated personal/network identifiers remain excluded. Per-client deployments must use generated unique identities and must not reuse P2002 runtime values.
+5. The 2026-11-06 temporary publication window is historical and was superseded on 2026-11-07 by the standing owner instruction in the publication and installation-audit policies. Routine CLARYEL engineering logs are to be published promptly; do not wait for automated publisher, scanner or CI readiness. Non-secret P2002/CLARYEL lab network and operational details are authorized for publication. Credentials, customer/third-party confidential data and unrelated personal information remain excluded. Per-client deployments must use generated unique identities and must not reuse P2002 runtime values.
+
+## 4.1 Cloud Hermes guest and Gateway checkpoint added — 2026-11-07
+
+New record: `logs/P2002/2026-11-07-cloud-hermes-network-pm-repair-gateway.md`.
+
+- Guest `172.30.240.12/24` on `claryel-cloud-admin` / `virbr240` has no default route; systemd-resolved is active but the link has no DNS scope/upstream server.
+- Host Guard rules explicitly drop forwarding into and out of `virbr240`. The Squid proxy at `172.30.250.1:3128` is bound to the separate `br-strata-eg` network; it is not an allowance for the Cloud Hermes guest.
+- No network/Guard change was made. The Hermes package manager was repaired offline from a local wheelhouse after original packaging 26.3 and setuptools 84.1.0 artifacts were verified against the guest lock-file hashes.
+- Hermes Gateway is installed as an enabled user systemd service; `Linger=yes`.
+- A controlled SIGKILL test passed: PID 2969 was restarted as PID 3132; `NRestarts=1`.
+- Gateway is **not yet messaging-ready**: the log says `No messaging platforms enabled`. Auxiliary xAI OAuth and Nous Portal warnings are present. End-to-end messaging and reboot persistence remain NOT_TESTED.
+- The earlier guest-runtime snapshot that found no matching service and linger disabled predates this later installation; preserve both checkpoints as chronological evidence.
 
 ## 5. Required next audit steps
 
 - Recover latest GPU/Strata logs from P2002 host log directory, agent source logs, other branches and any owner-controlled local Git mirror.
+- Preserve the Cloud Hermes guest isolation boundary; if package/network access is needed, design an explicitly approved broker/proxy path rather than adding an unreviewed default route or NAT.
+- Inspect Hermes Gateway CLI help and non-secret messaging configuration, identify the intended messaging platform, and run a controlled inbound/outbound test. Verify the primary Grok session separately from auxiliary xAI OAuth/Nous warnings.
+- After a planned maintenance window, test guest/host reboot recovery and confirm Gateway startup with linger; do not infer reboot acceptance from the SIGKILL restart test.
 - Create one event ID per material operation and map it to commit, file, issue/comment and machine identity.
 - Add a machine-readable index (JSON/YAML) and a human-readable timeline; validate no orphan event or unsupported PASS.
 - Add the successful inference checkpoint (now published), recover the separate GPU/ROCm smoke-test transcript and model artifact hashes, and add missing checkpoints for Cloud Hermes post-reboot state and backup restore when evidence becomes available.
