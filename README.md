@@ -38,6 +38,7 @@ The P2002 installation journal contains **operator-reported** findings; Git publ
 ## Project map
 - [Architecture v0.1 — original trust boundaries](docs/ARCHITECTURE.md)
 - [Architecture v0.2 — vendor-neutral replaceable platform, artifact admission and fail-closed lifecycle](docs/ARCHITECTURE-V0.2-REPLACEABLE-PLATFORM.md)
+- [Strategic architecture and process evaluation (2026-11-07)](docs/ARCHITECTURE-PROCESS-STRATEGIC-EVALUATION-2026-11-07.md)
 - [Owner-controlled implementation roadmap](docs/ROADMAP.md)
 - [P2002 and P1005 hardware testbeds](docs/HARDWARE-TESTBEDS.md)
 - [Storage, encrypted keys, state indicators and deferred backup plan](docs/STORAGE-KEYS-AND-BACKUP-PLAN.md)
