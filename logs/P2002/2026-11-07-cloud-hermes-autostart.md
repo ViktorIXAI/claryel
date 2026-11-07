@@ -77,3 +77,31 @@ No guest command or service change was performed by this documentation correctio
 - **Reviewed-by:** SELF_REVIEW_ONLY
 - **Published-by:** GitHub connector via shared ViktorIXAI account
 - **Attribution-confidence:** DECLARED_UNVERIFIED
+
+
+## Root-cause clarification — why the VM did not start after the 2026-11-06 host reboot
+
+The initial installation direction is preserved in [issue #8](https://github.com/ViktorIXAI/claryel/issues/8): keep both `claryel-cloud-admin` network autostart and `claryel-cloud-hermes` VM autostart **off initially** while bringing up the installation under operator control. This was an intentional temporary configuration, not a KVM or qcow2 failure.
+
+The subsequent owner-supplied evidence recorded in [issue #10](https://github.com/ViktorIXAI/claryel/issues/10) shows:
+- P2002 rebooted at approximately 2026-11-06 18:26 UTC.
+- The VM remained defined and persistent; its qcow2 disk remained present.
+- KVM modules and `/dev/kvm` were available.
+- The VM log recorded a clean shutdown at 18:25:37 UTC after SIGTERM from `libvirtd`, immediately before the host reboot.
+- `virsh dominfo` reported `Autostart: disable`.
+- The libvirt network autostart was also disabled at the later 2026-11-07 owner-supplied current-state checkpoint.
+
+**Root cause:** the VM was shut down normally as part of host shutdown and was not started again because its libvirt autostart flag had deliberately been left disabled by the initial installation plan. The network was likewise not configured to auto-start. The available evidence does not indicate a VM disk failure, missing VM definition, or KVM failure.
+
+**Responsibility/sequence:** the initial plan recorded the owner's then-current instruction to leave autostart off. The later owner direction changed that requirement, but the flags were not enabled before the host reboot. The installation coordinator should have tracked that temporary state and completed the transition when the direction changed. This is a process/configuration omission, not an unexplained external failure.
+
+The owner later executed the two commands recorded above:
+```bash
+virsh net-autostart claryel-cloud-admin
+virsh autostart claryel-cloud-hermes
+```
+Both flags subsequently appeared enabled in the owner-supplied host snapshot. **A controlled P2002 reboot has not yet been performed**, so automatic recovery is configured but not proven.
+
+This is separate from guest Hermes autostart: earlier guest diagnostics found no Hermes system/user service or process and `Linger=no`. The later user Gateway unit and `Linger=yes` address that separate layer. See the [PM/Gateway/Grok log](2026-11-07-cloud-hermes-network-pm-repair-gateway.md).
+
+Evidence classification: issue #8/#10 and owner-supplied terminal outputs; no independent host access by this writer.
