@@ -1,5 +1,7 @@
 # Temporary 24-hour owner-authorized P2002 technical-log publication window
 
+> **Historical status — superseded on 2026-11-07:** This file records the original 24-hour authorization only. The owner has since issued a standing publication instruction, effective until a later explicit owner instruction, in [PUBLICATION-SECURITY.md](PUBLICATION-SECURITY.md) and [INSTALLATION-AUDIT-LOGGING.md](INSTALLATION-AUDIT-LOGGING.md). The former expiry/withholding rule below no longer governs routine CLARYEL engineering-log publication. Do not use this historical file to reinstate a publisher-readiness hold.
+
 **Owner authorization:** explicit instruction in the active ChatGPT conversation on 2026-11-06.  
 **Starts:** 2026-11-06T17:09:44+01:00 (16:09:44 UTC).  
 **Expires automatically:** 2026-11-07T17:09:44+01:00 (16:09:44 UTC).  
@@ -31,7 +33,7 @@ If any such material appears in an otherwise publishable log, withhold or redact
 
 ## Expiration
 
-At **2026-11-07T17:09:44+01:00**, this exception expires automatically without further approval. The standing publication-security, installation-audit-logging, and contributor-provenance policies resume without this temporary override. Check the absolute expiry before every publication.
+The original 24-hour exception was scheduled to expire at **2026-11-07T17:09:44+01:00**. Before that expiry, the owner superseded this temporary arrangement with the standing publication instruction dated 2026-11-07, recorded in [PUBLICATION-SECURITY.md](PUBLICATION-SECURITY.md) and [INSTALLATION-AUDIT-LOGGING.md](INSTALLATION-AUDIT-LOGGING.md). The timestamp above remains as historical evidence only; it is not a future publication stop. The standing rule remains active until a later explicit owner instruction changes or revokes it.
 
 ## Contribution provenance
 
