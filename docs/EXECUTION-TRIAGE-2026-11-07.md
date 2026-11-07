@@ -104,30 +104,39 @@ This is a safety-preserving interpretation of the current repository documents, 
 
 These items remain open; deferral is not closure or a security pass. No customer data, production deployment or broad external access is authorized by this triage.
 
-## Latest read-only preflight — completed 2026-11-07 10:05 UTC
+## Latest read-only preflight — host/guest snapshots completed 2026-11-07
 
-Owner supplied the P2002 host snapshot at 10:03:40 UTC and Cloud Hermes guest snapshot at 10:05:06 UTC. Full sanitized operational record: [xAI egress preflight log](../logs/P2002/2026-11-07-xai-egress-preflight.md).
+Owner supplied the P2002 host snapshot at 10:03:40 UTC and Cloud Hermes guest snapshot at 10:05:06 UTC, followed by a second read-only host transcript (the latter did not emit its own execution timestamp). Full sanitized operational record: [xAI egress preflight log](../logs/P2002/2026-11-07-xai-egress-preflight.md).
 
 Confirmed:
-- Guard verifier passes its exact two-chain/12-ordered-rule invariant; `virbr240` input is dropped after established/related and DHCP exceptions.
-- UFW is active with default deny incoming, allow outgoing, deny routed. Its complete effective chains have not yet been inspected.
-- Existing Squid listens on `172.30.250.1:3128`; only source `172.30.250.10/32` and the listed Hugging Face/GitHub download domains are allowed. Keep it unchanged.
-- P2002 resolves `auth.x.ai` and `api.x.ai`; the guest resolves neither.
-- Guest has no default route (expected), Gateway is enabled/active, Linger=yes, Hermes v0.23.0 is up to date, `grok-4.6` is selected and primary xAI OAuth credentials are present.
-- VM and libvirt network autostart are enabled, but a controlled reboot has not verified them.
-- Docker CLI inspection was denied because the commands were run without sufficient privileges. Docker daemon service is active; container state/health is not established by this snapshot.
-- Existing qcow2 backups are from 2026-11-06 and predate the 2026-11-07 Hermes PM/Gateway changes. No libvirt snapshot was listed. The live qcow2's current metadata and backup storage capacity have not yet been captured.
+- Guest Hermes v0.23.0 is up to date, `grok-4.6` selected, primary xAI OAuth credentials present, Gateway enabled/active, Linger=yes, and guest has no default route or DNS scope.
+- Host xAI HTTPS is working: OIDC discovery on `auth.x.ai` returns HTTP 200 with TLS verification 0; unauthenticated `api.x.ai/v1/models` returns HTTP 401 with TLS verification 0 (transport works; authenticated inference remains untested).
+- Guard verifier passes exact two-chain / 12-rule invariant. Its `guest_input` chain drops new traffic from `virbr240` after established/related and DHCP exceptions.
+- UFW/iptables confirms IPv4 INPUT policy DROP. The UFW user-input chain currently has only the SSH rule; the libvirt INPUT chain has DNS/DHCP exceptions but no TCP/3129 exception. Therefore a Guard exception alone would still be blocked by UFW.
+- Existing Squid listens on `172.30.250.1:3128` and is restricted to `172.30.250.10/32` and the existing Hugging Face/GitHub domains. Preserve its effective policy; if adding a second listener to the same Squid instance, explicitly scope both listener ACLs so they cannot cross-apply.
+- Docker state is now confirmed using `sudo docker`: `claryel-inference` is running/healthy on image `claryel/strata:0.2.11-rocm-gfx120x`, attached only to `claryel-private-ai` (`internal=true`), address `172.31.250.2`, with no published host port.
+- VM and libvirt network autostart flags are enabled, but a controlled reboot remains NOT_TESTED.
+- Live VM qcow2 is 5,690,753,024 bytes. `qemu-img info` could not obtain the shared write lock because the VM is active; this is not evidence of corruption. Do not bypass the lock. Backup filesystem has 223 GB free.
+- Existing 2026-11-06 backup artifacts predate the 2026-11-07 Hermes PM/Gateway repair and are not a current recovery point. Existing SHA256SUMS shown cover Guard/proxy config, not a current VM image.
 
-### Next operator action — read-only host inspection only
+### Next operator action — final read-only configuration capture
 
-Run the focused command block supplied in the current conversation to capture:
-1. complete UFW/iptables packet path and service unit definitions;
-2. canonical Guard loader/verifier source and exact Squid ACL/include ordering;
-3. Docker container/network state using `sudo docker` without exposing environment values;
-4. live qcow2 metadata, backup storage free space and prior checksum manifests;
-5. host-side HTTPS reachability to the xAI OIDC discovery endpoint.
+1. Print the canonical `/etc/claryel/firewall.nft` and its SHA-256; compare with the installed backup manifest. The latest transcript showed the loader and verifier but not this canonical rules file.
+2. Print the full Squid config (including multi-line `blocked_dst` continuation and any includes), listener state and parse result. The grep excerpt did not show the full ACL.
+3. Capture the active VM disk target with `virsh domblklist` and live metadata with `virsh domblkinfo`; do not run `qemu-img info` against the active disk.
+4. Capture Gateway service fragment/drop-in paths and confirm proxy-environment handling without printing environment values or OAuth secrets.
+5. Verify Hermes' pinned HTTP transport honors proxy environment variables before preparing the service override.
 
-No host or guest mutation, firewall reload, Squid reload, Docker restart, disk copy/snapshot, service restart or reboot is authorized by this diagnostic request. After reviewing the outputs, prepare an exact Squid + Guard + UFW change and rollback for owner approval. Keep the guest without a default route and keep the existing Strata proxy path unchanged.
+### Proposed change after review — NOT IMPLEMENTED
+
+- Dedicated Squid listener on host address `172.30.240.1:3129`, exact source `172.30.240.12/32`, CONNECT/443 only, destination allowlist `auth.x.ai` and `api.x.ai`, with private/reserved destination denial retained.
+- Scope both Strata and Cloud Hermes Squid ACLs to their respective listener ports, preserving the existing Strata/Hugging Face access policy.
+- Add one exact Guard INPUT rule for `virbr240`, source `172.30.240.12`, destination `172.30.240.1`, TCP/3129, before the existing `virbr240` drop; update canonical nft file and exact verifier together.
+- Add one exact UFW INPUT allow for the same source/interface/destination/port. No broad libvirt rule, FORWARD rule, NAT or guest default route.
+- Configure only the Hermes Gateway service to use the proxy after confirming client support; do not put credentials in the override.
+- Test allowed xAI endpoints, denied external and private/LAN destinations, OIDC discovery, then one authenticated Grok request.
+
+No host or guest mutation, firewall/Squid reload, Docker restart, Gateway restart, disk copy/snapshot or reboot has been performed or authorized. A current consistent backup and owner-approved service window are required before any reboot. Keep the guest without a default route and preserve the Strata private network.
 
 ## Evidence and provenance
 
