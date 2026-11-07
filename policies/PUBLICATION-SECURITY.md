@@ -2,6 +2,24 @@
 
 **Status: mandatory publication policy, effective 2026-11-06. Implementation and CI enforcement require separate testing and owner approval.**
 
+
+## Standing owner authorization: prompt publication of technical logs (2026-11-07)
+
+**This is a permanent standing instruction until the owner gives a later explicit instruction changing or revoking it. It is not a 24-hour exception.**
+
+The owner directs CLARYEL contributors and agents to publish routine project engineering records promptly and comprehensively in this repository. **Do not delay publication because an automated publisher, pre-publication gate, CI workflow, scanner integration, or private evidence ledger is unfinished or unavailable.** Manual preparation, review and GitHub publication are authorized. The old rule to wait for the publisher/gate to become ready is superseded for the scope below.
+
+The authorized public record includes commands, terminal output, diagnostics, failed attempts, DNS/routing/network findings, errors, warnings, mistaken assumptions, corrections, configuration changes, service state, versions, tests, results, residual risks and next actions. For the owner-controlled P2002/CLARYEL reference lab—including its Cloud Hermes guest—non-secret internal network and operational details are publishable: private lab IP addresses, host/VM/service/network/bridge names, interfaces, routes, ports, firewall and access rules, package and software versions, and relevant systemd/libvirt/nftables output. These details are not to be withheld merely because they describe the internal lab network.
+
+For ordinary text-based engineering logs, the required pre-publication check is a review of the exact outgoing text to remove the prohibited material below and to preserve accurate provenance. Run automated scanners when available, keep them enabled, and record their results; however, scanner or publisher readiness is not a prerequisite for routine logs. A scanner failure must never be represented as a pass. If a possible credential or protected personal/customer/third-party datum cannot be confidently excluded, redact or withhold that material—not the unrelated technical log.
+
+This standing authorization does **not** permit publication of passwords, passphrases, API/OAuth/access tokens, cookies, session credentials, private keys, recovery material, secret environment-variable values, credential-bearing URLs, customer/third-party confidential data, or unrelated personal information. Do not publish raw secret-bearing files, vault contents, private keys, backups, or unreviewed binary/archive artifacts. Customer and third-party deployments remain subject to generated placeholders and the per-client identity rules; this authorization is for CLARYEL-owned laboratory activity.
+
+Preserve chronology and mistakes. Never invent commands, outputs, timestamps, actors, exit codes, approvals or verification. Label owner-supplied terminal transcripts as owner-supplied; distinguish proposed, executed, observed and independently verified work. Append corrections rather than silently rewriting history.
+
+This owner instruction supersedes conflicting temporary publication holds and any requirement to wait for the automated publisher for the scope above. Only a later explicit owner instruction may change this standing rule. It does not weaken the secret, customer-data or personal-data exclusions, and it does not authorize host/network changes.
+
+
 > **Standing owner direction — 2026-11-07:** The owner directs public disclosure of the P2002 laboratory architecture for independent security review, including its actual non-secret internal IP addresses, host/container/VM/service names, Docker network names, ports, routes, firewall/access configuration, versions, commands, outputs, failures and test results. This standing direction supersedes the expired 24-hour exception for the P2002 lab's non-secret architecture and operational identifiers. It does not authorize credentials, private keys, customer data or unrelated personal/network identifiers. See [the public architecture and client identity standard](PUBLIC-ARCHITECTURE-AND-CLIENT-IDENTITY.md). This does not prove technical gate enforcement or deploy the private evidence ledger.
 
 ## Scope and origin
@@ -36,7 +54,10 @@ Personal/customer data: names/usernames, paths embedding local accounts, real ho
 
 Untrusted/raw materials: core dumps, crash traces, database backups, container/VM exports, shell history, provider responses, and unreviewed logs/artifacts remain private by default. P2002 command transcripts and diagnostic excerpts may be published only after review for excluded secrets, personal/customer data and unrelated identifiers under the owner's standing lab-disclosure direction. Filenames or exclusion rules do not constitute authorization.
 
-## Mandatory publication gate
+## Mandatory publication gate for material outside the standing text-log authorization
+
+The full gate below remains mandatory for automated/bulk publication, releases, binary or archive artifacts, raw exports, and material outside the standing owner authorization above. For routine text-based CLARYEL engineering logs within that authorization, use the manual exact-content review described above and publish promptly; automated publisher, scanner integration, CI enforcement and private-ledger readiness are not prerequisites.
+
 
 1. **Stage privately**, never by writing the raw artifact directly to the public branch or GitHub API.
 2. Classify inputs: public/synthetic, confidential environment, secret/credential, personal/customer or unknown. Unknown is private until reviewed.
@@ -59,7 +80,7 @@ Untrusted/raw materials: core dumps, crash traces, database backups, container/V
 
 ## Operational privileges and retention
 
-- Human owner approves changes to disclosure gates and access policy. AI agents are untrusted authors, never authorized to bypass the gate, self-approve exceptions or publish from a private vault.
+- The human owner controls disclosure policy. The standing owner authorization above is approval for routine text-based CLARYEL engineering-log publication; AI agents may prepare and publish those logs after the required manual secret/privacy review. Agents may not widen the authorized scope, self-approve new exceptions, publish from a private vault, or bypass the hard exclusions. The full gate remains mandatory for material outside the standing authorization.
 - Use isolated GitHub write identities with least privilege; protected main, no force-push by default, no deletion rights except explicitly authorized incident remediation. Enforce once possible; current configuration is unverified.
 - Keep append-only correction history of non-secret mistakes. If a secret leaks, prioritize revocation and controlled removal; a public correction must not reproduce it.
 - Classify file retention, customer rights and backup expiration in accordance with applicable obligations. Public Git is not an encrypted or reversible private backup.
