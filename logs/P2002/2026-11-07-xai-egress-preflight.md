@@ -426,3 +426,17 @@ To honor issue #19's explicit non-goal of changing the existing Strata proxy pat
 - Feasibility details for a second Squid instance: package binary path/version, runtime user, service model, and non-overlapping PID/log/cache directories.
 
 No host or guest configuration was changed. No service was reloaded/restarted, no firewall was mutated, no VM was stopped, and no backup or reboot was performed.
+
+
+### 10.8 Pinned upstream Hermes source — source-level proxy clue, not guest runtime proof
+
+The public Hermes source at the issue's referenced commit `2bd378ed1b8d6bf2192cb26e0a55ff3091e6bd19` was inspected at `hermes_cli/auth_xai.py`.
+
+- `_xai_oauth_discovery()` calls top-level `httpx.get(XAI_OAUTH_DISCOVERY_URL, ...)`.
+- xAI token refresh and device-code flows construct `httpx.Client(...)` without an explicit `trust_env=False`, custom transport or proxy override in the displayed code paths.
+- With the standard HTTPX default environment handling, `HTTPS_PROXY=http://172.30.240.1:3129` is expected to be honored for HTTPS OIDC/token requests. This is a source-level expectation only.
+- The guest's installed source and HTTPX version have not yet been independently inspected. The inference transport path must also be checked separately; inspecting OAuth code alone does not prove all Gateway inference calls use the same transport or proxy behavior.
+
+Reference: [pinned Hermes xAI OAuth source](https://github.com/NousResearch/hermes-agent/blob/2bd378ed1b8d6bf2192cb26e0a55ff3091e6bd19/hermes_cli/auth_xai.py).
+
+Do not configure the Gateway until guest-side unit metadata, actual installed source/version and runtime proxy environment are captured.
