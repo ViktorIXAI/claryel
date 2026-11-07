@@ -432,3 +432,72 @@ The outgoing summary was manually reviewed against the active owner-authorized P
 - Published-by: GitHub connector via shared ViktorIXAI account
 - Attribution-confidence: DECLARED_UNVERIFIED
 - Related-checkpoint: CLARYEL-P2002-20261107-GATEWAY-SYSTEMD-SOURCE-REVIEW-001
+
+## Owner-supplied Hermes PM repair failure — DNS resolution blocks PyPI
+
+- **Checkpoint ID:** CLARYEL-P2002-20261107-PM-REPAIR-DNS-FAILURE-001
+- **Target-machine-ID:** P2002-CLOUD-GUEST
+- **Deployment-alias:** P2002-LAB
+- **Event time:** UNKNOWN (no timestamp in the supplied terminal transcript)
+- **Operation:** OWNER_EXECUTED_DEPENDENCY_REPAIR_ATTEMPT
+- **Evidence source:** OWNER_SUPPLIED_TERMINAL_TRANSCRIPT
+- **Executed-by:** Owner, as the existing non-root guest account in the already-open VM shell; ChatGPT did not execute on the guest.
+- **Prepared-by:** ChatGPT GPT-6 (declared)
+- **Writer-instance:** CHATGPT-INSTALL-01 (declared; unauthenticated)
+- **Writer-role:** INSTALLATION_COORDINATOR
+- **Reviewed-by:** SELF_REVIEW_ONLY
+- **Approved-by:** OWNER_REQUEST_2026-11-07 (owner-controlled repair attempt)
+- **Published-by:** GitHub connector via shared ViktorIXAI account
+- **Attribution-confidence:** DECLARED_UNVERIFIED
+- **Related-issue:** #10
+- **Related-checkpoint:** CLARYEL-P2002-20261107-GATEWAY-SYSTEMD-SOURCE-REVIEW-001
+
+### Executed command
+
+The owner ran hermes pm repair as the existing guest user (not via sudo), from the existing Hermes checkout.
+
+### Observed failure
+
+The PM repair process began and attempted to build the Hermes package in its recorded dependency environment. It failed while resolving the build-system requirements:
+
+- setuptools==84.1.0
+- wheel
+
+The package index request failed at https://pypi.org/simple/setuptools/. The terminal reported three retries followed by:
+
+    Temporary failure in name resolution
+
+The PM command exited with dependency repair failure; the nested uv sync returned exit code 2. The terminal explicitly recommended retrying or running hermes pm doctor / hermes pm repair.
+
+### Assessment
+
+- **CONFIRMED:** The repair command was run as the checkout owner (UID 1000), avoiding the earlier root-versus-owner checkout permission conflict.
+- **CONFIRMED:** The immediate blocker is name resolution for pypi.org during dependency installation.
+- **NOT_YET_DETERMINED:** Whether the guest's resolver configuration/service is broken, its default route or upstream network is unavailable, or host-side Guard/egress policy is blocking DNS/HTTPS.
+- **NO_CHANGES_CONFIRMED:** The supplied output shows a failed dependency repair attempt; it does not show successful environment repair or Gateway installation.
+- **BLOCKED:** Do not run hermes update or gateway install until the dependency environment is repaired and verified.
+
+### Next action
+
+Run a read-only guest network diagnostic while remaining in the existing VM shell:
+- interface addresses and default route;
+- /etc/resolv.conf and resolvectl status;
+- getent ahostsv4 pypi.org and resolvectl query pypi.org;
+- reachability of the configured default gateway;
+- HTTPS HEAD request to the setuptools package index.
+
+Do not change DNS servers, edit resolver files, open egress, disable Guard, alter nftables, or change libvirt networking until the diagnostics identify the failure layer and the owner approves a specific controlled change.
+
+### Contribution provenance
+
+- Writer-instance: CHATGPT-INSTALL-01 (declared; unauthenticated)
+- Writer-role: INSTALLATION_COORDINATOR
+- Deployment-alias: P2002-LAB
+- Prepared-by: ChatGPT GPT-6 (declared)
+- Executed-by: Owner in the existing guest shell
+- Evidence-source: OWNER_SUPPLIED_TERMINAL_TRANSCRIPT
+- Reviewed-by: SELF_REVIEW_ONLY
+- Approved-by: OWNER_REQUEST_2026-11-07 (owner-controlled repair attempt)
+- Published-by: GitHub connector via shared ViktorIXAI account
+- Attribution-confidence: DECLARED_UNVERIFIED
+- Related-checkpoint: CLARYEL-P2002-20261107-PM-REPAIR-DNS-FAILURE-001
