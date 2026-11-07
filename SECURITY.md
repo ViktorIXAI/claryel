@@ -5,7 +5,7 @@ This repository is public. All contributions, including direct GitHub API writes
 This policy draws on the existing security practice in the adjacent [claryel-autonomous](https://github.com/ViktorIXAI/claryel-autonomous/blob/main/SECURITY.md) project: Gitleaks, infrastructure-pattern checks, local-only configuration, scanning publication artifacts, protected history and credential-incident procedures. It strengthens that practice with a **separate full-fidelity private recovery ledger**, deterministic sanitized public reproduction steps, and an explicit mandatory **pre-publication** gate for API-based authors.
 
 ## Report a vulnerability privately
-Use the repository's GitHub private vulnerability reporting or security advisory facility when enabled, or contact the maintainer through an already-established private channel. **Never submit a usable credential, sensitive IP/host inventory, customer data or exploit detail as a public issue.**
+Use the repository's GitHub private vulnerability reporting or security advisory facility when enabled, or contact the maintainer through an already-established private channel. **Never submit a usable credential, customer data, third-party infrastructure details or secret exploit material as a public issue.** Non-secret P2002 laboratory IPs, container/network names and architecture details are intentionally public under the owner's [standing disclosure policy](policies/PUBLIC-ARCHITECTURE-AND-CLIENT-IDENTITY.md); do not extend that permission to customer or unrelated networks.
 
 ## Suspected disclosure
 1. Stop every publishing automation and cancel public uploads.
