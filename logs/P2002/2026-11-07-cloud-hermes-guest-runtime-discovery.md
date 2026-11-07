@@ -1005,3 +1005,68 @@ If approved by the owner, use the cached wheel packer with the retained environm
 - Published-by: GitHub connector via shared ViktorIXAI account
 - Attribution-confidence: DECLARED_UNVERIFIED
 - Related-checkpoint: CLARYEL-P2002-20261107-PM-CACHED-WHEEL-PACKER-AVAILABLE-001
+
+## Upstream Hermes PM source review — supported UV controls and wheelhouse path
+
+- **Checkpoint ID:** CLARYEL-P2002-20261107-PM-WHEELHOUSE-CONTROL-FLOW-REVIEW-001
+- **Target-machine-ID:** P2002-CLOUD-GUEST
+- **Deployment-alias:** P2002-LAB
+- **Event time:** 2026-11-07 (review performed during this conversation; exact clock time not asserted)
+- **Operation:** UPSTREAM_SOURCE_AND_OFFICIAL_UV_DOCUMENTATION_REVIEW
+- **Evidence-source:** TOOL_OBSERVED_UPSTREAM_SOURCE + OFFICIAL_UV_DOCUMENTATION
+- **Executed-by:** ChatGPT reviewed source/documentation only; no guest command was executed.
+- **Prepared-by:** ChatGPT GPT-6 (declared)
+- **Writer-instance:** CHATGPT-INSTALL-01 (declared; unauthenticated)
+- **Writer-role:** INSTALLATION_COORDINATOR
+- **Reviewed-by:** SELF_REVIEW_ONLY
+- **Approved-by:** OWNER_REQUEST_2026-11-07 (continue controlled installation analysis)
+- **Published-by:** GitHub connector via shared ViktorIXAI account
+- **Attribution-confidence:** DECLARED_UNVERIFIED
+- **Related-issue:** #10
+- **Related-checkpoint:** CLARYEL-P2002-20261107-PM-CACHED-WHEEL-PACKER-AVAILABLE-001
+
+### Exact source reviewed
+
+Hermes Agent source commit: `2bd378ed1b8d6bf2192cb26e0a55ff3091e6bd19`.
+
+- `pm/index_config.py`: the PM forwarding allowlist includes `UV_FIND_LINKS` and `UV_NO_INDEX`, but not `UV_OFFLINE`.
+- `pm/environment.py::_base_environment`: ambient `UV_*` variables are filtered unless on that allowlist.
+- `pm/environment.py::PythonEnvironment._run`: the explicit offline mode adds the actual `--offline` CLI flag only when the PythonEnvironment instance was created with `offline=True`.
+- `pm/packages.py::Packages.apply`: the repair path creates a managed environment without passing `offline=True`, then replays the workspace through `lock_and_sync`.
+- `pm/environment.py::PythonEnvironment.install_wheelhouse`: a separate supported path exports requirements and invokes `uv pip install --no-index --only-binary :all: --find-links <wheelhouse>`, then checks the lock.
+- `pm/runtime_stage.py::stage_runtime`: the above wheelhouse method is used by a distinct PM runtime-staging flow when its caller supplies a wheelhouse. This is not evidence that `hermes pm repair` exposes or uses that wheelhouse argument.
+
+Source links:
+- https://github.com/NousResearch/hermes-agent/blob/2bd378ed1b8d6bf2192cb26e0a55ff3091e6bd19/pm/index_config.py
+- https://github.com/NousResearch/hermes-agent/blob/2bd378ed1b8d6bf2192cb26e0a55ff3091e6bd19/pm/environment.py
+- https://github.com/NousResearch/hermes-agent/blob/2bd378ed1b8d6bf2192cb26e0a55ff3091e6bd19/pm/packages.py
+- https://github.com/NousResearch/hermes-agent/blob/2bd378ed1b8d6bf2192cb26e0a55ff3091e6bd19/pm/runtime_stage.py
+
+Official uv documentation reviewed:
+- https://docs.astral.sh/uv/configuration/environment/
+- https://docs.astral.sh/uv/reference/cli/
+
+It documents `UV_OFFLINE` as the environment equivalent of `--offline`, and `UV_FIND_LINKS` as the environment equivalent of `--find-links`. It does not document `UV_NO_INDEX`; the CLI's `--no-index` flag is a command-line option. This explains why the previous `UV_NO_INDEX=1` experiment was ineffective. `UV_FIND_LINKS` is a real supported setting, but by itself it only adds package-file locations; it does not guarantee that the default registry will not be queried.
+
+### Assessment and next step
+
+- **CONFIRMED:** The cached wheel packer is callable and can expose `wheel pack`.
+- **CONFIRMED:** Hermes PM forwards `UV_FIND_LINKS`, but does not forward `UV_OFFLINE`; the PM repair code path does not construct its environment with `offline=True`.
+- **CONFIRMED:** Hermes has a distinct wheelhouse-install API that explicitly passes `--no-index`; source review does not show this API being used by `pm repair`.
+- **NOT_YET_CONFIRMED:** The exact supported way to make the PM repair build-isolation step consume local wheels without PyPI access.
+- **NEXT BOUNDED ACTION:** Build the two verified unpacked cache entries into wheel archives in a newly created temporary directory, using the cached wheel packer and the retained environment's Python/packaging. Verify ZIP integrity, METADATA, WHEEL tags and RECORD hashes. This will not alter the UV cache or any PM environment. Do not run `pm repair` yet.
+- **NO NETWORK/POLICY CHANGES:** No egress, DNS, routing, firewall or proxy rules were changed.
+
+### Contribution provenance
+
+- Writer-instance: CHATGPT-INSTALL-01 (declared; unauthenticated)
+- Writer-role: INSTALLATION_COORDINATOR
+- Deployment-alias: P2002-LAB
+- Prepared-by: ChatGPT GPT-6 (declared)
+- Executed-by: ChatGPT for source/documentation review; owner has not yet run the proposed wheelhouse build command
+- Evidence-source: TOOL_OBSERVED_UPSTREAM_SOURCE + OFFICIAL_UV_DOCUMENTATION
+- Reviewed-by: SELF_REVIEW_ONLY
+- Approved-by: OWNER_REQUEST_2026-11-07 (continue controlled installation analysis)
+- Published-by: GitHub connector via shared ViktorIXAI account
+- Attribution-confidence: DECLARED_UNVERIFIED
+- Related-checkpoint: CLARYEL-P2002-20261107-PM-WHEELHOUSE-CONTROL-FLOW-REVIEW-001
