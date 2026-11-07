@@ -482,3 +482,40 @@ The bare-interpreter package checks do **not** establish that Hermes or HTTPX is
 The exact OAuth source file is now located. Next read-only inspection must establish (a) how the launcher completes bootstrap and selects dependency paths, (b) which Python executable and import paths the live Gateway process actually uses, (c) the installed HTTPX version in that context, and (d) whether OAuth and inference clients honor proxy environment variables.
 
 No configuration, service, firewall, Squid, VM or boot state was changed.
+
+
+### 10.11 Owner-supplied OAuth transport and installed HTTPX inventory
+
+Read-only output supplied from claryel-cloud-vm (uploaded transcript, 2026-11-07):
+
+**Launcher and OAuth source**
+- Launcher grep confirms the generated entry point removes PYTHONPATH, inserts the Hermes repository root into sys.path, and later rewrites sys.path using a variable named closure. The captured grep output does not show the surrounding bootstrap logic or the value/source of closure.
+- The installed hermes_cli/auth_xai.py imports the shared httpx object from hermes_cli.auth_constants.
+- xAI OIDC discovery calls httpx.get(...) with default client behavior.
+- Token refresh uses httpx.Client(...) with no explicit trust_env=False or explicit proxy argument.
+- Device-code login similarly uses default httpx.Client(...).
+- Thus the inspected OAuth source does not explicitly disable HTTPX environment-proxy handling. This is a source-level indication only; actual runtime HTTPX version/configuration and behavior still need confirmation.
+- The output did not inspect auth_constants.py to establish how the shared HTTPX module is imported/configured, nor the model inference transport selected for Grok.
+
+**HTTPX files found**
+- uv cache archive: ~/.hermes/cache/uv/archive-v0/SidGhfBngLqwVydd/httpx/__init__.py, metadata reports HTTPX 0.28.1.
+- Environment c349a12bceef4e6290b7d183c0b32e2d: HTTPX 0.28.1 under its Python 3.14 site-packages.
+- Environment fcc6015261fa40b4891cdeb11eb08cfe: HTTPX 0.28.1 under its Python 3.14 site-packages.
+- uv PM runtime generation 21a9bd4435d448a19d8ddc553e3a9c14 has a pyvenv.cfg; the supplied search did not print its contents or the environment's resolved site-packages path.
+- Two environment directories exist; the output does not establish which one the live Gateway launcher selected. Do not infer active runtime from directory presence alone.
+
+**Current interpretation**
+1. The earlier bare-interpreter pip show httpx result was misleading for the Hermes launcher context. HTTPX 0.28.1 is present in the uv cache and in two Hermes environment trees.
+2. The inspected xAI OAuth calls use HTTPX defaults and do not visibly opt out of environment proxy handling. This supports the proposed HTTPS_PROXY approach at source level, but does not yet prove the Gateway will receive or honor it.
+3. The most important unresolved items are the launcher closure/bootstrap selection, the active Gateway's actual sys.path and imported HTTPX file/version, auth_constants.py configuration, and the Grok inference transport's proxy behavior.
+4. The prior hard failure remains explained at the network layer: the guest had no default route and no working DNS, and the host Guard currently drops new traffic arriving on virbr240 before any Cloud Hermes proxy exception. The existing Squid instance is dedicated to Strata; the agreed design is a separate Cloud Hermes Squid instance, not a modification of Strata's existing instance.
+
+**Next safe read-only gate**
+- Inspect the launcher around lines 1–110 (including the closure selection and final exec path).
+- Inspect hermes_cli/auth_constants.py around its HTTPX import/alias.
+- Query the live Gateway process for its Python command line, /proc/PID/maps entries containing httpx or site-packages, and /proc/PID/environ proxy-variable names only (never values).
+- Inspect the selected environment's pyvenv.cfg and package metadata.
+- Inspect the actual Grok inference client construction and whether it honors environment proxies.
+- Continue to leave VM routes/DNS, Guard, UFW, Squid, systemd and Strata untouched until the exact proposed patch and negative/positive tests are reviewed.
+
+No configuration, service, firewall, Squid, VM or boot state was changed.
