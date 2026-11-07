@@ -104,3 +104,10 @@ New record: `logs/P2002/2026-11-07-cloud-hermes-guest-runtime-discovery.md`.
 - No guest configuration or service was changed.
 
 Next: grouped read-only inventory of binaries, package managers, containers, installation directories and alternative service/supervisor mechanisms. Never display credentials or secret values; do not reinstall or repeat Grok authorization.
+
+
+### Recovered prior Cloud Hermes installation record
+
+A targeted prior-conversation retrieval recovered Hermes v0.23.0 at `/home/claryelvm/.hermes/hermes-agent`, CLI `/home/claryelvm/.local/bin/hermes`, config paths `~/.hermes/config.yaml` and `~/.hermes/.env`, xAI OAuth configuration, selected model `grok-4.6`, base URL `https://api.x.ai/v1`, and a reported successful `hermes chat --oneshot` test. Classification: **PRIOR_CONVERSATION_RECOVERED**, not fresh shell evidence. No credential values or OAuth credential object identifiers are published.
+
+No persistent service/container/autostart mechanism was documented in the recovered history. This reconciles the current no-process/no-matching-unit diagnostic: the CLI can exist and have passed a one-shot test without a persistent daemon. Do not reinstall or reauthorize. Inspect the existing CLI's supported gateway/daemon mode and configure its actual supported boot-start mechanism.
