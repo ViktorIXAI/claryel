@@ -4,7 +4,7 @@
 
 ## 1. Repository log inventory
 
-The current logs root contains only one machine directory: logs/P2002/. It contains **11 standalone Markdown records**, not 11. The 50 KB initial-install.md is the long chronological narrative; the other nine files are focused checkpoints.
+The current logs root contains only one machine directory: logs/P2002/. It contains **11 standalone Markdown records**. The 50 KB initial-install.md is the long chronological narrative; the other ten files are focused checkpoints.
 
 | # | File | Main scope | Evidence limitation / gap |
 | --- | --- | --- | --- |
@@ -22,9 +22,9 @@ The current logs root contains only one machine directory: logs/P2002/. It conta
 
 ## 2. Other evidence surfaces
 
-- docs/AUDIT-STATUS-AND-EVIDENCE.md: status summary, but its GPU/Strata status mirrors the last partial bring-up checkpoint and is stale if later successful tests occurred outside this public repository snapshot.
+- docs/AUDIT-STATUS-AND-EVIDENCE.md: refreshed status summary now includes the successful Strata/Qwen inference checkpoint; the separate raw ROCm/HIP smoke-test evidence remains missing.
 - docs/EVIDENCE-INDEX-UPDATE-2026-11-06-02.md: links the backup and IQ3_S bring-up events; its last status is IN PROGRESS / NOT VERIFIED.
-- Issue #9 has five visible comments after the 2026-11-07 inference update. The latest comment repeats the partial retry status and says no ROCm smoke test, model download, model load or inference was yet confirmed.
+- Issue #9 has five visible comments after the 2026-11-07 inference update. The latest comment records successful model/API inference while keeping the separate raw ROCm/HIP smoke-test transcript open.
 - Commit history contains numerous checkpoint commits, but a commit is not a substitute for the corresponding execution log.
 - Current logs root contains only P2002. No P1005 log directory was found.
 - The adjacent claryel-autonomous repository is a separate AI-agent benchmark/research project; do not treat its extensive experiment logs as P2002 installation logs.
@@ -51,13 +51,13 @@ The current logs root contains only one machine directory: logs/P2002/. It conta
 - A verified restore-from-backup boot.
 - Machine-readable cross-file event inventory, global chronological checkpoint index, and reconciliation of every commit with a log checkpoint.
 
-**Important:** owner reports that GPU testing works. This inventory does not dispute that report; it records that the matching evidence has not been found in the public repository snapshot reviewed. Do not label the GPU failed. Recover the exact later terminal transcript/agent log and append a correction/update.
+**Important:** owner reports that GPU testing works, and the new inference transcript confirms the model runs through the local Strata API. The remaining evidence gap is the exact post-fix ROCm/HIP device-identification and standalone GPU smoke-test transcript. Do not label the GPU failed; recover the raw terminal/agent evidence and append it.
 
 ## 4. Chronology and consistency issues
 
 1. The initial install file accumulates many unrelated milestones; a separate checkpoint is preferable for each major subsystem.
 2. The network acceptance file contains a proposed download command explicitly marked NOT EXECUTED, followed by a later separate actual bring-up log. The index must preserve this distinction.
-3. The initial issue #9 comments describe firmware investigation and later corrected container device passthrough, but not final successful GPU compute/inference acceptance.
+3. The earlier issue #9 comments describe firmware investigation and corrected container device passthrough. The 2026-11-07 comment adds successful Strata/Qwen inference; standalone GPU compute acceptance remains a separate evidence gap.
 4. The current audit-status page is a snapshot and must carry a last-evidence timestamp; it should not be treated as live status.
 5. The 2026-11-06 temporary publication window is historical and expired. The owner issued a standing 2026-11-07 direction permitting public disclosure of P2002 non-secret architecture and lab identifiers; credentials, customer data and unrelated personal/network identifiers remain excluded. Per-client deployments must use generated unique identities and must not reuse P2002 runtime values.
 
