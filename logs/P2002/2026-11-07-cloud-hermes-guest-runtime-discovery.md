@@ -796,3 +796,76 @@ On success, verify PM doctor and the repair marker before proceeding to Hermes u
 - Published-by: GitHub connector via shared ViktorIXAI account
 - Attribution-confidence: DECLARED_UNVERIFIED
 - Related-checkpoint: CLARYEL-P2002-20261107-PM-CACHE-SETUPTOOLS-WHEEL-PRESENT-001
+
+## Bounded cache-only repair attempt failed — correction to UV_NO_INDEX assumption
+
+- **Checkpoint ID:** CLARYEL-P2002-20261107-PM-UV-NO-INDEX-REPAIR-FAILED-001
+- **Target-machine-ID:** P2002-CLOUD-GUEST
+- **Deployment-alias:** P2002-LAB
+- **Event time:** UNKNOWN (no timestamp in supplied terminal transcript)
+- **Operation:** OWNER_EXECUTED_PM_REPAIR_WITH_UV_NO_INDEX_ENV
+- **Evidence source:** OWNER_SUPPLIED_TERMINAL_TRANSCRIPT
+- **Executed-by:** Owner, as the existing non-root guest user in the already-open VM shell; ChatGPT did not execute on the guest.
+- **Prepared-by:** ChatGPT GPT-6 (declared)
+- **Writer-instance:** CHATGPT-INSTALL-01 (declared; unauthenticated)
+- **Writer-role:** INSTALLATION_COORDINATOR
+- **Reviewed-by:** SELF_REVIEW_ONLY
+- **Approved-by:** OWNER_REQUEST_2026-11-07 (single bounded repair attempt)
+- **Published-by:** GitHub connector via shared ViktorIXAI account
+- **Attribution-confidence:** DECLARED_UNVERIFIED
+- **Related-issue:** #10
+- **Related-checkpoints:** CLARYEL-P2002-20261107-PM-CACHE-SETUPTOOLS-WHEEL-PRESENT-001; CLARYEL-P2002-20261107-PM-REPAIR-DNS-FAILURE-001
+
+### Owner-supplied command and result
+
+Command:
+`UV_NO_INDEX=1 "$HOME/.local/bin/hermes" pm repair`
+
+Observed:
+- PM repair began and attempted to build a fresh generation under `~/.hermes/installs/ab16f6e41f23151a/environments/6caee0fc9a5944b0ac46b48ff5dce014/workspace`.
+- uv still attempted `https://pypi.org/simple/setuptools/`.
+- It failed after three retries with DNS resolution failure; uv sync exited 2.
+- No successful dependency repair is established.
+- No evidence of a successful Gateway service installation/start is established.
+
+### Correction to prior analysis
+
+The previous checkpoint incorrectly described `UV_NO_INDEX=1` as a reliable cache-only control because Hermes v0.23.0's `pm.index_config.FORWARDED_UV_SETTINGS` includes that name. The owner-supplied result disproves that operational assumption: the actual uv process still queried PyPI.
+
+Further review of uv's official environment-variable reference shows **no documented `UV_NO_INDEX` environment variable**. The uv CLI does support the command-line flag `--no-index`, but Hermes's `hermes pm repair` command does not expose that flag. uv documents `UV_OFFLINE` as its supported environment variable for disabling network access; however, Hermes v0.23.0's `pm.environment._base_environment()` strips ambient `UV_*` variables unless listed in `FORWARDED_UV_SETTINGS`, and `UV_OFFLINE` is not on that allowlist. Therefore neither prior shell-variable attempt constitutes a proven offline repair method.
+
+Official uv source: https://docs.astral.sh/uv/reference/environment/ (the reference documents `UV_OFFLINE`; it has no `UV_NO_INDEX` entry).
+Exact Hermes source reviewed at commit `2bd378ed1b8d6bf2192cb26e0a55ff3091e6bd19`:
+- `pm/index_config.py`: forwarding allowlist
+- `pm/environment.py`: ambient UV filtering and child environment construction
+- `pm/client.py` and `pm/runtime.py`: isolated PM worker environment
+- `pm/install.py`, `pm/packages.py`, and `pm/workspace.py`: repair builds a fresh environment generation and replays the recorded workspace/lock
+
+### Assessment
+
+- **CONFIRMED:** The attempted repair still requires resolving build-system requirements from PyPI; the guest cannot resolve/reach PyPI.
+- **CONFIRMED:** The prior claim that `UV_NO_INDEX=1` would make Hermes repair cache-only was incorrect and is withdrawn.
+- **NOT_YET_CONFIRMED:** Whether the cache contains reusable wheel artifacts and index metadata sufficient to satisfy the build-system requirements without a registry.
+- **NOT_YET_CONFIRMED:** Whether the failed candidate generation was removed as expected; verify read-only before further action.
+- **NO_NETWORK_POLICY_CHANGE:** No guest route, DNS, NAT, forwarding, Guard rule, Squid ACL, or proxy exception was changed.
+- **NO_GATEWAY_INSTALL:** Gateway install remains blocked pending successful dependency recovery.
+
+### Next controlled action — READ ONLY
+
+Inspect the exact UV cache layout and package artifacts (not only `.dist-info` directories), the installed PM uv executable/version, the repair marker, and current environment generation directories. Do not run another repair, do not set further guessed UV environment variables, and do not open guest egress.
+
+If wheel archives are missing, plan a narrow package-intake transfer with verified hashes through an approved host-to-guest path. If artifacts exist but uv still lacks registry metadata, evaluate a local file-based package index / wheelhouse using a supported uv mechanism; validate this design before attempting any mutation. Do not change the upstream Hermes checkout or lockfile ad hoc.
+
+### Contribution provenance
+
+- Writer-instance: CHATGPT-INSTALL-01 (declared; unauthenticated)
+- Writer-role: INSTALLATION_COORDINATOR
+- Deployment-alias: P2002-LAB
+- Prepared-by: ChatGPT GPT-6 (declared)
+- Executed-by: Owner for terminal command; ChatGPT for source and official uv documentation review
+- Evidence-source: OWNER_SUPPLIED_TERMINAL_TRANSCRIPT + TOOL_OBSERVED_HERMES_SOURCE + OFFICIAL_UV_DOCUMENTATION
+- Reviewed-by: SELF_REVIEW_ONLY
+- Approved-by: OWNER_REQUEST_2026-11-07 (bounded repair attempt and follow-up diagnosis)
+- Published-by: GitHub connector via shared ViktorIXAI account
+- Attribution-confidence: DECLARED_UNVERIFIED
+- Related-checkpoint: CLARYEL-P2002-20261107-PM-UV-NO-INDEX-REPAIR-FAILED-001
